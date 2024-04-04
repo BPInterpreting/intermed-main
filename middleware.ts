@@ -1,16 +1,10 @@
-import { authMiddleware } from "@clerk/nextjs";
+import { clerkMiddleware } from '@clerk/nextjs/server';
 
-export default authMiddleware({
-    // Routes that can be accessed while signed out
-    publicRoutes: [
-
-    ],
-
-});
+export default clerkMiddleware()
 
 export const config = {
-    // Protects all routes, including api/trpc.
-    // See https://clerk.com/docs/references/nextjs/auth-middleware
-    // for more information about configuring your Middleware
-    matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/", "/(api|trpc)(.*)"],
+    matcher: [
+        '/((?!.*\\..*|_next).*)', // Don't run middleware on static files
+        '/', // Run middleware on index page
+        '/(api|trpc)(.*)'], // Run middleware on API routes
 };

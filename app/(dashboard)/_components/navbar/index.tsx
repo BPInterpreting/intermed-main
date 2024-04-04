@@ -3,7 +3,12 @@ import {UserButton} from "@clerk/nextjs";
 export const Navbar = () => {
     return (
         <div>
-            navbar
+               <h1>Navbar</h1>
+            <UserButton
+                afterSignOutUrl='/'
+                showName
+            />
         </div>
+
     )
 }
