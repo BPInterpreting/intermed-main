@@ -1,5 +1,5 @@
 import {Navbar} from "@/app/(dashboard)/_components/navbar";
-import {UserButton} from "@clerk/nextjs";
+import {Sidebar} from "@/app/(dashboard)/_components/sidebar";
 
 export default function DashboardLayout({
                                             children, // will be a page or nested layout
@@ -8,9 +8,14 @@ export default function DashboardLayout({
 }) {
     return (
         <>
-            <Navbar />
-            <div className='flex h-full pt-20'>
-                {children}
+            <div className='h-full relative'>
+                <Navbar />
+                <div className='flex flex-col fixed mt-10 bg-blue-600 w-60 inset-y-0 z-80'>
+                    <Sidebar />
+                    <main className='ml-[70px]'>
+                        {children}
+                    </main>
+                </div>
             </div>
         </>
     )
