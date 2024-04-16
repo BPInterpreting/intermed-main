@@ -3,18 +3,15 @@
 
 import { Hono } from 'hono'
 import { handle } from 'hono/vercel'
+import patients from "@/app/api/[[...route]]/patients";
 
 export const runtime = 'edge';
 
 //initialize the new hono api instance where base is out /api route
 const app = new Hono().basePath('/api')
 
-//c refers to the controller
-app.get('/hello', (c) => {
-    return c.json({
-        message: 'Hello Next.js!',
-    })
-})
+//route and map the patients
+app.route('/patients', patients)
 
 export const GET = handle(app)
 export const POST = handle(app)
