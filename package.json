@@ -14,10 +14,12 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^5.0.0-beta.35",
+    "@hono/zod-validator": "^0.2.1",
     "@neondatabase/serverless": "^0.9.1",
     "@radix-ui/react-slot": "^1.0.2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
+    "date-fns": "^3.6.0",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.30.8",
     "hono": "^4.2.4",
@@ -26,7 +28,8 @@
     "react": "^18",
     "react-dom": "^18",
     "tailwind-merge": "^2.2.1",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@types/node": "^20",
