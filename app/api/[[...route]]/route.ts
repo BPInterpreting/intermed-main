@@ -10,8 +10,10 @@ export const runtime = 'edge';
 //initialize the new hono api instance where base is out /api route
 const app = new Hono().basePath('/api')
 
-//route and map the patients
-app.route('/patients', patients)
+//chained elements to the Hono app are the routes that are going to be used
+const route = app.route('/patients', patients)
+
+export type AppType = typeof route
 
 export const GET = handle(app)
 export const POST = handle(app)

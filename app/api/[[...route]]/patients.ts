@@ -10,11 +10,12 @@ const schema = z.object({
     firstName: z.string(),
 })
 
+
+//all of the routes are chained to the main Hono app
 const app = new Hono()
 
-
 // all the '/' routes are relative to the base path of this file which is /api/patients
-app.get('/', async (c) => {
+    .get('/', async (c) => {
     // the get request will return all the patients in the database
     const patients = await db.query.patient.findMany({
         orderBy: (patient, {desc}) => [desc(patient.firstName)]
@@ -22,7 +23,7 @@ app.get('/', async (c) => {
     return c.json(patients)
 })
 
-app.post(
+.post(
     '/',
     //TODO:add verify auth middleware
     zValidator("form", schema),
