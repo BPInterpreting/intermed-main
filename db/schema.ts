@@ -1,5 +1,4 @@
 import {pgTable, serial, timestamp, varchar} from "drizzle-orm/pg-core";
-import db from "@/db/drizzle";
 import {relations} from "drizzle-orm";
 
 export const patient = pgTable("patients", {
@@ -7,7 +6,7 @@ export const patient = pgTable("patients", {
     firstName: varchar("name").notNull(),
 })
 
-//one to many relationship between patient and appointment
+//one-to-many relationship between patient and appointment
 export const patientRelations = relations(patient, ({many}) =>({
     appointments: many(appointment)
 }))

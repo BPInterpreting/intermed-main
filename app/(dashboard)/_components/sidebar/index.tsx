@@ -1,9 +1,10 @@
 import Wrapper from "@/app/(dashboard)/_components/sidebar/wrapper";
+import Navigation from "@/app/(dashboard)/_components/sidebar/navigation";
 
 export const Sidebar = () => {
     return (
-        <div className=''>
-            <h1>Sidebar</h1>
-        </div>
+        <Wrapper>
+            <Navigation />
+        </Wrapper>
     )
 }
