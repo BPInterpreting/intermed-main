@@ -8,15 +8,13 @@ export default function DashboardLayout({
 }) {
     return (
         <>
-            <div className='h-full relative'>
-                <Navbar />
-                <div className='flex flex-col fixed mt-10 bg-blue-600 w-60 inset-y-0 z-80'>
-                    <Sidebar />
-                    <main className='ml-[70px]'>
+            <Sidebar className='hidden md:flex '/>
+            <main className='md:ml-60 h-full pt-[50px] md:pt-0'>
+                    <div className='h-full bg-blue-900'>
                         {children}
-                    </main>
-                </div>
-            </div>
-        </>
-    )
+                    </div>
+
+            </main>
+    </>
+)
 }
