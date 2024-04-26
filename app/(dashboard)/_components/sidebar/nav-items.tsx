@@ -9,7 +9,6 @@ interface NavItemsProps {
     icon: LucideIcon;
     label: string;
     href: string;
-
 }
 
 export const NavItems = ({
@@ -22,8 +21,8 @@ export const NavItems = ({
 
     return (
         <Button
-         asChild
-         variant={active ? 'sidebarOutline' : 'sidebar'}
+            asChild
+            variant={active ? 'sidebarOutline' : 'sidebar'}
             className='h-[52px] justify-start rounded-2xl'
         >
             <Link href={href}>

@@ -8,13 +8,18 @@ export default function DashboardLayout({
 }) {
     return (
         <>
-            <Sidebar className='hidden md:flex '/>
-            <main className='md:ml-60 h-full pt-[50px] md:pt-0'>
-                    <div className='h-full'>
-                        {children}
-                    </div>
+            <div>
+                <Navbar/>
+            </div>
+            <div>
+                <Sidebar className='hidden md:flex '/>
+            </div>
+            <main className='md:pl-60 h-full pt-[100px]  mt-10'>
+                <div className='h-full'>
+                    {children}
+                </div>
 
             </main>
-    </>
-)
+        </>
+    )
 }
