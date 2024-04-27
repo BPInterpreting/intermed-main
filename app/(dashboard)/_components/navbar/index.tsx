@@ -8,8 +8,8 @@ import { Search } from 'lucide-react';
 
 export const Navbar = () => {
     return (
-        <nav className='fixed top-0 h-[100px] pl-60  w-full px-4 z-10 shadow-sm border-b-[1px] pt-1 pb-1'>
-            <div className='flex flex-row items-center justify-between'>
+        <nav className='fixed top-0 h-[100px] pl-60  w-full px-4 z-10 shadow-sm border-b-[1px]'>
+            <div className='flex flex-row items-center justify-between p-2'>
                 <div>
                     <UserButton
                         afterSignOutUrl='/'
