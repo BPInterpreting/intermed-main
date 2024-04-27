@@ -1,7 +1,9 @@
+import PatientsClient from "@/app/(dashboard)/patients/components/client";
+
 const PatientsPage = () => {
     return (
         <div>
-        <h1>Patients</h1>
+            <PatientsClient />
         </div>
     );
 }
