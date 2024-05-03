@@ -26,7 +26,6 @@ export const Search = () => {
 
     const onClear = () => {
         setValue('')
-        router.push('/')
     }
 
     return (
