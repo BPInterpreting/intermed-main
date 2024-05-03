@@ -1,7 +1,7 @@
 //all comppnents of the sidebar are rendered here
 
 
-import Navigation from "@/app/(dashboard)/_components/sidebar/navigation";
+import Navigation from "@/app/(dashboard)/components/sidebar/navigation";
 import {cn} from "@/lib/utils";
 
 interface SidebarProps {

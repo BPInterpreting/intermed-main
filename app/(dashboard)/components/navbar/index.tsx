@@ -3,13 +3,13 @@
 import {UserButton} from "@clerk/nextjs";
 import {ModeToggle} from "@/components/theme/mode-toggle";
 import {Input} from "@/components/ui/input";
-import { Search } from 'lucide-react';
+import {Search} from "./search";
 
 
 export const Navbar = () => {
     return (
-        <nav className='fixed top-0 h-[100px] pl-60  w-full px-4 z-10 shadow-sm border-b-[1px]'>
-            <div className='flex flex-row items-center justify-between p-2'>
+        <nav className='fixed top-0 h-[85px] pl-60  w-full px-4 z-10 shadow-sm border-b-[1px]'>
+            <div className='flex  items-center justify-between p-2'>
                 <div>
                     <UserButton
                         afterSignOutUrl='/'
@@ -40,15 +40,8 @@ export const Navbar = () => {
                         }}
                     />
                 </div>
-                <div className='flex flex-row items-center justify-center'>
-                    <Input
-                        placeholder='Search...'
-                    />
-                </div>
-                <div className='flex justify-end'>
+                    <Search />
                     <ModeToggle/>
-                </div>
-
             </div>
         </nav>
 

@@ -16,7 +16,7 @@ const buttonVariants = cva(
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
           sidebar: "bg-transparent font-medium border-2 border-transparent cursor-pointer hover:bg-blue-200 transition-none box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.5);",
-          sidebarOutline: "bg-blue-200 text-sky-600 font-bold border-blue-300 border-2 hover:bg-blue-200 transition-none"
+          sidebarOutline: "bg-slate-50 text-red-600 font-bold border-none border-2 hover:bg-blue-200 transition-none"
       },
       size: {
         default: "h-10 px-4 py-2",

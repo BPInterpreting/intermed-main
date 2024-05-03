@@ -1,5 +1,5 @@
-import {Navbar} from "@/app/(dashboard)/_components/navbar";
-import {Sidebar} from "@/app/(dashboard)/_components/sidebar";
+import {Navbar} from "@/app/(dashboard)/components/navbar";
+import {Sidebar} from "@/app/(dashboard)/components/sidebar";
 
 export default function DashboardLayout({
                                             children, // will be a page or nested layout
@@ -14,7 +14,7 @@ export default function DashboardLayout({
             <div>
                 <Sidebar className='hidden md:flex '/>
             </div>
-            <main className='md:pl-60 h-full pt-[100px]  mt-10'>
+            <main className='md:pl-60 h-full pt-[80px]  mt-10'>
                 <div className='h-full'>
                     {children}
                 </div>

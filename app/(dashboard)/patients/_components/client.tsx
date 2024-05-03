@@ -4,8 +4,15 @@ import {Heading} from "@/components/customUi/heading";
 import {Button} from "@/components/ui/button";
 import {Separator} from "@/components/ui/separator";
 import HeadingContainer from "@/components/customUi/headingContainer";
+import {DataTable} from "@/components/ui/data-table";
+import {PatientsColumn, columns} from "./columns";
 
-const PatientsClient = () => {
+// interface PatientClientProps {
+//     data: PatientsColumn[];
+// }
+
+const PatientsClient = (
+) => {
   return (
       <>
           <HeadingContainer>
@@ -21,6 +28,8 @@ const PatientsClient = () => {
               </Button>
           </HeadingContainer>
           <Separator />
+          {/*TODO: data is not defined fix it so that the data can be displayed*/}
+          {/*<DataTable columns={columns} data={data}  />*/}
 
       </>
   )
