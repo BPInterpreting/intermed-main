@@ -14,7 +14,7 @@ export default function DashboardLayout({
             <div>
                 <Sidebar className='hidden md:flex '/>
             </div>
-            <main className='md:pl-60 h-full pt-[80px]  mt-10'>
+            <main className='md:pl-60 h-full pt-[80px]  mt-5'>
                 <div className='h-full'>
                     {children}
                 </div>

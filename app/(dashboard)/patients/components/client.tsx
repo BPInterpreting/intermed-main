@@ -6,6 +6,7 @@ import {Separator} from "@/components/ui/separator";
 import HeadingContainer from "@/components/customUi/headingContainer";
 import {DataTable} from "@/components/ui/data-table";
 import {PatientsColumn, columns} from "./columns";
+import {useRouter} from "next/navigation";
 
 // interface PatientClientProps {
 //     data: PatientsColumn[];
@@ -13,6 +14,8 @@ import {PatientsColumn, columns} from "./columns";
 
 const PatientsClient = (
 ) => {
+
+    const router = useRouter();
   return (
       <>
           <HeadingContainer>
@@ -21,7 +24,8 @@ const PatientsClient = (
                   description={"List of all patients"}
               />
               <Button
-                className='items-center'
+                  onClick={() => router.push("/patients/new")}
+                  className='items-center'
               >
                   <span className="font-bold pr-1 text-lg">+</span>
                   Patient

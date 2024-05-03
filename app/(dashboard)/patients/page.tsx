@@ -1,6 +1,6 @@
-import PatientsClient from "@/app/(dashboard)/patients/_components/client";
+import PatientsClient from "@/app/(dashboard)/patients/components/client";
 import {usePatients} from "@/hooks/patients";
-import { PatientsColumn } from "@/app/(dashboard)/patients/_components/columns";
+import { PatientsColumn } from "@/app/(dashboard)/patients/components/columns";
 
 
 const PatientsPage = async () => {
