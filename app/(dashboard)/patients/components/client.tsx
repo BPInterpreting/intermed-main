@@ -8,9 +8,9 @@ import {DataTable} from "@/components/ui/data-table";
 import {PatientsColumn, columns} from "./columns";
 import {useRouter} from "next/navigation";
 
-// interface PatientClientProps {
-//     data: PatientsColumn[];
-// }
+interface PatientClientProps {
+    data: PatientsColumn[];
+}
 
 const PatientsClient = (
 ) => {
@@ -20,7 +20,7 @@ const PatientsClient = (
       <>
           <HeadingContainer>
               <Heading
-                  title={"Patients"}
+                  title={`Patients `}
                   description={"List of all patients"}
               />
               <Button
