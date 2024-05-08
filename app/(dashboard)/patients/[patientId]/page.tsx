@@ -2,9 +2,12 @@ import PatientForm from "@/app/(dashboard)/patients/[patientId]/components/patie
 
 const PatientsPage = () => {
     return (
-        <div>
-            <PatientForm />
+        <div className='flex-col'>
+            <div className='flex-1 space-y-4 p-8 pt-6'  >
+                <PatientForm/>
+            </div>
         </div>
+
     )
 }
 
