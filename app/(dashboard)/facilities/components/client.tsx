@@ -45,9 +45,9 @@ const FacilitiesClient = (
 ) => {
     return (
         <div className='w-full pb-10'>
-            <Card className='border-none shadow-none'>
+            <Card className=''>
                 <CardHeader className='gap-y-2 lg:flex-row lg:justify-between'>
-                    <CardTitle>Medical Facilities</CardTitle>
+                    <CardTitle className='text-3xl line-clamp-1' >Medical Facilities</CardTitle>
                     <Button>
                         <Plus className='size-4 mr-2' />
                         Add Facility

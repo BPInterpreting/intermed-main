@@ -17,27 +17,31 @@ const app = new Hono()
 // all the '/' routes are relative to the base path of this file which is /api/patients
     .get('/', async (c) => {
     // the get request will return all the patients in the database
-    const patients = await db.query.patient.findMany({
-        orderBy: (patient, {desc}) => [desc(patient.firstName)]
-    })
-    return c.json(patients)
-})
-
-.post(
-    '/',
-    //TODO:add verify auth middleware
-    zValidator("form", schema),
-    async (c) => {
-        //access data from the frontend
-        const data = c.req.valid("form")
-
-        //TODO: throw HTTP exception from Hono if there is no user
-        const newPatient = await db.insert(patient).values({
-            firstName: data.firstName
+    const data = await db
+        .select({
+            id: patient.id,
+            firstName: patient.firstName
         })
+        .from(patient)
 
-        return c.json(newPatient)
+        return c.json({ data })
 })
+
+// .post(
+//     '/',
+//     //TODO:add verify auth middleware
+//     zValidator("form", schema),
+//     async (c) => {
+//         //access data from the frontend
+//         const data = c.req.valid("form")
+//
+//         //TODO: throw HTTP exception from Hono if there is no user
+//         const newPatient = await db.insert(patient).values({
+//             firstName: data.firstName
+//         })
+//
+//         return c.json(newPatient)
+// })
 
 
 export default app

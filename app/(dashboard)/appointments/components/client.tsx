@@ -5,31 +5,51 @@ import {Button} from "@/components/ui/button";
 import {Separator} from "@/components/ui/separator";
 import HeadingContainer from "@/components/customUi/headingContainer";
 import {DataTable} from "@/components/ui/data-table";
+import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
+import {Plus} from "lucide-react";
+import {columns} from "@/app/(dashboard)/patients/components/columns";
+import {useRouter} from "next/navigation";
 
 
-// interface PatientClientProps {
-//     data: PatientsColumn[];
-// }
+type Appointment = {
+    id: string
+    firstName: string
+}
+
+const data: Appointment[] = [
+    {
+        id: "728ed52f",
+        firstName: "bryan ",
+    },
+    {
+        id: "489e1d42",
+        firstName: "celene",
+    },
+    // ...
+]
 
 const AppointmentsClient = (
 ) => {
+    const router = useRouter();
+
     return (
         <>
-            <HeadingContainer>
-                <Heading
-                    title={"Appointments"}
-                    description={"List of all appointments"}
-                />
-                <Button
-                    className='items-center'
-                >
-                    <span className="font-bold pr-1 text-lg">+</span>
-                    Appointment
-                </Button>
-            </HeadingContainer>
-            <Separator />
-            {/*TODO: data is not defined fix it so that the data can be displayed*/}
-            {/*<DataTable columns={columns} data={data}  />*/}
+            <div className='w-full pb-10'>
+                <Card className=''>
+                    <CardHeader className='gap-y-2 lg:flex-row lg:justify-between'>
+                        <CardTitle className='text-3xl line-clamp-1'>Appointments</CardTitle>
+                        <Button
+                            onClick={() => router.push("/appointments/new")}
+                        >
+                            <Plus className='size-4 mr-2'/>
+                            Add Appointment
+                        </Button>
+                    </CardHeader>
+                    <CardContent>
+                        <DataTable columns={columns} data={data}/>
+                    </CardContent>
+                </Card>
+            </div>
 
         </>
     )
