@@ -1,5 +1,5 @@
 import { hc } from 'hono/client'; //creates the client
 import { AppType } from "@/app/api/[[...route]]/route"; //pass AppType as generics and URL is argument
 
-//pass AppType as generics and URL is argument
-export const client = hc<AppType>("http://localhost:3000")
+//hc is the function that creates the client. AppType is passed as generics and URL is passed as argument
+export const client = hc<AppType>(process.env.NEXT_PUBLIC_URL!)
