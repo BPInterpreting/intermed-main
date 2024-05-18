@@ -9,6 +9,7 @@ import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Plus} from "lucide-react";
 import {columns} from "@/app/(dashboard)/patients/components/columns";
 import {useRouter} from "next/navigation";
+import {useGetPatients} from "@/features/patients/api/use-get-patients";
 
 
 type Appointment = {
@@ -31,6 +32,7 @@ const data: Appointment[] = [
 const AppointmentsClient = (
 ) => {
     const router = useRouter();
+
 
     return (
         <>
