@@ -1,9 +1,10 @@
 // authors.ts
 import { Hono } from 'hono'
 import { db } from '@/db/drizzle'
-import {patient} from "@/db/schema";
+import {insertPatientSchema, patient} from "@/db/schema";
 import { z } from 'zod'
 import { zValidator } from '@hono/zod-validator'
+import {createId} from "@paralleldrive/cuid2";
 
 //part of RPC is to create a schema for the validation that is used in the post request
 const schema = z.object({
@@ -26,22 +27,26 @@ const app = new Hono()
 
         return c.json({ data })
 })
+    .post(
+        '/',
+        // validate with zod what type of data is being passed in the post request
+        zValidator(
+            'json',
+            // only allow the first name to be passed in the post request for client to see
+            insertPatientSchema.pick({
+                firstName: true
+            })
+        ),
+        async (c) => {
+            const values = c.req.valid('json')
 
-// .post(
-//     '/',
-//     //TODO:add verify auth middleware
-//     zValidator("form", schema),
-//     async (c) => {
-//         //access data from the frontend
-//         const data = c.req.valid("form")
-//
-//         //TODO: throw HTTP exception from Hono if there is no user
-//         const newPatient = await db.insert(patient).values({
-//             firstName: data.firstName
-//         })
-//
-//         return c.json(newPatient)
-// })
+            // insert patient values using spread which only allows picked values
+            const [data] = await db.insert(patient).values({
+                id: createId(),
+                ...values
+            }).returning()
+            return c.json({ data })
+    })
 
 
 export default app

@@ -1,10 +1,13 @@
-import {pgTable, serial, timestamp, varchar} from "drizzle-orm/pg-core";
+import {pgTable, serial, text, timestamp, varchar} from "drizzle-orm/pg-core";
 import {relations} from "drizzle-orm";
+import { createInsertSchema } from "drizzle-zod";
 
 export const patient = pgTable("patients", {
-    id: serial("id").primaryKey(),
+    id: text("id").primaryKey(),
     firstName: varchar("name").notNull(),
 })
+
+export const insertPatientSchema = createInsertSchema(patient)
 
 //one-to-many relationship between patient and appointment
 export const patientRelations = relations(patient, ({many}) =>({

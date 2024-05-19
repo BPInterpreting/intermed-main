@@ -4,11 +4,12 @@ import {config} from "dotenv";
 
 config({path: ".env"});
 
-export default {
+export default({
     schema: "./db/schema.ts",
-    out: "./drizzle",
-    driver: "pg",
+    dialect: "postgresql",
     dbCredentials: {
-        connectionString: process.env.DATABASE_URL!,
+        url: process.env.DATABASE_URL!,
     },
-} satisfies Config;
+    verbose: true,
+    strict: true,
+})
