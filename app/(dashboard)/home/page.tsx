@@ -1,6 +1,6 @@
 'use client'
 
-import {useGetPatients} from "@/features/patients/api/use-get-patients";
+import {useGetPatients} from "@/app/(dashboard)/patients/api/use-get-patients";
 
 const HomePage = () => {
     const patientsQuery = useGetPatients()
