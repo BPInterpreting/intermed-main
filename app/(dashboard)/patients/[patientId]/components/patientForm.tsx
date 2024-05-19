@@ -50,9 +50,7 @@ const PatientForm = ({
     })
 
     function handleSubmit(values: FormValues) {
-        // Do something with the form values.
-        // ✅ This will be type-safe and validated.
-        console.log(values)
+        onSubmit(values)
     }
 
     const handleDelete = () => {
@@ -65,13 +63,16 @@ const PatientForm = ({
                <div className="flex items-center justify-between">
                    {/* eslint-disable-next-line react/jsx-no-undef */}
                    <Heading title={title} description={description}/>
-                       <Button
-                           variant='destructive'
-                           size='sm'
-                           onClick={() => {}}
-                       >
-                           <Trash className="h-4 w-4"/>
-                       </Button>
+                   {/*button conditionally renders only if id exists. meaning data already exists for it*/}
+                   {!!id && <Button
+                       type='button'
+                       disabled={disabled}
+                       variant='destructive'
+                       size='sm'
+                       onClick={handleDelete}
+                   >
+                       <Trash className="h-4 w-4"/>
+                   </Button>}
                </div>
 
                <Form {...form}>
@@ -91,7 +92,9 @@ const PatientForm = ({
                            />
                        </div>
 
-                       <Button type="submit">Submit</Button>
+                       <Button>
+                           {id ? "Update Patient" : "Add Patient"}
+                       </Button>
                    </form>
                </Form>
            </div>
