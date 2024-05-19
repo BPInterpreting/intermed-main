@@ -16,28 +16,47 @@ import {
 import { Input } from "@/components/ui/input"
 import {Heading} from "@/components/customUi/heading";
 import {Trash} from "lucide-react";
+import {insertPatientSchema} from "@/db/schema";
 
-const formSchema = z.object({
-    firstName: z.string().min(1).max(30),
+// modified formSchema to only include firstName based on drizzle insertPatientSchema
+const formSchema = insertPatientSchema.pick({
+    firstName: true,
 })
 
+type FormValues = z.input<typeof formSchema>
 
+type Props ={
+    id?: string;
+    defaultValues?: FormValues;
+    onSubmit: (values: FormValues) => void;
+    onDelete?: () => void;
+    disabled?: boolean;
+}
 
-const PatientForm = () => {
+const PatientForm = ({
+    id,
+    defaultValues,
+    onSubmit,
+    onDelete,
+    disabled,
+}: Props) => {
 
     const title = "Add Patient"
     const description = "Add a new patient to the system"
 
-    const form = useForm<z.infer<typeof formSchema>>({
+    const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
-        defaultValues: {
-            firstName:"",
-        },
+        defaultValues: defaultValues
     })
-    function onSubmit(values: z.infer<typeof formSchema>) {
+
+    function handleSubmit(values: FormValues) {
         // Do something with the form values.
         // ✅ This will be type-safe and validated.
         console.log(values)
+    }
+
+    const handleDelete = () => {
+        onDelete?.()
     }
 
    return(
@@ -56,7 +75,7 @@ const PatientForm = () => {
                </div>
 
                <Form {...form}>
-                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 w-full">
+                   <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8 w-full">
                        <div className='grid grid-cols-3 gap-8'>
                            <FormField
                                control={form.control}
