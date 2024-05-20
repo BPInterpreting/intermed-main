@@ -2,6 +2,7 @@ import { InferRequestType, InferResponseType } from "hono";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
 
 import { client } from "@/lib/hono";
+import {toast} from "sonner";
 
 
 // these types help to know the type of object that will be requested and returned
@@ -24,10 +25,14 @@ export const useCreatePatient = () => {
         },
         onSuccess: () => {
              //refetch all patients when a new patient is created to update the cache through the queryKey
+            toast.success('Patient created successfully')
             queryClient.invalidateQueries({ queryKey: ["patients"] })
         },
         onError: () => {
+            toast.error('Failed to create patient')
             console.error('Failed to create patient')
         }
     })
+
+    return mutation
 }

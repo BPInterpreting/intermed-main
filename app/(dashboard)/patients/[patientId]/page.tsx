@@ -3,6 +3,8 @@
 import PatientForm from "@/app/(dashboard)/patients/[patientId]/components/patientForm";
 import {insertPatientSchema} from "@/db/schema";
 import {z} from "zod";
+import {useCreatePatient} from "@/app/(dashboard)/patients/api/use-create-patient";
+import {useRouter} from "next/navigation";
 
 const formSchema = insertPatientSchema.pick({
     firstName: true,
@@ -10,17 +12,22 @@ const formSchema = insertPatientSchema.pick({
 
 type FormValues = z.input<typeof formSchema>
 
-const onSubmit = (values: FormValues) => {
-    console.log(values)
-}
-
 const PatientsPage = () => {
+    const router = useRouter()
+
+    const onSubmit = (values: FormValues) => {
+        mutation.mutate(values)
+
+    }
+
+    const mutation = useCreatePatient()
+
     return (
         <div className='flex-col'>
             <div className='flex-1 space-y-4 p-8 pt-6'  >
                 <PatientForm
                     onSubmit={onSubmit}
-                    disabled={false}
+                    disabled={mutation.isPending}
                     defaultValues={{
                         firstName: ''
                     }}

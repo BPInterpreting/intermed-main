@@ -5,6 +5,8 @@ import {ClerkProvider} from "@clerk/nextjs";
 import {ThemeProvider} from "@/components/theme/theme-provider";
 import { dark } from '@clerk/themes'
 import {QueryProvider} from "@/providers/query-provider";
+import { Toaster } from "@/components/ui/sonner";
+import {DialogProvider} from "@/providers/dialog-provider";
 
 
 const inter = Inter({ subsets: ["latin"] });
@@ -26,6 +28,8 @@ export default function RootLayout({
         <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <QueryProvider>
+            <DialogProvider />
+            <Toaster position='top-center' richColors />
             {children}
           </QueryProvider>
         </ThemeProvider>

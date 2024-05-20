@@ -1,5 +1,5 @@
 import PatientsClient from "@/app/(dashboard)/patients/components/client";
-import {usePatients} from "@/hooks/patients";
+
 
 
 

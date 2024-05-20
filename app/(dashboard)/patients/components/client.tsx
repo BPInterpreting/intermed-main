@@ -9,6 +9,7 @@ import {columns} from "./columns";
 import {useRouter} from "next/navigation";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Plus} from "lucide-react";
+import { useNewPatient } from "@/app/(dashboard)/patients/hooks/use-new-patient";
 
 type Patient = {
     id: string
@@ -29,8 +30,9 @@ const data: Patient[] = [
 
 const PatientsClient = (
 ) => {
-
+    const newPatient = useNewPatient()
     const router = useRouter();
+
   return (
       <>
           <div className='w-full pb-10'>
@@ -38,7 +40,7 @@ const PatientsClient = (
                   <CardHeader className='gap-y-2 lg:flex-row lg:justify-between'>
                       <CardTitle className='text-3xl line-clamp-1'>Patients</CardTitle>
                       <Button
-                          onClick = {() => router.push("/patients/new")}
+                          onClick = {newPatient.onOpen}
                       >
                           <Plus className='size-4 mr-2'/>
                           Add Patient
