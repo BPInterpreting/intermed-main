@@ -62,7 +62,7 @@ const PatientForm = ({
            <div>
                <div className="flex items-center justify-between">
                    {/* eslint-disable-next-line react/jsx-no-undef */}
-                   <Heading title={title} description={description}/>
+                   {/*<Heading title={title} description={description}/>*/}
                    {/*button conditionally renders only if id exists. meaning data already exists for it*/}
                    {!!id && <Button
                        type='button'
