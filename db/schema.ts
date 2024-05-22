@@ -4,7 +4,7 @@ import { createInsertSchema } from "drizzle-zod";
 
 export const patient = pgTable("patients", {
     id: text("id").primaryKey(),
-    firstName: varchar("name").notNull(),
+    firstName: varchar("firstName").notNull(),
 })
 
 export const insertPatientSchema = createInsertSchema(patient)
