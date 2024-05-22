@@ -10,28 +10,23 @@ import {useRouter} from "next/navigation";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Plus} from "lucide-react";
 import { useNewPatient } from "@/app/(dashboard)/patients/hooks/use-new-patient";
+import {useGetPatients} from "@/app/(dashboard)/patients/api/use-get-patients";
+
+
 
 type Patient = {
     id: string
     firstName: string
 }
 
-const data: Patient[] = [
-    {
-        id: "728ed52f",
-        firstName: "bryan ",
-    },
-    {
-        id: "489e1d42",
-        firstName: "celene",
-    },
-    // ...
-]
+
 
 const PatientsClient = (
 ) => {
     const newPatient = useNewPatient()
     const router = useRouter();
+    const patientsQuery = useGetPatients()
+    const patients = patientsQuery.data || []
 
   return (
       <>
@@ -47,7 +42,7 @@ const PatientsClient = (
                       </Button>
                   </CardHeader>
                   <CardContent>
-                      <DataTable columns={columns} data={data}/>
+                      <DataTable columns={columns} data={patients}/>
                   </CardContent>
               </Card>
           </div>

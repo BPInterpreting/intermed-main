@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/table"
 import {Button} from "@/components/ui/button";
 import { Input } from "@/components/ui/input"
+import {Trash} from "lucide-react";
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[]
@@ -65,6 +66,16 @@ export function DataTable<TData, TValue>({
                     }
                     className="max-w-sm"
                 />
+                {table.getFilteredRowModel().rows.length > 0 && (
+                    <Button
+                        size='sm'
+                        variant='destructive'
+                        className="ml-auto font-normal text-xs"
+                    >
+                        <Trash className='size-4 mr-2' />
+                        Delete ({table.getFilteredSelectedRowModel().rows.length})
+                    </Button>
+                )}
             </div>
             <div className="rounded-md border">
                 <Table>
