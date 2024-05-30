@@ -14,7 +14,7 @@ import {
     CardTitle,
 } from "@/components/ui/card"
 import {Plus} from "lucide-react";
-import {columns} from "@/app/(dashboard)/facilities/components/columns";
+import {columns} from "@/app/(dashboard)/facilities/columns";
 
 
 type Payment = {

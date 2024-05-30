@@ -7,9 +7,9 @@ import HeadingContainer from "@/components/customUi/headingContainer";
 import {DataTable} from "@/components/ui/data-table";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Plus} from "lucide-react";
-import {columns} from "@/app/(dashboard)/patients/components/columns";
+import {columns} from "@/app/(dashboard)/patients/columns";
 import {useRouter} from "next/navigation";
-import {useGetPatients} from "@/app/(dashboard)/patients/api/use-get-patients";
+import {useGetPatients} from "@/features/patients/api/use-get-patients";
 
 
 type Appointment = {

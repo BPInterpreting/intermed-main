@@ -12,10 +12,10 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { z } from "zod"
 
-import {useNewPatient} from "@/app/(dashboard)/patients/hooks/use-new-patient";
-import PatientForm from "@/app/(dashboard)/patients/components/patientForm";
+import {useNewPatient} from "@/features/patients/hooks/use-new-patient";
+import PatientForm from "@/features/patients/components/patientForm";
 import {insertPatientSchema} from "@/db/schema";
-import {useCreatePatient} from "@/app/(dashboard)/patients/api/use-create-patient";
+import {useCreatePatient} from "@/features/patients/api/use-create-patient";
 
 const formSchema  = insertPatientSchema.pick({
     firstName: true,

@@ -5,21 +5,18 @@ import {Button} from "@/components/ui/button";
 import {Separator} from "@/components/ui/separator";
 import HeadingContainer from "@/components/customUi/headingContainer";
 import {DataTable} from "@/components/ui/data-table";
-import {columns} from "./columns";
+import {columns} from "../../../app/(dashboard)/patients/columns";
 import {useRouter} from "next/navigation";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
-import {Plus} from "lucide-react";
-import { useNewPatient } from "@/app/(dashboard)/patients/hooks/use-new-patient";
-import {useGetPatients} from "@/app/(dashboard)/patients/api/use-get-patients";
-
-
+import {Loader2, Plus} from "lucide-react";
+import { useNewPatient } from "@/features/patients/hooks/use-new-patient";
+import {useGetPatients} from "@/features/patients/api/use-get-patients";
+import {Skeleton} from "@/components/ui/skeleton";
 
 type Patient = {
     id: string
     firstName: string
 }
-
-
 
 const PatientsClient = (
 ) => {
@@ -27,6 +24,24 @@ const PatientsClient = (
     const router = useRouter();
     const patientsQuery = useGetPatients()
     const patients = patientsQuery.data || []
+
+    if(patientsQuery.isLoading){
+        return (
+            <div>
+                <Card className='w-full pb-10'>
+                    <CardHeader className='gap-y-2 lg:flex-row lg:justify-between'>
+                        <Skeleton className='h-8 w-48' />
+                    </CardHeader>
+                    <CardContent>
+                        <div className='h-[500px] w-full flex items-center'>
+                            <Loader2 className='size-6 text-slate-300 animate-spin' />
+                        </div>
+                    </CardContent>
+                </Card>
+
+            </div>
+        )
+    }
 
   return (
       <>
@@ -46,12 +61,9 @@ const PatientsClient = (
                   </CardContent>
               </Card>
           </div>
-
-
       </>
   )
 }
-
 
 export default PatientsClient;
 

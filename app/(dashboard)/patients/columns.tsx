@@ -14,10 +14,10 @@ export type Patient = {
 }
 
 export const columns: ColumnDef<ResponseType>[] = [
-    {
-        accessorKey: "id",
-        header: "ID",
-    },
+    // {
+    //     accessorKey: "id",
+    //     header: "ID",
+    // },
     {
         accessorKey: "firstName",
         header: "First Name",

@@ -1,6 +1,6 @@
 'use client'
 
-import { NewPatientDialog } from "@/app/(dashboard)/patients/components/new-patient-dialog";
+import { NewPatientDialog } from "@/features/patients/components/new-patient-dialog";
 
 
 export const DialogProvider = ( ) => {

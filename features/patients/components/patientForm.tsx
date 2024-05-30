@@ -91,7 +91,6 @@ const PatientForm = ({
                                )}
                            />
                        </div>
-
                        <Button>
                            {id ? "Update Patient" : "Add Patient"}
                        </Button>
