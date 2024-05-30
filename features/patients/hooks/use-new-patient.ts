@@ -11,3 +11,4 @@ export const useNewPatient = create<NewPatientState>((set) => ({
     onOpen: () => set({ isOpen: true }),
     onClose: () => set({ isOpen: false }),
 }));
+

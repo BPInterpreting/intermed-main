@@ -11,6 +11,7 @@ export const DialogProvider = ( ) => {
     return (
         <>
             <NewPatientDialog />
+            <NewPatientDialog />
         </>
     )
 }
