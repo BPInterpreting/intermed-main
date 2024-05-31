@@ -11,7 +11,7 @@ type ResponseType = InferResponseType<typeof client.api.patients[':id']['$patch'
 type RequestType = InferRequestType<typeof client.api.patients[':id']['$patch']>["json"]
 
 
-export const useCreatePatient = (id?:string ) => {
+export const useEditPatient = (id?:string ) => {
     const queryClient = useQueryClient()
 
     const mutation = useMutation<

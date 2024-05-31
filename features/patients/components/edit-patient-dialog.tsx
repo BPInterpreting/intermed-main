@@ -12,10 +12,13 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { z } from "zod"
 
-import { useEditPatient } from "@/features/patients/hooks/use-edit-patient";
+import { useUpdatePatient } from "@/features/patients/hooks/use-update-patient";
 import PatientForm from "@/features/patients/components/patientForm";
 import {insertPatientSchema} from "@/db/schema";
 import {useCreatePatient} from "@/features/patients/api/use-create-patient";
+import {useEditPatient} from "@/features/patients/api/use-edit-patient";
+import {useGetSinglePatient} from "@/features/patients/api/use-get-single-patient";
+
 
 const formSchema  = insertPatientSchema.pick({
     firstName: true,
@@ -23,26 +26,30 @@ const formSchema  = insertPatientSchema.pick({
 
 type FormValues = z.input<typeof formSchema>
 
-
-
-
-
-export const NewPatientDialog = () => {
-    const {isOpen, onClose} = useEditPatient()
-    const mutation = useCreatePatient()
+export const EditPatientDialog = () => {
+    const {isOpen, onClose, id} = useUpdatePatient()
+    const editMutation = useEditPatient(id)
+    const patientQuery = useGetSinglePatient(id)
+    const isPending = editMutation.isPending
 
     const onSubmit = (values: FormValues) => {
-        mutation.mutate(values, {
+        editMutation.mutate(values, {
             onSuccess: () => {
                 onClose()
             }
         })
     }
-    // const {isOpen, onClose}  = useNewPatient()
+
+    const defaultValues = patientQuery.data ? {
+        firstName: patientQuery.data.firstName
+    }: {
+        firstName: ''
+    }
+
 
      return(
          <Dialog open={isOpen} onOpenChange={onClose}>
-             <DialogContent>
+             <DialogContent className='space-y-4'>
                  <DialogHeader>
                      <DialogTitle>Edit patient </DialogTitle>
                      <DialogDescription>
@@ -50,9 +57,10 @@ export const NewPatientDialog = () => {
                      </DialogDescription>
                  </DialogHeader>
                  <PatientForm
+                     id={id}
                      onSubmit={onSubmit}
-                     disabled={mutation.isPending}
-                     defaultValues={{firstName: ''}}
+                     disabled={isPending}
+                     defaultValues={defaultValues}
                  />
              </DialogContent>
          </Dialog>

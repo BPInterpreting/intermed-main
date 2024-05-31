@@ -7,7 +7,7 @@ type EditPatientState = {
     onClose: () => void;
 }
 
-export const useEditPatient = create<EditPatientState>((set) => ({
+export const useUpdatePatient = create<EditPatientState>((set) => ({
     id: undefined,
     isOpen: false,
     onOpen: (id: string) => set({ isOpen: true, id }),

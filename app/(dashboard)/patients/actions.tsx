@@ -8,14 +8,14 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import {useEditPatient} from "@/features/patients/hooks/use-edit-patient";
+import {useUpdatePatient} from "@/features/patients/hooks/use-update-patient";
 
 type Props = {
     id: string;
 }
 
 export const Actions = ({id}: Props) => {
-    const {onOpen} = useEditPatient()
+    const {onOpen} = useUpdatePatient()
 
         return (
             <DropdownMenu>
