@@ -15,7 +15,7 @@ type Props = {
 }
 
 export const Actions = ({id}: Props) => {
-    const onOpen = useEditPatient()
+    const {onOpen} = useEditPatient()
 
         return (
             <DropdownMenu>
@@ -32,8 +32,7 @@ export const Actions = ({id}: Props) => {
                         Edit
                     </DropdownMenuItem>
                     <DropdownMenuSeparator/>
-                    <DropdownMenuItem>View customer</DropdownMenuItem>
-                    <DropdownMenuItem>View payment details</DropdownMenuItem>
+                    <DropdownMenuLabel>Delete</DropdownMenuLabel>
                 </DropdownMenuContent>
             </DropdownMenu>
         )

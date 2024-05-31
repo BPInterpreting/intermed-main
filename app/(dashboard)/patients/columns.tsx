@@ -3,6 +3,7 @@
 import { ColumnDef } from "@tanstack/react-table"
 import {InferResponseType} from "hono";
 import {client} from "@/lib/hono";
+import {Actions} from "@/app/(dashboard)/patients/actions";
 
 export type ResponseType = InferResponseType<typeof client.api.patients.$get, 200>["data"][0]
 
@@ -22,5 +23,9 @@ export const columns: ColumnDef<ResponseType>[] = [
         accessorKey: "firstName",
         header: "First Name",
     },
+    {
+        id: "actions",
+        cell: ({ row }) => <Actions id={row.original.id} />
+    }
 
 ]

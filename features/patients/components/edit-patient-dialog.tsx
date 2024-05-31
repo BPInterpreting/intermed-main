@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { z } from "zod"
 
-import {useNewPatient} from "@/features/patients/hooks/use-new-patient";
+import { useEditPatient } from "@/features/patients/hooks/use-edit-patient";
 import PatientForm from "@/features/patients/components/patientForm";
 import {insertPatientSchema} from "@/db/schema";
 import {useCreatePatient} from "@/features/patients/api/use-create-patient";
@@ -28,7 +28,7 @@ type FormValues = z.input<typeof formSchema>
 
 
 export const NewPatientDialog = () => {
-    const {isOpen, onClose} = useNewPatient()
+    const {isOpen, onClose} = useEditPatient()
     const mutation = useCreatePatient()
 
     const onSubmit = (values: FormValues) => {
@@ -44,9 +44,9 @@ export const NewPatientDialog = () => {
          <Dialog open={isOpen} onOpenChange={onClose}>
              <DialogContent>
                  <DialogHeader>
-                     <DialogTitle>New Patient Form</DialogTitle>
+                     <DialogTitle>Edit patient </DialogTitle>
                      <DialogDescription>
-                         Fill out the form below to add a new patient to the system.
+                         Edit any part of the form below to update the patient
                      </DialogDescription>
                  </DialogHeader>
                  <PatientForm
