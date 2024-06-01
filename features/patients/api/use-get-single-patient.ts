@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
-
 import { client } from '@/lib/hono';
 
 export const useGetSinglePatient = (id?: string) => {
     //define the query
     const query = useQuery({
+        //query is only fetched if we have the id
         enabled: !!id,
         //queryKey is the name of the data stored in cache to be reused later again instead or parsing data all over again
         queryKey: ['patient', { id }],

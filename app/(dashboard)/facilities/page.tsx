@@ -1,4 +1,3 @@
-import AppointmentsClient from "@/app/(dashboard)/appointments/components/client";
 import FacilitiesClient from "@/app/(dashboard)/facilities/components/client";
 
 const FacilitiesPage = () => {

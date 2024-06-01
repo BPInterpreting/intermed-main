@@ -16,16 +16,18 @@ const schema = z.object({
 const app = new Hono()
 
 // all the '/' routes are relative to the base path of this file which is /api/patients
-    .get('/', async (c) => {
-    // the get request will return all the patients in the database
-    const data = await db
-        .select({
-            id: patient.id,
-            firstName: patient.firstName
-        })
-        .from(patient)
+    .get(
+        '/',
+        async (c) => {
+            // the get request will return all the patients in the database
+        const data = await db
+            .select({
+                id: patient.id,
+                firstName: patient.firstName
+            })
+            .from(patient)
 
-        return c.json({ data })
+            return c.json({ data })
 })
     // get the patient by id
     .get(
@@ -38,6 +40,10 @@ const app = new Hono()
             //the param is validated
             const { id } = c.req.valid('param')
 
+            if (!id) {
+                return c.json({ error: "Invalid id" }, 400)
+            }
+
             //data that is returned is the id and first name of the patient from the patient table
             const [data] = await db
                 .select({
@@ -45,6 +51,11 @@ const app = new Hono()
                     firstName: patient.firstName
                 })
                 .from(patient)
+                .where(
+                    and(
+                        eq(patient.id, id)
+                    )
+                )
 
             if (!data) {
                 return c.json({ error: "Patient not found" }, 404)

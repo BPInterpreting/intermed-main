@@ -33,16 +33,13 @@ type Props ={
     disabled?: boolean;
 }
 
-const PatientForm = ({
+export const PatientForm = ({
     id,
     defaultValues,
     onSubmit,
     onDelete,
     disabled,
 }: Props) => {
-
-    const title = "Add Patient"
-    const description = "Add a new patient to the system"
 
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
@@ -85,7 +82,10 @@ const PatientForm = ({
                                    <FormItem>
                                        <FormLabel>First Name</FormLabel>
                                        <FormControl>
-                                           <Input placeholder="first name" {...field} />
+                                           <Input
+                                               placeholder="first name"
+                                               {...field}
+                                           />
                                        </FormControl>
                                    </FormItem>
                                )}
@@ -100,4 +100,3 @@ const PatientForm = ({
        </>
    )
 }
-export default PatientForm

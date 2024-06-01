@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input"
 import { z } from "zod"
 
 import {useNewPatient} from "@/features/patients/hooks/use-new-patient";
-import PatientForm from "@/features/patients/components/patientForm";
+import {PatientForm} from "@/features/patients/components/patientForm";
 import {insertPatientSchema} from "@/db/schema";
 import {useCreatePatient} from "@/features/patients/api/use-create-patient";
 

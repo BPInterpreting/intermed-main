@@ -13,12 +13,12 @@ import { Input } from "@/components/ui/input"
 import { z } from "zod"
 
 import { useUpdatePatient } from "@/features/patients/hooks/use-update-patient";
-import PatientForm from "@/features/patients/components/patientForm";
+import {PatientForm} from "@/features/patients/components/patientForm";
 import {insertPatientSchema} from "@/db/schema";
 import {useCreatePatient} from "@/features/patients/api/use-create-patient";
 import {useEditPatient} from "@/features/patients/api/use-edit-patient";
 import {useGetSinglePatient} from "@/features/patients/api/use-get-single-patient";
-
+import {Loader2} from "lucide-react";
 
 const formSchema  = insertPatientSchema.pick({
     firstName: true,
@@ -27,10 +27,13 @@ const formSchema  = insertPatientSchema.pick({
 type FormValues = z.input<typeof formSchema>
 
 export const EditPatientDialog = () => {
+    //the id from the useUpdatePatient hook is used to get the patient data in the useGetSinglePatient hook
     const {isOpen, onClose, id} = useUpdatePatient()
     const editMutation = useEditPatient(id)
     const patientQuery = useGetSinglePatient(id)
     const isPending = editMutation.isPending
+
+    const isLoading = patientQuery.isLoading
 
     const onSubmit = (values: FormValues) => {
         editMutation.mutate(values, {
@@ -56,12 +59,21 @@ export const EditPatientDialog = () => {
                          Edit any part of the form below to update the patient
                      </DialogDescription>
                  </DialogHeader>
-                 <PatientForm
-                     id={id}
-                     onSubmit={onSubmit}
-                     disabled={isPending}
-                     defaultValues={defaultValues}
-                 />
+                 {/*conditianl rendering automatically enables default values  */}
+                 {
+                        isLoading ? (
+                            <div className='absolute inset-0 flex items-center justify-center'>
+                                <Loader2 className='size-4 text-muted-foreground animate-spin' />
+                            </div>
+                        ) : (
+                            <PatientForm
+                                id={id}
+                                onSubmit={onSubmit}
+                                disabled={isPending}
+                                defaultValues={defaultValues}
+                            />
+                        )
+                 }
              </DialogContent>
          </Dialog>
      )

@@ -31,7 +31,7 @@ export const useEditPatient = (id?:string ) => {
              //refetch all patients when a new patient is created to update the cache through the queryKey
             toast.success('Patient updated successfully')
             queryClient.invalidateQueries({ queryKey: ["patients"] })
-            queryClient.invalidateQueries({ queryKey: ["patient", { id }] });
+            queryClient.invalidateQueries({ queryKey: ["patients", { id }] });
         },
         onError: () => {
             toast.error('Failed to update patient')
