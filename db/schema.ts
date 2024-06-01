@@ -1,5 +1,4 @@
 import {pgTable, serial, text, timestamp, varchar} from "drizzle-orm/pg-core";
-import {relations} from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 
 export const patient = pgTable("patients", {
@@ -9,3 +8,9 @@ export const patient = pgTable("patients", {
 
 export const insertPatientSchema = createInsertSchema(patient)
 
+export const facilities = pgTable("facilities", {
+    id: text("id").primaryKey(),
+    name: varchar("name").notNull(),
+})
+
+export const insertFacilitySchema = createInsertSchema(facilities)
