@@ -119,5 +119,33 @@ const app = new Hono()
             return c.json({ data })
         }
     )
+    .delete(
+        '/:id',
+        // validate the id that is being passed in the patch request
+        zValidator('param', z.object({
+            id: z.string()
+        })),
+        async (c) => {
+            const { id } = c.req.valid('param')
+
+            if (!id) {
+                return c.json({ error: "Invalid id" }, 400)
+            }
+
+            //update the facility values according to drizzle update method. sets the new values and check if the facility id matches the id in the database
+            const [data] = await db
+                .delete(facilities)
+                .where(
+                    and(
+                        eq(facilities.id, id)
+                    )
+                ).returning()
+
+            if (!data) {
+                return c.json({ error: "Facility not found" }, 404)
+            }
+            return c.json({ data })
+        }
+    )
 
 export default app
