@@ -1,9 +1,9 @@
 "use client"
 
 import { ColumnDef } from "@tanstack/react-table"
-import {InferResponseType} from "hono";
-import {client} from "@/lib/hono";
-import {Actions} from "@/app/(dashboard)/patients/actions";
+import { InferResponseType } from "hono";
+import { client } from "@/lib/hono";
+import { Actions } from "@/app/(dashboard)/patients/actions";
 
 export type ResponseType = InferResponseType<typeof client.api.patients.$get, 200>["data"][0]
 
@@ -12,10 +12,6 @@ export type ResponseType = InferResponseType<typeof client.api.patients.$get, 20
 
 
 export const columns: ColumnDef<ResponseType>[] = [
-    // {
-    //     accessorKey: "id",
-    //     header: "ID",
-    // },
     {
         accessorKey: "firstName",
         header: "First Name",
