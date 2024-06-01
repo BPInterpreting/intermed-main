@@ -1,11 +1,12 @@
 // authors.ts
 import { Hono } from 'hono'
 import { db } from '@/db/drizzle'
-import {insertPatientSchema, patient} from "@/db/schema";
+import {facilities, insertPatientSchema, patient} from "@/db/schema";
 import { z } from 'zod'
 import { zValidator } from '@hono/zod-validator'
 import {createId} from "@paralleldrive/cuid2";
 import {and, eq} from "drizzle-orm";
+import {parseTemplate} from "sucrase/dist/types/parser/traverser/expression";
 
 //part of RPC is to create a schema for the validation that is used in the post request
 const schema = z.object({
@@ -112,6 +113,34 @@ const app = new Hono()
                         eq(patient.id, id)
                 )
             ).returning()
+
+            if (!data) {
+                return c.json({ error: "Patient not found" }, 404)
+            }
+            return c.json({ data })
+        }
+    )
+    .delete(
+        '/:id',
+        // validate the id that is being passed in the delete request
+        zValidator('param', z.object({
+            id: z.string()
+        })),
+        async (c) => {
+            const { id } = c.req.valid('param')
+
+            if (!id) {
+                return c.json({ error: "Invalid id" }, 400)
+            }
+
+            //delete the facility values according to drizzle update method.check if the facility id matches the id in the database
+            const [data] = await db
+                .delete(patient)
+                .where(
+                    and(
+                        eq(patient.id, id)
+                    )
+                ).returning()
 
             if (!data) {
                 return c.json({ error: "Patient not found" }, 404)

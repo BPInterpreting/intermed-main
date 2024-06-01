@@ -121,7 +121,7 @@ const app = new Hono()
     )
     .delete(
         '/:id',
-        // validate the id that is being passed in the patch request
+        // validate the id that is being passed in the delete request
         zValidator('param', z.object({
             id: z.string()
         })),
@@ -132,7 +132,7 @@ const app = new Hono()
                 return c.json({ error: "Invalid id" }, 400)
             }
 
-            //update the facility values according to drizzle update method. sets the new values and check if the facility id matches the id in the database
+            //delete the facility values according to drizzle update method.check if the facility id matches the id in the database
             const [data] = await db
                 .delete(facilities)
                 .where(

@@ -59,23 +59,13 @@ export function DataTable<TData, TValue>({
         <div>
             <div className="flex items-center py-2">
                 <Input
-                    placeholder="Filter emails..."
-                    value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
+                    placeholder="Filter first name..."
+                    value={(table.getColumn("firstName")?.getFilterValue() as string) ?? ""}
                     onChange={(event) =>
-                        table.getColumn("email")?.setFilterValue(event.target.value)
+                        table.getColumn("firstName")?.setFilterValue(event.target.value)
                     }
                     className="max-w-sm"
                 />
-                {table.getFilteredRowModel().rows.length > 0 && (
-                    <Button
-                        size='sm'
-                        variant='destructive'
-                        className="ml-auto font-normal text-xs"
-                    >
-                        <Trash className='size-4 mr-2' />
-                        Delete ({table.getFilteredSelectedRowModel().rows.length})
-                    </Button>
-                )}
             </div>
             <div className="rounded-md border">
                 <Table>

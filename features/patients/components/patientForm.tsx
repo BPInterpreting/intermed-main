@@ -57,21 +57,6 @@ export const PatientForm = ({
    return(
        <>
            <div>
-               {/*<div className="flex items-center justify-between">*/}
-               {/*    /!* eslint-disable-next-line react/jsx-no-undef *!/*/}
-               {/*    /!*<Heading title={title} description={description}/>*!/*/}
-               {/*    /!*button conditionally renders only if id exists. meaning data already exists for it*!/*/}
-               {/*    {!!id && <Button*/}
-               {/*        type='button'*/}
-               {/*        disabled={disabled}*/}
-               {/*        variant='destructive'*/}
-               {/*        size='sm'*/}
-               {/*        onClick={handleDelete}*/}
-               {/*    >*/}
-               {/*        <Trash className="h-4 w-4"/>*/}
-               {/*    </Button>}*/}
-               {/*</div>*/}
-
                <Form {...form}>
                    <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 pt-4">
                        <div className='grid grid-cols-3 gap-8'>
@@ -94,6 +79,18 @@ export const PatientForm = ({
                        <Button className='w-full'>
                            {id ? "Update Patient" : "Add Patient"}
                        </Button>
+                       {!!id && (
+                            <Button
+                                type='button'
+                                disabled={disabled}
+                                variant="destructive"
+                                className='w-full'
+                                onClick={handleDelete}
+                            >
+                                 <Trash className='size-4 mr-2'/>
+                                 Delete Patient
+                            </Button>
+                       )}
                    </form>
                </Form>
            </div>
