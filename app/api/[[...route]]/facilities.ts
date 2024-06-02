@@ -23,7 +23,7 @@ const app = new Hono()
         const data = await db
             .select({
                 id: facilities.id,
-                firstName: facilities.name
+                name: facilities.name
             })
             .from(facilities)
 
@@ -48,7 +48,7 @@ const app = new Hono()
             const [data] = await db
                 .select({
                     id: facilities.id,
-                    firstName: facilities.name
+                    name: facilities.name
                 })
                 .from(facilities)
                 .where(

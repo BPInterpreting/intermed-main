@@ -19,7 +19,7 @@ import {insertPatientSchema} from "@/db/schema";
 import {useCreatePatient} from "@/features/patients/api/use-create-patient";
 import {useEditPatient} from "@/features/patients/api/use-edit-patient";
 import {useDeletePatient} from "@/features/patients/api/use-delete-patient";
-import {useGetSinglePatient} from "@/features/patients/api/use-get-single-patient";
+import {useGetIndividualPatient} from "@/features/patients/api/use-get-individual-patient";
 import {Loader2} from "lucide-react";
 
 const formSchema  = insertPatientSchema.pick({
@@ -29,11 +29,11 @@ const formSchema  = insertPatientSchema.pick({
 type FormValues = z.input<typeof formSchema>
 
 export const EditPatientDialog = () => {
-    //the id from the useUpdatePatient hook is used to get the patient data in the useGetSinglePatient hook
+    //the id from the useUpdatePatient hook is used to get the patient data in the useGetIndividualPatient hook
     const {isOpen, onClose, id} = useUpdatePatient()
     const editMutation = useEditPatient(id)
     const deleteMutation = useDeletePatient(id)
-    const patientQuery = useGetSinglePatient(id)
+    const patientQuery = useGetIndividualPatient(id)
 
     const [ConfirmDialog, confirm] = useConfirm(
         'Are you sure you want to delete this patient?',
