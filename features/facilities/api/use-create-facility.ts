@@ -10,7 +10,7 @@ type ResponseType = InferResponseType<typeof client.api.facilities.$post>
 //what the endpoint is expecting to be sent which needs the zValidator from the api accessed by json
 type RequestType = InferRequestType<typeof client.api.facilities.$post>["json"]
 
-export const useCreatePatient = () => {
+export const useCreateFacility = () => {
     const queryClient = useQueryClient()
 
     const mutation = useMutation<

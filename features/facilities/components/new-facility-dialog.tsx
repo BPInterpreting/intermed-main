@@ -1,0 +1,55 @@
+'use client'
+
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { z } from "zod"
+
+import {useNewFacility} from "@/features/facilities/hooks/use-new-facility";
+import {PatientForm} from "@/features/patients/components/patientForm";
+import {insertFacilitySchema} from "@/db/schema";
+import {useCreateFacility} from "@/features/facilities/api/use-create-facility";
+
+const formSchema  = insertFacilitySchema.pick({
+    name: true,
+})
+
+type FormValues = z.input<typeof formSchema>
+
+export const NewFacilityDialog = () => {
+    const {isOpen, onClose} = useNewFacility()
+    const mutation = useCreateFacility()
+
+    const onSubmit = (values: FormValues) => {
+        mutation.mutate(values, {
+            onSuccess: () => {
+                onClose()
+            }
+        })
+    }
+
+     return(
+         <Dialog open={isOpen} onOpenChange={onClose}>
+             <DialogContent>
+                 <DialogHeader>
+                     <DialogTitle>New Facility Form</DialogTitle>
+                     <DialogDescription>
+                         Fill out the form below to add a new patient to the system.
+                     </DialogDescription>
+                 </DialogHeader>
+                 {/*<PatientForm*/}
+                 {/*    onSubmit={onSubmit}*/}
+                 {/*    disabled={mutation.isPending}*/}
+                 {/*    defaultValues={{firstName: ''}}*/}
+                 {/*/>*/}
+             </DialogContent>
+         </Dialog>
+     )
+}
