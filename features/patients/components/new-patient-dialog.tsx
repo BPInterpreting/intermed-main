@@ -1,16 +1,7 @@
 'use client'
 
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { z } from "zod"
+import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,} from "@/components/ui/dialog"
+import {z} from "zod"
 
 import {useNewPatient} from "@/features/patients/hooks/use-new-patient";
 import {PatientForm} from "@/features/patients/components/patientForm";
@@ -23,10 +14,6 @@ const formSchema  = insertPatientSchema.pick({
 
 type FormValues = z.input<typeof formSchema>
 
-
-
-
-
 export const NewPatientDialog = () => {
     const {isOpen, onClose} = useNewPatient()
     const mutation = useCreatePatient()
@@ -38,7 +25,6 @@ export const NewPatientDialog = () => {
             }
         })
     }
-    // const {isOpen, onClose}  = useNewPatient()
 
      return(
          <Dialog open={isOpen} onOpenChange={onClose}>
