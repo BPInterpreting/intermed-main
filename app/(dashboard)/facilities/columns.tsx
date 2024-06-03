@@ -1,8 +1,6 @@
 "use client"
 
-import { ColumnDef } from "@tanstack/react-table"
-import { ArrowUpDown, MoreHorizontal } from "lucide-react"
-import {Button} from "@/components/ui/button";
+import {ColumnDef} from "@tanstack/react-table"
 import {InferResponseType} from "hono";
 import {client} from "@/lib/hono";
 

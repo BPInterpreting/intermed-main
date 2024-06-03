@@ -1,23 +1,11 @@
 'use client'
 
-import {Heading} from "@/components/customUi/heading";
 import {Button} from "@/components/ui/button";
-import {Separator} from "@/components/ui/separator";
-import HeadingContainer from "@/components/customUi/headingContainer";
 import {DataTable} from "@/components/ui/data-table";
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card"
+import {Card, CardContent, CardHeader, CardTitle,} from "@/components/ui/card"
 import {Plus} from "lucide-react";
 import {columns} from "@/app/(dashboard)/facilities/columns";
 import {useGetFacilities} from "@/features/facilities/api/use-get-facilities";
-
-
 
 
 const FacilitiesClient = (
