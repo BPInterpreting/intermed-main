@@ -16,6 +16,7 @@ import {useNewFacility} from "@/features/facilities/hooks/use-new-facility";
 import {PatientForm} from "@/features/patients/components/patientForm";
 import {insertFacilitySchema} from "@/db/schema";
 import {useCreateFacility} from "@/features/facilities/api/use-create-facility";
+import {FacilityForm} from "@/features/facilities/components/facilityForm";
 
 const formSchema  = insertFacilitySchema.pick({
     name: true,
@@ -41,14 +42,14 @@ export const NewFacilityDialog = () => {
                  <DialogHeader>
                      <DialogTitle>New Facility Form</DialogTitle>
                      <DialogDescription>
-                         Fill out the form below to add a new patient to the system.
+                         Fill out the form below to add a new facility to the system.
                      </DialogDescription>
                  </DialogHeader>
-                 {/*<PatientForm*/}
-                 {/*    onSubmit={onSubmit}*/}
-                 {/*    disabled={mutation.isPending}*/}
-                 {/*    defaultValues={{firstName: ''}}*/}
-                 {/*/>*/}
+                 <FacilityForm
+                     onSubmit={onSubmit}
+                     disabled={mutation.isPending}
+                     defaultValues={{name: ''}}
+                 />
              </DialogContent>
          </Dialog>
      )
