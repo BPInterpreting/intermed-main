@@ -28,7 +28,6 @@ const PatientsClient = (
                         </div>
                     </CardContent>
                 </Card>
-
             </div>
         )
     }

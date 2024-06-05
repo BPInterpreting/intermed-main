@@ -7,8 +7,11 @@ import { client } from '@/lib/hono';
 
 
 export const useGetIndividualFacility = (id?: string) => {
+
     //define the query
     const query = useQuery({
+        //query is only fetched if we have the id so automatic refetching is disabled meaning that if dialog is closed the data will not be refetched
+        enabled: !!id,
         //queryKey is the name of the data stored in cache to be reused later again instead or parsing data all over again
         queryKey: ['facility', {id}],
          //queryFn is function that query will use to request data as promise which resloves data or a throws error if it fails
