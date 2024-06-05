@@ -1,6 +1,7 @@
 import {pgTable, serial, text, timestamp, varchar} from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import {relations} from "drizzle-orm";
+import {z} from "zod";
 
 export const patient = pgTable("patients", {
     id: text("id").primaryKey(),
@@ -26,6 +27,7 @@ export const insertFacilitySchema = createInsertSchema(facilities)
 
 export const appointments = pgTable("appointments", {
     id: text("id").primaryKey(),
+    date: timestamp("date", {mode: "date"}).notNull(),
     patientId: text("patient_id").references(() => patient.id, {
         onDelete: "cascade",
     }),
@@ -46,4 +48,6 @@ export const appointmentsRelations = relations(appointments, ({ one }) => ({
     })
 }))
 
-export const insertAppointmentSchema = createInsertSchema(appointments)
+export const insertAppointmentSchema = createInsertSchema(appointments, {
+    date: z.coerce.date(),
+})
