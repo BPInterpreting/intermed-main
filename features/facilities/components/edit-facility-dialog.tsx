@@ -22,6 +22,7 @@ import {useEditFacility} from "@/features/facilities/api/use-edit-facility";
 import {useGetIndividualFacility} from "@/features/facilities/api/use-get-individual-facility";
 import {useDeleteFacility} from "@/features/facilities/api/use-delete-facility";
 import {useConfirm} from "@/hooks/use-confirm";
+import {Loader2} from "lucide-react";
 
 const formSchema  = insertFacilitySchema.pick
 ({
@@ -36,7 +37,6 @@ export const EditFacilityDialog = () => {
     const facilityQuery = useGetIndividualFacility(id)
     const deleteMutation = useDeleteFacility(id)
 
-    const mutation = useCreateFacility()
 
     const isPending = editMutation.isPending || deleteMutation.isPending
 
@@ -67,7 +67,7 @@ export const EditFacilityDialog = () => {
 
 
     const onSubmit = (values: FormValues) => {
-        mutation.mutate(values, {
+        editMutation.mutate(values, {
             onSuccess: () => {
                 onClose()
             }
@@ -85,13 +85,21 @@ export const EditFacilityDialog = () => {
                              Fill out details to edit facility.
                          </DialogDescription>
                      </DialogHeader>
-                     <FacilityForm
-                         id={id}
-                         onSubmit={onSubmit}
-                         disabled={isPending}
-                         defaultValues={defaultValues}
-                         onDelete={onDelete}
-                     />
+                     {
+                         isLoading ? (
+                             <div className='absolute inset-0 flex items-center justify-center'>
+                                 <Loader2 className='size-4 text-muted-foreground animate-spin' />
+                             </div>
+                         ) : (
+                             <FacilityForm
+                                 id={id}
+                                 onSubmit={onSubmit}
+                                 disabled={isPending}
+                                 defaultValues={defaultValues}
+                                 onDelete={onDelete}
+                             />
+                         )
+                     }
                  </DialogContent>
              </Dialog>
          </>
