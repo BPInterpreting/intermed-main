@@ -1,7 +1,7 @@
 'use client'
 
 import {Edit, MoreHorizontal, Trash} from "lucide-react";
-import { Button } from "@/components/ui/button"
+import {Button} from "@/components/ui/button"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -10,10 +10,9 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import {useUpdatePatient} from "@/features/patients/hooks/use-update-patient";
-import {useDeletePatient} from "@/features/patients/api/use-delete-patient";
 import {useConfirm} from "@/hooks/use-confirm";
 import {useUpdateFacility} from "@/features/facilities/hooks/use-update-facility";
+import {useDeleteFacility} from "@/features/facilities/api/use-delete-facility";
 
 type Props = {
     id: string;
@@ -21,19 +20,19 @@ type Props = {
 
 export const Actions = ({id}: Props) => {
     const {onOpen} = useUpdateFacility()
-    // const deleteMutation = useDeletePatient(id)
+    const deleteMutation = useDeleteFacility(id)
     const [ConfirmDialog, confirm] = useConfirm(
         'Are you sure you want to delete this patient?',
         "You are about to delete a patient. This action cannot be undone."
     )
 
-    // const handleDelete = async () => {
-    //     const ok = await confirm()
-    //
-    //     if(ok) {
-    //         deleteMutation.mutate()
-    //     }
-    // }
+    const handleDelete = async () => {
+        const ok = await confirm()
+
+        if(ok) {
+            deleteMutation.mutate()
+        }
+    }
 
         return (
             <>
@@ -47,15 +46,15 @@ export const Actions = ({id}: Props) => {
                     <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                         <DropdownMenuItem
-                            disabled={false}
+                            disabled={deleteMutation.isPending}
                             onClick={() => onOpen(id)}
                         >
                             <Edit className="size-4 mr-2"/>
                             Edit
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                            disabled={false}
-                            onClick={() => {}}
+                            disabled={deleteMutation.isPending}
+                            onClick={handleDelete}
                         >
                             <Trash className="size-4 mr-2"/>
                             Delete

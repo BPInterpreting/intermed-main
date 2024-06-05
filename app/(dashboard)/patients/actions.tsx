@@ -1,6 +1,6 @@
 'use client'
 
-import {Edit, MoreHorizontal, Trash} from "lucide-react";
+import {Edit, MoreHorizontal} from "lucide-react";
 import { Button } from "@/components/ui/button"
 import {
     DropdownMenu,
@@ -13,6 +13,8 @@ import {
 import {useUpdatePatient} from "@/features/patients/hooks/use-update-patient";
 import {useDeletePatient} from "@/features/patients/api/use-delete-patient";
 import {useConfirm} from "@/hooks/use-confirm";
+
+import { Trash} from "lucide-react";
 
 type Props = {
     id: string;
@@ -60,7 +62,7 @@ export const Actions = ({id}: Props) => {
                             Delete
                         </DropdownMenuItem>
                         <DropdownMenuSeparator/>
-                        <DropdownMenuLabel>Details</DropdownMenuLabel>
+                        <DropdownMenuLabel>Delete</DropdownMenuLabel>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </>
