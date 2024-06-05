@@ -16,40 +16,43 @@ const FacilitiesClient = (
     const facilitiesQuery = useGetFacilities()
     const facilities  = facilitiesQuery.data || []
 
-    // if(facilitiesQuery.isLoading){
-    //     return (
-    //         <div>
-    //             <Card className='w-full pb-10'>
-    //                 <CardHeader className='gap-y-2 lg:flex-row lg:justify-between'>
-    //                     <Skeleton className='h-8 w-48' />
-    //                 </CardHeader>
-    //                 <CardContent>
-    //                     <div className='h-[500px] w-full flex items-center'>
-    //                         <Loader2 className='size-6 text-slate-300 animate-spin' />
-    //                     </div>
-    //                 </CardContent>
-    //             </Card>
-    //         </div>
-    //     )
-    // }
+    if(facilitiesQuery.isLoading){
+        return (
+            <div>
+                <Card className='w-full pb-10'>
+                    <CardHeader className='gap-y-2 lg:flex-row lg:justify-between'>
+                        <Skeleton className='h-8 w-48' />
+                    </CardHeader>
+                    <CardContent>
+                        <div className='h-[500px] w-full flex items-center'>
+                            <Loader2 className='size-6 text-slate-300 animate-spin' />
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+        )
+    }
 
     return (
-        <div className='flex-1 px-4 w-full pb-10'>
-            <Card className='border-none, shadow-none'>
-                <CardHeader className='gap-y-2 lg:flex-row lg:justify-between'>
-                    <CardTitle className='text-3xl line-clamp-1' >Medical Facilities</CardTitle>
-                    <Button
-                        onClick = {newFacility.onOpen}
-                    >
-                        <Plus className='size-4 mr-2' />
-                        Add Facility
-                    </Button>
-                </CardHeader>
-                <CardContent>
-                    <DataTable columns={columns} data={facilities} />
-                </CardContent>
-            </Card>
-        </div>
+        <>
+            <div className='flex-1 px-4 w-full pb-10'>
+                <Card className='border-none shadow-none'>
+                    <CardHeader className='gap-y-2 lg:flex-row lg:justify-between'>
+                        <CardTitle className='text-3xl line-clamp-1'>Medical Facilities</CardTitle>
+                        <Button
+                            onClick={newFacility.onOpen}
+                        >
+                            <Plus className='size-4 mr-2'/>
+                            Add Facility
+                        </Button>
+                    </CardHeader>
+                    <CardContent>
+                        <DataTable columns={columns} data={facilities}/>
+                    </CardContent>
+                </Card>
+            </div>
+        </>
+
     )
 }
 
