@@ -23,9 +23,9 @@ export const useDeleteFacility = (id?: string) => {
 
       },
       onSuccess: () => {
-          //refetch all accounts after creating a new account
+          //refetch all appointments after creating a new account
           toast.success("Facility deleted successfully");
-          //primary update account with id as key and all accounts
+          //primary update account with id as key and all appointments
           queryClient.invalidateQueries({ queryKey: ["facility", { id }] });
             queryClient.invalidateQueries({ queryKey: ["facilities"] });
       },

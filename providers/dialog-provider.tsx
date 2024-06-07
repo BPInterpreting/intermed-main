@@ -5,6 +5,7 @@ import {EditPatientDialog} from "@/features/patients/components/edit-patient-dia
 import {useMountedState} from "react-use";
 import {NewFacilityDialog} from "@/features/facilities/components/new-facility-dialog";
 import {EditFacilityDialog} from "@/features/facilities/components/edit-facility-dialog";
+import {NewAppointmentDialog} from "@/features/appointments/components/new-appointment-dialog";
 
 
 export const DialogProvider = ( ) => {
@@ -19,6 +20,8 @@ export const DialogProvider = ( ) => {
 
             <NewFacilityDialog />
             <EditFacilityDialog />
+
+            <NewAppointmentDialog/>
         </>
     )
 }
