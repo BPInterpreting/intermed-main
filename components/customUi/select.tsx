@@ -8,7 +8,7 @@ import CreatableSelect from "react-select/creatable";
 
 type Props = {
     onChange: (value?: string) => void;
-    onCreate?: (value?: string) => void;
+    onCreate?: (value: string) => void;
     options?: {label: string, value: string}[]; //exactly what is formatted in the appointment form
     value?: string | null | undefined; //the extra options are to satisfy the types
     disabled?: boolean;
@@ -30,8 +30,8 @@ export const Select = ({
         onChange(option?.value)
     }
 
-    const formattedValues = useMemo(() => {
-        return options?.find((option) => option.value === value)
+    const formattedValue = useMemo(() => {
+        return options.find((option) => option.value === value)
     }, [options, value])
 
     return (
@@ -48,7 +48,7 @@ export const Select = ({
                     }
                 })
             }}
-            value={formattedValues}
+            value={formattedValue}
             onChange={onSelect}
             options={options}
             onCreateOption={onCreate}

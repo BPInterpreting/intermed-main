@@ -8,6 +8,7 @@ import {Form, FormControl, FormField, FormItem, FormLabel,} from "@/components/u
 import {Input} from "@/components/ui/input"
 import {Trash} from "lucide-react";
 import {insertAppointmentSchema} from "@/db/schema";
+import {Select} from "@/components/customUi/select";
 
 //this shcema is needed since the types are more complicated and it is easier for the types to handle
 const formSchema = z.object({
@@ -56,7 +57,7 @@ export const AppointmentForm = ({
     })
 
     function handleSubmit(values: FormValues) {
-        onSubmit(values)
+        console.log({values})
     }
 
     const handleDelete = () => {
@@ -71,14 +72,37 @@ export const AppointmentForm = ({
                        <div className='grid grid-cols-3 gap-8'>
                            <FormField
                                control={form.control}
-                               name="name"
+                               name="patientId"
                                render={({field}) => (
                                    <FormItem>
-                                       <FormLabel>Name</FormLabel>
+                                       <FormLabel>Patient</FormLabel>
                                        <FormControl>
-                                           <Input
-                                               placeholder="Clinic Name"
-                                               {...field}
+                                           <Select
+                                               placeholder="Select a patient..."
+                                               options={patientOptions}
+                                               onCreate={onCreatePatient}
+                                               value={field.value}
+                                               onChange={field.onChange}
+                                               disabled={disabled}
+                                           />
+                                       </FormControl>
+                                   </FormItem>
+                               )}
+                           />
+                           <FormField
+                               control={form.control}
+                               name="facilityId"
+                               render={({ field }) => (
+                                   <FormItem>
+                                       <FormLabel>Category</FormLabel>
+                                       <FormControl>
+                                           <Select
+                                               options={facilityOptions}
+                                               value={field.value}
+                                               onChange={field.onChange}
+                                               onCreate={onCreateFacility}
+                                               placeholder="Select an category"
+                                               disabled={disabled}
                                            />
                                        </FormControl>
                                    </FormItem>
@@ -86,7 +110,7 @@ export const AppointmentForm = ({
                            />
                        </div>
                        <Button className='w-full'>
-                           {id ? "Update Facility" : "Add Facility"}
+                           {id ? "Update Appointment" : "Add Appointment"}
                        </Button>
                        {!!id && (
                             <Button

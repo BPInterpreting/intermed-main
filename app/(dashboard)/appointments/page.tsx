@@ -46,7 +46,7 @@ const AppointmentsClient = (
                             onClick={newAppointment.onOpen}
                         >
                             <Plus className='size-4 mr-2'/>
-                            Add Facility
+                            Add Appointment
                         </Button>
                     </CardHeader>
                     <CardContent>
