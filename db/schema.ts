@@ -28,6 +28,7 @@ export const insertFacilitySchema = createInsertSchema(facilities)
 export const appointments = pgTable("appointments", {
     id: text("id").primaryKey(),
     date: timestamp("date", {mode: "date"}).notNull(),
+    notes: text("notes"),
     patientId: text("patient_id").references(() => patient.id, {
         onDelete: "cascade",
     }),

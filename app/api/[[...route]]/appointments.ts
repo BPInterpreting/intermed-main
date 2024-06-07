@@ -1,11 +1,11 @@
 // authors.ts
 import { Hono } from 'hono'
 import { db } from '@/db/drizzle'
-import {insertFacilitySchema, facilities, appointments, patient} from "@/db/schema";
+import { facilities, appointments, patient, insertAppointmentSchema} from "@/db/schema";
 import { z } from 'zod'
 import { zValidator } from '@hono/zod-validator'
 import {createId} from "@paralleldrive/cuid2";
-import {and, desc, eq, gte, lte} from "drizzle-orm";
+import {and, desc, eq, gte, inArray, lte, sql} from "drizzle-orm";
 import {subDays, parse} from "date-fns";
 
 //part of RPC is to create a schema for the validation that is used in the post request
@@ -13,7 +13,7 @@ const schema = z.object({
     name: z.string(),
 })
 
-//all of the routes are chained to the main Hono app
+//all the routes are chained to the main Hono app
 const app = new Hono()
 
 // all the '/' routes are relative to the base path of this file which is /api/facility
@@ -38,6 +38,8 @@ const app = new Hono()
         const data = await db
             .select({
                 id: appointments.id,
+                date: appointments.date,
+                notes: appointments.notes,
                 facility: facilities.name,
                 facilityId: appointments.facilityId,
                 patient: patient.firstName,
@@ -76,13 +78,17 @@ const app = new Hono()
             //data that is returned is the id and first name of the facility from the facility table
             const [data] = await db
                 .select({
-                    id: facilities.id,
-                    name: facilities.name
+                    id: appointments.id,
+                    date: appointments.date,
+                    notes: appointments.notes,
+                    facilityId: appointments.facilityId,
+                    patientId: appointments.patientId,
                 })
-                .from(facilities)
+                .from(appointments)
+                .innerJoin(patient, eq(appointments.patientId, patient.id))
                 .where(
                     and(
-                        eq(facilities.id, id)
+                        eq(appointments.id, id)
                     )
                 )
 
@@ -99,15 +105,15 @@ const app = new Hono()
         zValidator(
             'json',
             // only allow the first name to be passed in the post request for client to see
-            insertFacilitySchema.pick({
-                name: true
+            insertAppointmentSchema.omit({
+                id: true
             })
         ),
         async (c) => {
             const values = c.req.valid('json')
 
             // insert facility values using spread which only allows picked values
-            const [data] = await db.insert(facilities).values({
+            const [data] = await db.insert(appointments).values({
                 id: createId(),
                 ...values
             }).returning()
@@ -121,8 +127,8 @@ const app = new Hono()
             id: z.string()
         })),
         // this route makes sure that the first name is the only value that can be updated
-        zValidator("json", insertFacilitySchema.pick({
-            name: true
+        zValidator("json", insertAppointmentSchema.omit({
+            id: true
         })),
         async (c) => {
             const { id } = c.req.valid('param')
@@ -132,18 +138,27 @@ const app = new Hono()
                 return c.json({ error: "Invalid id" }, 400)
             }
 
-            //update the facility values according to drizzle update method. sets the new values and check if the facility id matches the id in the database
+            //helper function that selects the id from the appointments table and joins it with the patient table
+            //simplifies complex queries since appointment does not belong to the patient
+            const appointmentsToUpdate = db.$with("appointments_to_update").as(
+                db.select({ id: appointments.id }).from(appointments)
+                    .innerJoin(patient, eq(appointments.id, patient.id))
+                    .where(and(eq(appointments.id, id)))
+            )
+
+            //
             const [data] = await db
-                .update(facilities)
+                .with(appointmentsToUpdate)
+                .update(appointments)
                 .set(values)
                 .where(
-                    and(
-                        eq(facilities.id, id)
+                    //finds individual appointment id and matches it with the id in the database
+                    inArray(appointments.id, sql`(select id from ${appointmentsToUpdate})`)
                 )
-            ).returning()
+                .returning()
 
             if (!data) {
-                return c.json({ error: "Facility not found" }, 404)
+                return c.json({ error: "Appointment not found" }, 404)
             }
             return c.json({ data })
         }
@@ -161,17 +176,27 @@ const app = new Hono()
                 return c.json({ error: "Invalid id" }, 400)
             }
 
+
+            const appointmentsToDelete = db.$with("appointments_to_delete").as(
+                db.select({ id: appointments.id }).from(appointments)
+                    .innerJoin(patient, eq(appointments.patientId, patient.id))
+                    .where(and(
+                        eq(appointments.id, id), //matching transaction id passed from id param above
+                    ))
+            )
+
             //delete the facility values according to drizzle update method.check if the facility id matches the id in the database
             const [data] = await db
-                .delete(facilities)
+                .with(appointmentsToDelete)
+                .delete(appointments)
                 .where(
-                    and(
-                        eq(facilities.id, id)
-                    )
-                ).returning()
+                    //finds individual appointment id and matches it with the id in the database
+                    inArray(appointments.id, sql`(select id from ${appointmentsToDelete})`)
+                )
+                .returning()
 
             if (!data) {
-                return c.json({ error: "Facility not found" }, 404)
+                return c.json({ error: "Appointment not found" }, 404)
             }
             return c.json({ data })
         }
