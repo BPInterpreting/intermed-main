@@ -22,6 +22,8 @@ import {useCreateAppointment} from "@/features/appointments/api/use-create-appoi
 import {useGetPatients} from "@/features/patients/api/use-get-patients";
 import {useGetFacilities} from "@/features/facilities/api/use-get-facilities";
 import {useCreatePatient} from "@/features/patients/api/use-create-patient";
+import {AppointmentForm} from "@/features/appointments/components/appointmentForm";
+import {Loader2} from "lucide-react";
 
 const formSchema  = insertAppointmentSchema.omit({
     id: true,
@@ -31,7 +33,7 @@ type FormValues = z.input<typeof formSchema>
 
 export const NewAppointmentDialog = () => {
     const {isOpen, onClose} = useNewAppointment()
-    const mutation = useCreateAppointment()
+    const createMutation = useCreateAppointment()
 
     const facilityQuery = useGetFacilities()
     const facilityMutation = useCreateFacility()
@@ -56,10 +58,16 @@ export const NewAppointmentDialog = () => {
         label: facility.firstName,
         value: facility.id
     }))
-    
+
+    //disables the form while the mutation is pending
+    const isPending = createMutation.isPending || facilityMutation.isPending || patientMutation.isPending
+
+    //displays a loading spinner while the query is in progress
+    const isLoading = facilityQuery.isLoading || patientQuery.isLoading
+
 
     const onSubmit = (values: FormValues) => {
-        mutation.mutate(values, {
+        createMutation.mutate(values, {
             onSuccess: () => {
                 onClose()
             }
@@ -75,7 +83,21 @@ export const NewAppointmentDialog = () => {
                          Fill out the form below to add a new appointment to the system.
                      </DialogDescription>
                  </DialogHeader>
-
+                 {/*conditional rendering is needed since patient and facility data needs to be loaded */}
+                 {isLoading ? (
+                     <div className='absolute inset-0 flex items-center'>
+                         <Loader2 className='size-4 text-muted-foreground'/>
+                     </div>
+                 ) : (
+                     <AppointmentForm
+                     onSubmit={onSubmit}
+                     disabled={isPending}
+                     facilityOptions={facilityOptions}
+                     patientOptions={patientOptions}
+                     onCreateFacility={onCreateFacility}
+                     onCreatePatient={onCreatePatient}
+                     />
+                 )}
              </DialogContent>
          </Dialog>
      )
