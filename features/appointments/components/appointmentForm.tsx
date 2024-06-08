@@ -9,6 +9,9 @@ import {Input} from "@/components/ui/input"
 import {Trash} from "lucide-react";
 import {insertAppointmentSchema} from "@/db/schema";
 import {Select} from "@/components/customUi/select";
+import { DatePicker } from "@/components/customUi/date-picker";
+import {Textarea} from "@/components/ui/textarea";
+
 
 //this shcema is needed since the types are more complicated and it is easier for the types to handle
 const formSchema = z.object({
@@ -72,6 +75,21 @@ export const AppointmentForm = ({
                        <div className='grid grid-cols-3 gap-8'>
                            <FormField
                                control={form.control}
+                               name="date"
+                               render={({field}) => (
+                                   <FormItem>
+                                       <FormControl>
+                                             <DatePicker
+                                                  value={field.value}
+                                                  onChange={field.onChange}
+                                                  disabled={disabled}
+                                             />
+                                       </FormControl>
+                                   </FormItem>
+                               )}
+                           />
+                           <FormField
+                               control={form.control}
                                name="patientId"
                                render={({field}) => (
                                    <FormItem>
@@ -103,6 +121,23 @@ export const AppointmentForm = ({
                                                onCreate={onCreateFacility}
                                                placeholder="Select an category"
                                                disabled={disabled}
+                                           />
+                                       </FormControl>
+                                   </FormItem>
+                               )}
+                           />
+                           <FormField
+                               control={form.control}
+                               name="notes"
+                               render={({ field }) => (
+                                   <FormItem>
+                                       <FormLabel>Notes</FormLabel>
+                                       <FormControl>
+                                           <Textarea
+                                               {...field}
+                                               value={field.value || ""}
+                                               disabled={disabled}
+                                               placeholder="Optional notes..."
                                            />
                                        </FormControl>
                                    </FormItem>
