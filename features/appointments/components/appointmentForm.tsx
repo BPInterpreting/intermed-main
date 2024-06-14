@@ -15,13 +15,13 @@ import {Textarea} from "@/components/ui/textarea";
 
 //this shcema is needed since the types are more complicated and it is easier for the types to handle
 const formSchema = z.object({
-   date: z.coerce.date(),
+    date: z.coerce.date(),
     patientId: z.string(),
     facilityId: z.string(),
     notes: z.string().nullable().optional()
 })
 
-//regular api shcema that is used in other forms
+//regular api schema that is used in other forms
 const apiSchema = insertAppointmentSchema.omit({
     id:true
 })
@@ -59,8 +59,10 @@ export const AppointmentForm = ({
         defaultValues: defaultValues
     })
 
-    function handleSubmit(values: FormValues) {
-        console.log({values})
+    const handleSubmit = (values: FormValues) => {
+        onSubmit({
+            ...values
+        })
     }
 
     const handleDelete = () => {
@@ -68,8 +70,6 @@ export const AppointmentForm = ({
     }
 
    return(
-       <>
-           <div>
                <Form {...form}>
                    <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 pt-4">
                        <div className='grid grid-cols-3 gap-8'>
@@ -112,14 +112,14 @@ export const AppointmentForm = ({
                                name="facilityId"
                                render={({ field }) => (
                                    <FormItem>
-                                       <FormLabel>Category</FormLabel>
+                                       <FormLabel>Facility</FormLabel>
                                        <FormControl>
                                            <Select
                                                options={facilityOptions}
                                                value={field.value}
                                                onChange={field.onChange}
                                                onCreate={onCreateFacility}
-                                               placeholder="Select an category"
+                                               placeholder="Select a facility..."
                                                disabled={disabled}
                                            />
                                        </FormControl>
@@ -135,7 +135,7 @@ export const AppointmentForm = ({
                                        <FormControl>
                                            <Textarea
                                                {...field}
-                                               value={field.value || ""}
+                                               value={field.value ?? ""}
                                                disabled={disabled}
                                                placeholder="Optional notes..."
                                            />
@@ -156,12 +156,11 @@ export const AppointmentForm = ({
                                 onClick={handleDelete}
                             >
                                  <Trash className='size-4 mr-2'/>
-                                 Delete Facility
+                                 Delete Appointment
                             </Button>
                        )}
                    </form>
                </Form>
-           </div>
-       </>
+
    )
 }

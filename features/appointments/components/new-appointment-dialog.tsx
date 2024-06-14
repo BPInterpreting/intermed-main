@@ -35,8 +35,10 @@ export const NewAppointmentDialog = () => {
     const {isOpen, onClose} = useNewAppointment()
     const createMutation = useCreateAppointment()
 
+    // facilityQuery is used to load the facilities from the database
     const facilityQuery = useGetFacilities()
     const facilityMutation = useCreateFacility()
+    //used to create the facility from the dropdown input field
     const onCreateFacility = (name: string) => {
         facilityMutation.mutate({
             name
@@ -47,8 +49,10 @@ export const NewAppointmentDialog = () => {
         value: facility.id
     }))
 
+    // patientQuery is used to load the patients from the database
     const patientQuery = useGetPatients()
     const patientMutation = useCreatePatient()
+    //used to create the patient from the dropdown input field
     const onCreatePatient = (firstName: string) => {
         patientMutation.mutate({
             firstName
@@ -90,12 +94,12 @@ export const NewAppointmentDialog = () => {
                      </div>
                  ) : (
                      <AppointmentForm
-                     onSubmit={onSubmit}
-                     disabled={isPending}
-                     facilityOptions={facilityOptions}
-                     patientOptions={patientOptions}
-                     onCreateFacility={onCreateFacility}
-                     onCreatePatient={onCreatePatient}
+                        onSubmit={onSubmit}
+                        disabled={isPending}
+                        facilityOptions={facilityOptions}
+                        patientOptions={patientOptions}
+                        onCreateFacility={onCreateFacility}
+                        onCreatePatient={onCreatePatient}
                      />
                  )}
              </DialogContent>

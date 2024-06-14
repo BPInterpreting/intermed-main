@@ -4,13 +4,10 @@ import {Button} from "@/components/ui/button";
 import {DataTable} from "@/components/ui/data-table";
 import {Card, CardContent, CardHeader, CardTitle,} from "@/components/ui/card"
 import {Loader2, Plus} from "lucide-react";
-import {columns} from "@/app/(dashboard)/facilities/columns";
-import {useGetFacilities} from "@/features/facilities/api/use-get-facilities";
-import {useNewFacility} from "@/features/facilities/hooks/use-new-facility";
+import {columns} from "@/app/(dashboard)/appointments/columns";
 import {Skeleton} from "@/components/ui/skeleton";
 import {useNewAppointment} from "@/features/appointments/hooks/use-new-appointments";
 import {useGetAppointments} from "@/features/appointments/api/use-get-appointments";
-import appointments from "@/app/api/[[...route]]/appointments";
 
 
 const AppointmentsClient = (
@@ -50,7 +47,7 @@ const AppointmentsClient = (
                         </Button>
                     </CardHeader>
                     <CardContent>
-                        <DataTable columns={columns} data={appointments}/>
+                        <DataTable columns={columns} data={appointments} />
                     </CardContent>
                 </Card>
             </div>

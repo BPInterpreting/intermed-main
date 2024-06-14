@@ -11,7 +11,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {useConfirm} from "@/hooks/use-confirm";
-import {useUpdateFacility} from "@/features/facilities/hooks/use-update-facility";
+import {useUpdateAppointment} from "@/features/appointments/hooks/use-update-appointment";
 import {useDeleteFacility} from "@/features/facilities/api/use-delete-facility";
 
 type Props = {
@@ -19,11 +19,11 @@ type Props = {
 }
 
 export const Actions = ({id}: Props) => {
-    const {onOpen} = useUpdateFacility()
+    const {onOpen} = useUpdateAppointment()
     const deleteMutation = useDeleteFacility(id)
     const [ConfirmDialog, confirm] = useConfirm(
-        'Are you sure you want to delete this patient?',
-        "You are about to delete a patient. This action cannot be undone."
+        'Are you sure you want to delete this appointment?',
+        "You are about to delete an appointment . This action cannot be undone."
     )
 
     const handleDelete = async () => {

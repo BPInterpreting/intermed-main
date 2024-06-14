@@ -28,9 +28,10 @@ const app = new Hono()
         })),
         async (c) => {
             const {from, to, patientId } = c.req.valid('query')
-            const defaultTo = new Date()
-            const defaultFrom = subDays(defaultTo, 30)
 
+            const defaultTo = new Date()
+            //TODO: the default date is set to 30 days before the current date change it so it shows all appointments including future
+            const defaultFrom = subDays(defaultTo, 0)
             const startDate = from ? parse(from, 'yyyy-MM-dd', new Date()) : defaultFrom
             const endDate = to ? parse(to, 'yyyy-MM-dd', new Date()) : defaultTo
 
@@ -52,8 +53,8 @@ const app = new Hono()
                 and(
                     //makes sure patientId matches up the the patientId from the appointments table or else it is undefined
                     patientId ? eq(appointments.patientId, patientId) : undefined,
-                    gte(appointments.date, startDate),
-                    lte(appointments.date, endDate)
+                    // gte(appointments.date, startDate),
+                    // lte(appointments.date, endDate)
                 )
             )
             .orderBy(desc(appointments.date))

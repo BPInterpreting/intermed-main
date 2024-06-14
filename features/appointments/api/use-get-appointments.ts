@@ -1,9 +1,7 @@
 //hook is used to fetch multiple facilities from the database that will be used to display the data in the UI
 
 import { useQuery } from '@tanstack/react-query';
-
 import { client } from '@/lib/hono';
-import {useSearchParam} from "react-use";
 import {useSearchParams} from "next/navigation";
 
 export const useGetAppointments = () => {
@@ -16,7 +14,7 @@ export const useGetAppointments = () => {
     const query = useQuery({
 
         //queryKey is the name of the data stored in cache to be reused later again instead or parsing data all over again
-        queryKey: ['appointments', from, to, patientId],
+        queryKey: ['appointments', {from, to, patientId}],
          //queryFn is function that query will use to request data as promise which resloves data or a throws error if it fails
         queryFn: async () => {
             const response = await client.api.appointments.$get({
