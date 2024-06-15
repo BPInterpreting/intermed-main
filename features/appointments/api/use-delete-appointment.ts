@@ -27,7 +27,7 @@ export const useDeleteAppointment = (id?: string) => {
           toast.success("Appointment deleted successfully");
           //primary update account with id as key and all appointments
           queryClient.invalidateQueries({ queryKey: ["appointment", { id }] });
-            queryClient.invalidateQueries({ queryKey: ["apppointments"] });
+            queryClient.invalidateQueries({ queryKey: ["appointments"] });
       },
       onError: () => {
           toast.error("Failed to delete appontment");

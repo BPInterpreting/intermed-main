@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import {useConfirm} from "@/hooks/use-confirm";
 import {useUpdateAppointment} from "@/features/appointments/hooks/use-update-appointment";
-import {useDeleteFacility} from "@/features/facilities/api/use-delete-facility";
+import {useDeleteAppointment} from "@/features/appointments/api/use-delete-appointment";
 
 type Props = {
     id: string;
@@ -20,7 +20,7 @@ type Props = {
 
 export const Actions = ({id}: Props) => {
     const {onOpen} = useUpdateAppointment()
-    const deleteMutation = useDeleteFacility(id)
+    const deleteMutation = useDeleteAppointment(id)
     const [ConfirmDialog, confirm] = useConfirm(
         'Are you sure you want to delete this appointment?',
         "You are about to delete an appointment . This action cannot be undone."
