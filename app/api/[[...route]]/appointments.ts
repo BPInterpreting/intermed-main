@@ -143,7 +143,7 @@ const app = new Hono()
             //simplifies complex queries since appointment does not belong to the patient
             const appointmentsToUpdate = db.$with("appointments_to_update").as(
                 db.select({ id: appointments.id }).from(appointments)
-                    .innerJoin(patient, eq(appointments.id, patient.id))
+                    .innerJoin(patient, eq(appointments.patientId, patient.id))
                     .where(and(eq(appointments.id, id)))
             )
 

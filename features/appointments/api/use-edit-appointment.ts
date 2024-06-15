@@ -28,7 +28,7 @@ export const useEditAppointment = (id?:string ) => {
         onSuccess: () => {
              //refetch all patients when a new patient is created to update the cache through the queryKey
             toast.success('Appointment updated successfully')
-            queryClient.invalidateQueries({ queryKey: ["apppointments"] })
+            queryClient.invalidateQueries({ queryKey: ["appointments"] })
             queryClient.invalidateQueries({ queryKey: ["appointment", { id }] });
         },
         onError: () => {

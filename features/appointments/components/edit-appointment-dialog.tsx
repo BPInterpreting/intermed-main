@@ -11,47 +11,80 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { z } from "zod"
-
-import {useNewFacility} from "@/features/facilities/hooks/use-new-facility";
-import {PatientForm} from "@/features/patients/components/patientForm";
-import {insertFacilitySchema} from "@/db/schema";
-import {useCreateFacility} from "@/features/facilities/api/use-create-facility";
-import {FacilityForm} from "@/features/facilities/components/facilityForm";
+import {insertAppointmentSchema} from "@/db/schema";
 import {useUpdateAppointment} from "@/features/appointments/hooks/use-update-appointment";
-import {useEditFacility} from "@/features/facilities/api/use-edit-facility";
-import {useGetIndividualFacility} from "@/features/facilities/api/use-get-individual-facility";
-import {useDeleteFacility} from "@/features/facilities/api/use-delete-facility";
 import {useConfirm} from "@/hooks/use-confirm";
 import {Loader2} from "lucide-react";
 import {AppointmentForm} from "@/features/appointments/components/appointmentForm";
+import {useEditAppointment} from "@/features/appointments/api/use-edit-appointment";
+import {useGetIndividualAppointment} from "@/features/appointments/api/use-get-individual-appointment";
+import {useDeleteAppointment} from "@/features/appointments/api/use-delete-appointment";
+import {useGetFacilities} from "@/features/facilities/api/use-get-facilities";
+import {useCreateFacility} from "@/features/facilities/api/use-create-facility";
+import {useGetPatients} from "@/features/patients/api/use-get-patients";
+import {useCreatePatient} from "@/features/patients/api/use-create-patient";
 
-const formSchema  = insertFacilitySchema.pick
+const formSchema  = insertAppointmentSchema.omit
 ({
-   name: true,
+   id: true,
 })
 
 type FormValues = z.input<typeof formSchema>
 
 export const EditAppointmentDialog = () => {
     const {isOpen, onClose, id} = useUpdateAppointment()
-    const editMutation = useEditFacility(id)
-    const facilityQuery = useGetIndividualFacility(id)
-    const deleteMutation = useDeleteFacility(id)
+    const editMutation = useEditAppointment(id)
+    const appointmentQuery = useGetIndividualAppointment(id)
+    const deleteMutation = useDeleteAppointment(id)
+
+    // facilityQuery is used to load the facilities from the database
+    const facilityQuery = useGetFacilities()
+    const facilityMutation = useCreateFacility()
+    //used to create the facility from the dropdown input field
+    const onCreateFacility = (name: string) => {
+        facilityMutation.mutate({
+            name
+        })
+    }
+    const facilityOptions = (facilityQuery.data ?? []).map(facility => ({
+        label: facility.name,
+        value: facility.id
+    }))
+
+    // patientQuery is used to load the patients from the database
+    const patientQuery = useGetPatients()
+    const patientMutation = useCreatePatient()
+    //used to create the patient from the dropdown input field
+    const onCreatePatient = (firstName: string) => {
+        patientMutation.mutate({
+            firstName
+        })
+    }
+    const patientOptions = (patientQuery.data ?? []).map(facility => ({
+        label: facility.firstName,
+        value: facility.id
+    }))
 
 
-    const isPending = editMutation.isPending || deleteMutation.isPending
+    const isPending = editMutation.isPending || deleteMutation.isPending || patientMutation.isPending || facilityMutation.isPending || appointmentQuery.isLoading
 
-    const isLoading = facilityQuery.isLoading
+    const isLoading = appointmentQuery.isLoading || patientQuery.isLoading || facilityQuery.isLoading
 
     const [ConfirmDialog, confirm] = useConfirm(
         'Are you sure you want to delete this appointment?',
         "You are about to delete an appointment . This action cannot be undone."
     )
 
-    const defaultValues = facilityQuery.data ? {
-        name: facilityQuery.data.name
+    const defaultValues = appointmentQuery.data ? {
+        patientId: appointmentQuery.data.patientId,
+        facilityId: appointmentQuery.data.facilityId,
+        date: appointmentQuery.data.date ? new Date(appointmentQuery.data.date) : new Date(),
+        notes: appointmentQuery.data.notes
     } : {
-        name: ''
+        patientId: '',
+        facilityId: '',
+        date: new Date(),
+        notes: ''
     }
 
     const onDelete = async () => {
@@ -98,6 +131,10 @@ export const EditAppointmentDialog = () => {
                                  disabled={isPending}
                                  defaultValues={defaultValues}
                                  onDelete={onDelete}
+                                 facilityOptions={facilityOptions}
+                                 patientOptions={patientOptions}
+                                 onCreateFacility={onCreateFacility}
+                                 onCreatePatient={onCreatePatient}
                              />
                          )
                      }

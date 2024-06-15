@@ -16,8 +16,8 @@ import {Textarea} from "@/components/ui/textarea";
 //this shcema is needed since the types are more complicated and it is easier for the types to handle
 const formSchema = z.object({
     date: z.coerce.date(),
-    patientId: z.string(),
-    facilityId: z.string(),
+    patientId: z.string().nullable(),
+    facilityId: z.string().nullable(),
     notes: z.string().nullable().optional()
 })
 
