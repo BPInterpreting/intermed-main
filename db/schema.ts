@@ -6,6 +6,11 @@ import {z} from "zod";
 export const patient = pgTable("patients", {
     id: text("id").primaryKey(),
     firstName: varchar("firstName").notNull(),
+    lastName: varchar("lastName").notNull(),
+    email: varchar("email").notNull(),
+    phoneNumber: varchar("phoneNumber").notNull(),
+    insuranceCarrier: varchar("insuranceCarrier"),
+    preferredLanguage: varchar("preferredLanguage"),
 })
 
 export const patientsRelations = relations(patient, ({ many }) => ({
