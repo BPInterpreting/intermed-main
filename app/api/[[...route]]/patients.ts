@@ -24,7 +24,12 @@ const app = new Hono()
         const data = await db
             .select({
                 id: patient.id,
-                firstName: patient.firstName
+                firstName: patient.firstName,
+                lastName: patient.lastName,
+                email: patient.email,
+                phoneNumber: patient.phoneNumber,
+                insuranceCarrier: patient.insuranceCarrier,
+                preferredLanguage: patient.preferredLanguage
             })
             .from(patient)
 
@@ -49,7 +54,12 @@ const app = new Hono()
             const [data] = await db
                 .select({
                     id: patient.id,
-                    firstName: patient.firstName
+                    firstName: patient.firstName,
+                    lastName: patient.lastName,
+                    email: patient.email,
+                    phoneNumber: patient.phoneNumber,
+                    preferredLanguage: patient.preferredLanguage,
+                    insuranceCarrier: patient.insuranceCarrier
                 })
                 .from(patient)
                 .where(
@@ -72,7 +82,12 @@ const app = new Hono()
             'json',
             // only allow the first name to be passed in the post request for client to see
             insertPatientSchema.pick({
-                firstName: true
+                firstName: true,
+                lastName: true,
+                email: true,
+                phoneNumber: true,
+                insuranceCarrier: true,
+                preferredLanguage: true
             })
         ),
         async (c) => {
@@ -94,7 +109,12 @@ const app = new Hono()
         })),
         // this route makes sure that the first name is the only value that can be updated
         zValidator("json", insertPatientSchema.pick({
-            firstName: true
+            firstName: true,
+            lastName: true,
+            email: true,
+            phoneNumber: true,
+            insuranceCarrier: true,
+            preferredLanguage: true
         })),
         async (c) => {
             const { id } = c.req.valid('param')
