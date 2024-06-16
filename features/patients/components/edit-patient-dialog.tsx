@@ -70,7 +70,6 @@ export const EditPatientDialog = () => {
         }
     }
 
-
     const defaultValues = patientQuery.data ? {
         firstName: patientQuery.data.firstName,
         lastName: patientQuery.data.lastName,
@@ -86,7 +85,6 @@ export const EditPatientDialog = () => {
         insuranceCarrier: '',
         preferredLanguage: ''
     }
-
 
      return(
          <>
