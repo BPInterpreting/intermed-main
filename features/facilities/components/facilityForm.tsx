@@ -76,6 +76,156 @@ export const FacilityForm = ({
                                    </FormItem>
                                )}
                            />
+                            <FormField
+                                 control={form.control}
+                                 name="address"
+                                 render={({field}) => (
+                                      <FormItem>
+                                        <FormLabel>Address</FormLabel>
+                                        <FormControl>
+                                             <Input
+                                                  placeholder="Clinic Address"
+                                                  {...field}
+                                             />
+                                        </FormControl>
+                                      </FormItem>
+                                 )}
+                            />
+                            <FormField
+                                 control={form.control}
+                                 name="city"
+                                 render={({field}) => (
+                                      <FormItem>
+                                        <FormLabel>City</FormLabel>
+                                        <FormControl>
+                                             <Input
+                                                  placeholder="City"
+                                                  {...field}
+                                             />
+                                        </FormControl>
+                                      </FormItem>
+                                 )}
+                            />
+                            <FormField
+                                 control={form.control}
+                                 name="state"
+                                 render={({field}) => (
+                                      <FormItem>
+                                        <FormLabel>State</FormLabel>
+                                        <FormControl>
+                                             <Input
+                                                  placeholder="State"
+                                                  {...field}
+                                             />
+                                        </FormControl>
+                                      </FormItem>
+                                 )}
+                            />
+                            <FormField
+                                 control={form.control}
+                                 name="county"
+                                 render={({field}) => (
+                                      <FormItem>
+                                        <FormLabel>County</FormLabel>
+                                        <FormControl>
+                                             <Input
+                                                  placeholder="County"
+                                                  {...field}
+                                             />
+                                        </FormControl>
+                                      </FormItem>
+                                 )}
+                            />
+                            <FormField
+                                 control={form.control}
+                                 name="zipCode"
+                                 render={({field}) => (
+                                      <FormItem>
+                                        <FormLabel>Zip Code</FormLabel>
+                                        <FormControl>
+                                             <Input
+                                                  placeholder="Zip Code"
+                                                  {...field}
+                                             />
+                                        </FormControl>
+                                      </FormItem>
+                                 )}
+                            />
+                            <FormField
+                                 control={form.control}
+                                 name="email"
+                                 render={({field}) => (
+                                      <FormItem>
+                                        <FormLabel>Email</FormLabel>
+                                        <FormControl>
+                                             <Input
+                                                  placeholder="Email"
+                                                  {...field}
+                                             />
+                                        </FormControl>
+                                      </FormItem>
+                                 )}
+                            />
+                            <FormField
+                                 control={form.control}
+                                 name="phoneNumber"
+                                 render={({field}) => (
+                                      <FormItem>
+                                        <FormLabel>Phone Number</FormLabel>
+                                        <FormControl>
+                                             <Input
+                                                  placeholder="Phone Number"
+                                                  {...field}
+                                             />
+                                        </FormControl>
+                                      </FormItem>
+                                 )}
+                            />
+                            <FormField
+                                 control={form.control}
+                                 name="facilityType"
+                                 render={({field}) => (
+                                      <FormItem>
+                                        <FormLabel>Facility Type</FormLabel>
+                                        <FormControl>
+                                             <Input
+                                                  placeholder="Facility Type"
+                                                  {...field}
+                                             />
+                                        </FormControl>
+                                      </FormItem>
+                                 )}
+                            />
+                            <FormField
+                                 control={form.control}
+                                 name="operatingHours"
+                                 render={({field}) => (
+                                      <FormItem>
+                                        <FormLabel>Operating Hours</FormLabel>
+                                        <FormControl>
+                                             <Input
+                                                  placeholder="Operating Hours"
+                                                  {...field}
+                                             />
+                                        </FormControl>
+                                      </FormItem>
+                                 )}
+                            />
+                            <FormField
+                                 control={form.control}
+                                 name="averageWaitTime"
+                                 render={({field}) => (
+                                      <FormItem>
+                                        <FormLabel>Average Wait Time</FormLabel>
+                                        <FormControl>
+                                             <Input
+                                                  placeholder="Average Wait Time"
+                                                  {...field}
+                                             />
+                                        </FormControl>
+                                      </FormItem>
+                                 )}
+                            />
                        </div>
                        <Button className='w-full'>
                            {id ? "Update Facility" : "Add Facility"}
