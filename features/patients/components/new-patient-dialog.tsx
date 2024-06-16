@@ -10,6 +10,11 @@ import {useCreatePatient} from "@/features/patients/api/use-create-patient";
 
 const formSchema  = insertPatientSchema.pick({
     firstName: true,
+    lastName: true,
+    email: true,
+    phoneNumber: true,
+    insuranceCarrier: true,
+    preferredLanguage: true
 })
 
 type FormValues = z.input<typeof formSchema>
@@ -27,18 +32,25 @@ export const NewPatientDialog = () => {
     }
 
      return(
-         <Dialog open={isOpen} onOpenChange={onClose}>
-             <DialogContent>
+         <Dialog open={isOpen} onOpenChange={onClose} >
+             <DialogContent >
                  <DialogHeader>
                      <DialogTitle>New Patient Form</DialogTitle>
                      <DialogDescription>
                          Fill out the form below to add a new patient to the system.
                      </DialogDescription>
                  </DialogHeader>
-                 <PatientForm
-                     onSubmit={onSubmit}
-                     disabled={mutation.isPending}
-                     defaultValues={{firstName: ''}}
+                    <PatientForm
+                        onSubmit={onSubmit}
+                        disabled={mutation.isPending}
+                        defaultValues={{
+                            firstName: '',
+                            lastName: '',
+                            email: '',
+                            phoneNumber: '',
+                            insuranceCarrier: '',
+                            preferredLanguage: ''
+                    }}
                  />
              </DialogContent>
          </Dialog>

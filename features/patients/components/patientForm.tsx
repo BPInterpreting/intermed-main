@@ -17,10 +17,16 @@ import { Input } from "@/components/ui/input"
 import {Heading} from "@/components/customUi/heading";
 import {Trash} from "lucide-react";
 import {insertPatientSchema} from "@/db/schema";
+import {PhoneInput} from "@/components/customUi/phone-input";
 
 // modified formSchema to only include firstName based on drizzle insertPatientSchema
 const formSchema = insertPatientSchema.pick({
     firstName: true,
+    lastName: true,
+    email: true,
+    phoneNumber: true,
+    insuranceCarrier: true,
+    preferredLanguage: true
 })
 
 type FormValues = z.input<typeof formSchema>
@@ -55,11 +61,10 @@ export const PatientForm = ({
     }
 
    return(
-       <>
            <div>
                <Form {...form}>
                    <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 pt-4">
-                       <div className='grid grid-cols-3 gap-8'>
+                       <div className='grid grid-cols-2 space-x-4'>
                            <FormField
                                control={form.control}
                                name="firstName"
@@ -68,13 +73,92 @@ export const PatientForm = ({
                                        <FormLabel>First Name</FormLabel>
                                        <FormControl>
                                            <Input
-                                               placeholder="first name"
+                                               placeholder="first name..."
                                                {...field}
                                            />
                                        </FormControl>
                                    </FormItem>
                                )}
                            />
+                           <FormField
+                               control={form.control}
+                               name="lastName"
+                               render={({field}) => (
+                                   <FormItem>
+                                       <FormLabel>Last Name</FormLabel>
+                                       <FormControl>
+                                           <Input
+                                               placeholder="last name..."
+                                               {...field}
+                                           />
+                                       </FormControl>
+                                   </FormItem>
+                               )}
+                           />
+                           <FormField
+                               control={form.control}
+                               name="email"
+                               render={({field}) => (
+                                   <FormItem>
+                                       <FormLabel>Email</FormLabel>
+                                       <FormControl>
+                                           <Input
+                                               placeholder="example@email.com"
+                                               {...field}
+                                           />
+                                       </FormControl>
+                                   </FormItem>
+                               )}
+                           />
+                           <FormField
+                               control={form.control}
+                               name="phoneNumber"
+                               render={({field}) => (
+                                   <FormItem>
+                                       <FormLabel>Phone Number</FormLabel>
+                                       <FormControl>
+                                           <PhoneInput
+                                               {...field}
+                                               format='(###) ###-####'
+                                               allowEmptyFormatting={true}
+                                               mask="_"
+                                           />
+                                       </FormControl>
+                                   </FormItem>
+                               )}
+                           />
+                           <FormField
+                               control={form.control}
+                               name="insuranceCarrier"
+                               render={({field}) => (
+                                   <FormItem>
+                                       <FormLabel>Insurance carrier</FormLabel>
+                                       <FormControl>
+                                           <Input
+                                               placeholder="Insurance Inc"
+                                               {...field}
+                                               value={field.value || ""}
+                                           />
+                                       </FormControl>
+                                   </FormItem>
+                               )}
+                           />
+                            <FormField
+                                 control={form.control}
+                                 name="preferredLanguage"
+                                 render={({field}) => (
+                                      <FormItem>
+                                        <FormLabel>Preferred Language</FormLabel>
+                                        <FormControl>
+                                             <Input
+                                                  placeholder="English"
+                                                  {...field}
+                                                 value={field.value || ""}
+                                             />
+                                        </FormControl>
+                                      </FormItem>
+                                 )}
+                            />
                        </div>
                        <Button className='w-full'>
                            {id ? "Update Patient" : "Add Patient"}
@@ -94,6 +178,6 @@ export const PatientForm = ({
                    </form>
                </Form>
            </div>
-       </>
+
    )
 }
