@@ -24,6 +24,11 @@ import {Loader2} from "lucide-react";
 
 const formSchema  = insertPatientSchema.pick({
     firstName: true,
+    lastName: true,
+    email: true,
+    phoneNumber: true,
+    insuranceCarrier: true,
+    preferredLanguage: true
 })
 
 type FormValues = z.input<typeof formSchema>
@@ -67,9 +72,19 @@ export const EditPatientDialog = () => {
 
 
     const defaultValues = patientQuery.data ? {
-        firstName: patientQuery.data.firstName
+        firstName: patientQuery.data.firstName,
+        lastName: patientQuery.data.lastName,
+        email: patientQuery.data.email,
+        phoneNumber: patientQuery.data.phoneNumber,
+        insuranceCarrier: patientQuery.data.insuranceCarrier,
+        preferredLanguage: patientQuery.data.preferredLanguage
     }: {
-        firstName: ''
+        firstName: '',
+        lastName: '',
+        email: '',
+        phoneNumber: '',
+        insuranceCarrier: '',
+        preferredLanguage: ''
     }
 
 
@@ -79,7 +94,7 @@ export const EditPatientDialog = () => {
              <Dialog open={isOpen} onOpenChange={onClose}>
                  <DialogContent className='space-y-4'>
                      <DialogHeader>
-                         <DialogTitle>Edit patient </DialogTitle>
+                         <DialogTitle>Edit Patient </DialogTitle>
                          <DialogDescription>
                              Edit any part of the form below to update the patient
                          </DialogDescription>

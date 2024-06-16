@@ -104,6 +104,7 @@ export const PatientForm = ({
                                        <FormControl>
                                            <Input
                                                placeholder="example@email.com"
+                                               type={"email"}
                                                {...field}
                                            />
                                        </FormControl>
