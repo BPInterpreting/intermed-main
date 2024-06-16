@@ -22,6 +22,16 @@ export const insertPatientSchema = createInsertSchema(patient)
 export const facilities = pgTable("facilities", {
     id: text("id").primaryKey(),
     name: varchar("name").notNull(),
+    address: varchar("address").notNull(),
+    city: varchar("city").notNull(),
+    state: varchar("state").notNull(),
+    county: varchar("county").notNull(),
+    zipCode: varchar("zipCode").notNull(),
+    email: varchar("email").notNull(),
+    phoneNumber: varchar("phoneNumber").notNull(),
+    facilityType: varchar("facilityType").notNull(),
+    averageWaitTime: varchar("averageWaitTime"),
+    operatingHours: varchar("operatingHours"),
 })
 
 export const facilitiesRelations = relations(facilities, ({ many }) => ({

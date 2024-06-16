@@ -12,6 +12,16 @@ import {insertFacilitySchema} from "@/db/schema";
 // modified formSchema to only include firstName based on drizzle insertPatientSchema
 const formSchema = insertFacilitySchema.pick({
     name: true,
+    address: true,
+    city: true,
+    state: true,
+    county: true,
+    zipCode: true,
+    email: true,
+    phoneNumber: true,
+    facilityType: true,
+    operatingHours: true,
+    averageWaitTime: true,
 })
 
 type FormValues = z.input<typeof formSchema>

@@ -20,6 +20,16 @@ import {FacilityForm} from "@/features/facilities/components/facilityForm";
 
 const formSchema  = insertFacilitySchema.pick({
     name: true,
+    address: true,
+    city: true,
+    state: true,
+    county: true,
+    zipCode: true,
+    email: true,
+    phoneNumber: true,
+    facilityType: true,
+    operatingHours: true,
+    averageWaitTime: true,
 })
 
 type FormValues = z.input<typeof formSchema>
@@ -48,7 +58,19 @@ export const NewFacilityDialog = () => {
                  <FacilityForm
                      onSubmit={onSubmit}
                      disabled={mutation.isPending}
-                     defaultValues={{name: ''}}
+                     defaultValues={{
+                            name: '',
+                            address: '',
+                            city: '',
+                            state: '',
+                            county: '',
+                            zipCode: '',
+                            email: '',
+                            phoneNumber: '',
+                            facilityType: '',
+                            operatingHours: '',
+                            averageWaitTime: '',
+                    }}
                  />
              </DialogContent>
          </Dialog>
