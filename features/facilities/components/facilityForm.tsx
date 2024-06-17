@@ -60,7 +60,7 @@ export const FacilityForm = ({
            <div>
                <Form {...form}>
                    <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 pt-4">
-                       <div className='grid grid-cols-3 gap-8'>
+                       <div className='grid grid-cols-2 mr-6'>
                            <FormField
                                control={form.control}
                                name="name"
