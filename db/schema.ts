@@ -1,4 +1,4 @@
-import {pgTable, serial, text, timestamp, varchar} from "drizzle-orm/pg-core";
+import {pgTable, serial, text, time, timestamp, varchar} from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import {relations} from "drizzle-orm";
 import {z} from "zod";
@@ -30,8 +30,8 @@ export const facilities = pgTable("facilities", {
     email: varchar("email").notNull(),
     phoneNumber: varchar("phoneNumber").notNull(),
     facilityType: varchar("facilityType").notNull(),
-    averageWaitTime: varchar("averageWaitTime"),
-    operatingHours: varchar("operatingHours"),
+    averageWaitTime: varchar("averageWaitTime").notNull(),
+    operatingHours: varchar("operatingHours").notNull(),
 })
 
 export const facilitiesRelations = relations(facilities, ({ many }) => ({
@@ -43,7 +43,10 @@ export const insertFacilitySchema = createInsertSchema(facilities)
 export const appointments = pgTable("appointments", {
     id: text("id").primaryKey(),
     date: timestamp("date", {mode: "date"}).notNull(),
+    startTime: time("start_time", {withTimezone: false}).notNull(),
+    endTime: time("end_time", {withTimezone: false}),
     notes: text("notes"),
+    appointmentType : varchar("appointmentType"),
     patientId: text("patient_id").references(() => patient.id, {
         onDelete: "cascade",
     }),

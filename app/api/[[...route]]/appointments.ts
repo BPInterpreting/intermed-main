@@ -8,10 +8,6 @@ import {createId} from "@paralleldrive/cuid2";
 import {and, desc, eq, gte, inArray, lte, sql} from "drizzle-orm";
 import {subDays, parse} from "date-fns";
 
-//part of RPC is to create a schema for the validation that is used in the post request
-const schema = z.object({
-    name: z.string(),
-})
 
 //all the routes are chained to the main Hono app
 const app = new Hono()
@@ -41,6 +37,9 @@ const app = new Hono()
                 id: appointments.id,
                 date: appointments.date,
                 notes: appointments.notes,
+                startTime: appointments.startTime,
+                endTime: appointments.endTime,
+                appointmentType: appointments.appointmentType,
                 facility: facilities.name,
                 facilityId: appointments.facilityId,
                 patient: patient.firstName,
@@ -81,6 +80,9 @@ const app = new Hono()
                 .select({
                     id: appointments.id,
                     date: appointments.date,
+                    startTime: appointments.startTime,
+                    endTime: appointments.endTime,
+                    appointmentType: appointments.appointmentType,
                     notes: appointments.notes,
                     facilityId: appointments.facilityId,
                     patientId: appointments.patientId,
@@ -119,7 +121,9 @@ const app = new Hono()
                 ...values
             }).returning()
             return c.json({ data })
+
     })
+
     //individual facility can be updated by id
     .patch(
         '/:id',

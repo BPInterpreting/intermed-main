@@ -27,6 +27,16 @@ import {Loader2} from "lucide-react";
 const formSchema  = insertFacilitySchema.pick
 ({
    name: true,
+    address: true,
+    city: true,
+    state: true,
+    county: true,
+    zipCode: true,
+    email: true,
+    phoneNumber: true,
+    facilityType: true,
+    operatingHours: true,
+    averageWaitTime: true,
 })
 
 type FormValues = z.input<typeof formSchema>
@@ -48,9 +58,29 @@ export const EditFacilityDialog = () => {
     )
 
     const defaultValues = facilityQuery.data ? {
-        name: facilityQuery.data.name
+        name: facilityQuery.data.name,
+        address: facilityQuery.data.address,
+        city: facilityQuery.data.city,
+        state: facilityQuery.data.state,
+        county: facilityQuery.data.county,
+        zipCode: facilityQuery.data.zipCode,
+        email: facilityQuery.data.email,
+        phoneNumber: facilityQuery.data.phoneNumber,
+        facilityType: facilityQuery.data.facilityType,
+        operatingHours: facilityQuery.data.operatingHours,
+        averageWaitTime: facilityQuery.data.averageWaitTime,
     } : {
-        name: ''
+        name: '',
+        address: '',
+        city: '',
+        state: '',
+        county: '',
+        zipCode: '',
+        email: '',
+        phoneNumber: '',
+        facilityType: '',
+        operatingHours: '',
+        averageWaitTime: '',
     }
 
     const onDelete = async () => {
@@ -64,7 +94,6 @@ export const EditFacilityDialog = () => {
             })
         }
     }
-
 
     const onSubmit = (values: FormValues) => {
         editMutation.mutate(values, {

@@ -18,6 +18,9 @@ const formSchema = z.object({
     date: z.coerce.date(),
     patientId: z.string().nullable(),
     facilityId: z.string().nullable(),
+    startTime: z.string(),
+    endTime: z.string().nullable(),
+    appointmentType: z.string().nullable(),
     notes: z.string().nullable().optional()
 })
 
@@ -38,8 +41,8 @@ type Props ={
     //arrays of values for label and value
     patientOptions: {label: string, value: string}[];
     facilityOptions: {label: string, value: string}[];
-    onCreateFacility: (name: string) => void
-    onCreatePatient: (firstName: string) => void
+    // onCreateFacility: (name: string) => void
+    // onCreatePatient: (firstName: string) => void
 }
 
 export const AppointmentForm = ({
@@ -50,8 +53,8 @@ export const AppointmentForm = ({
     disabled,
     patientOptions,
     facilityOptions,
-    onCreateFacility,
-    onCreatePatient
+    // onCreateFacility,
+    // onCreatePatient
 }: Props) => {
 
     const form = useForm<FormValues>({
@@ -63,6 +66,7 @@ export const AppointmentForm = ({
         onSubmit({
             ...values
         })
+        console.log(values)
     }
 
     const handleDelete = () => {
@@ -88,6 +92,44 @@ export const AppointmentForm = ({
                                    </FormItem>
                                )}
                            />
+                           <div className='flex flex-row items-center gap-x-4'>
+                               <FormField
+                                   control={form.control}
+                                   name="startTime"
+                                   render={({field}) => (
+                                       <FormItem>
+                                           <FormLabel>Start Time</FormLabel>
+                                           <FormControl>
+                                               <Input
+                                                   className='w-70'
+                                                   type="time"
+                                                   {...field}
+                                                   value={field.value}
+                                                   disabled={disabled}
+                                               />
+                                           </FormControl>
+                                       </FormItem>
+                                   )}
+                               />
+                               <FormField
+                                   control={form.control}
+                                   name="endTime"
+                                   render={({field}) => (
+                                       <FormItem>
+                                           <FormLabel>End Time</FormLabel>
+                                           <FormControl>
+                                               <Input
+                                                   className='w-70'
+                                                   type="time"
+                                                   {...field}
+                                                   value={field.value ?? ""}
+                                                   disabled={disabled}
+                                               />
+                                           </FormControl>
+                                       </FormItem>
+                                   )}
+                               />
+                           </div>
                            <FormField
                                control={form.control}
                                name="patientId"
@@ -98,7 +140,7 @@ export const AppointmentForm = ({
                                            <Select
                                                placeholder="Select a patient..."
                                                options={patientOptions}
-                                               onCreate={onCreatePatient}
+                                               // onCreate={onCreatePatient}
                                                value={field.value}
                                                onChange={field.onChange}
                                                disabled={disabled}
@@ -118,10 +160,42 @@ export const AppointmentForm = ({
                                                options={facilityOptions}
                                                value={field.value}
                                                onChange={field.onChange}
-                                               onCreate={onCreateFacility}
+                                               // onCreate={onCreateFacility}
                                                placeholder="Select a facility..."
                                                disabled={disabled}
                                            />
+                                       </FormControl>
+                                   </FormItem>
+                               )}
+                           />
+                           {/*<FormItem>*/}
+                           {/*    <FormLabel>Appointment Type</FormLabel>*/}
+                           {/*    <FormControl>*/}
+                           {/*        <Select*/}
+                           {/*            options={[*/}
+                           {/*                {label: "In-person", value: "in-person"},*/}
+                           {/*                {label: "Virtual", value: "virtual"},*/}
+                           {/*                {label: "Phone", value: "phone"},*/}
+                           {/*            ]}*/}
+                           {/*            value={form.getValues("appointmentType")}*/}
+                           {/*            onChange={(value) => form.setValue("appointmentType", value)}*/}
+                           {/*            disabled={disabled}*/}
+                           {/*        />*/}
+                           {/*    </FormControl>*/}
+                           {/*</FormItem>*/}
+                           <FormField
+                               control={form.control}
+                               name="appointmentType"
+                               render={({ field }) => (
+                                   <FormItem>
+                                       <FormLabel>Appointment Type</FormLabel>
+                                       <FormControl>
+                                             <Input
+                                                  {...field}
+                                                  value={field.value ?? ""}
+                                                  disabled={disabled}
+                                                  placeholder="Enter appointment type..."
+                                             />
                                        </FormControl>
                                    </FormItem>
                                )}

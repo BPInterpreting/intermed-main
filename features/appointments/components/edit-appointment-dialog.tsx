@@ -79,6 +79,9 @@ export const EditAppointmentDialog = () => {
         patientId: appointmentQuery.data.patientId,
         facilityId: appointmentQuery.data.facilityId,
         date: appointmentQuery.data.date ? new Date(appointmentQuery.data.date) : new Date(),
+        startTime: appointmentQuery.data.startTime,
+        endTime: appointmentQuery.data.endTime,
+        appointmentType: appointmentQuery.data.appointmentType,
         notes: appointmentQuery.data.notes
     } : {
         patientId: '',

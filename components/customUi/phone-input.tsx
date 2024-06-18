@@ -11,8 +11,13 @@ type Props = {
     onChange: (value: string) => void
 }
 
-export const PhoneInput = (
-    { format, allowEmptyFormatting, mask, value, onChange }: Props
+export const PhoneInput = ({
+    format,
+                               allowEmptyFormatting,
+                               mask,
+                               value,
+                               onChange
+}: Props
 ) => {
 
     return (

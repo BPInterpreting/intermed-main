@@ -37,13 +37,13 @@ export const NewAppointmentDialog = () => {
 
     // facilityQuery is used to load the facilities from the database
     const facilityQuery = useGetFacilities()
-    const facilityMutation = useCreateFacility()
+    // const facilityMutation = useCreateFacility()
     //used to create the facility from the dropdown input field
-    const onCreateFacility = (name: string) => {
-        facilityMutation.mutate({
-            name
-        })
-    }
+    // const onCreateFacility = (name: string) => {
+    //     facilityMutation.mutate({
+    //         name
+    //     })
+    // }
     const facilityOptions = (facilityQuery.data ?? []).map(facility => ({
         label: facility.name,
         value: facility.id
@@ -51,20 +51,21 @@ export const NewAppointmentDialog = () => {
 
     // patientQuery is used to load the patients from the database
     const patientQuery = useGetPatients()
-    const patientMutation = useCreatePatient()
+    // const patientMutation = useCreatePatient()
     //used to create the patient from the dropdown input field
-    const onCreatePatient = (firstName: string) => {
-        patientMutation.mutate({
-            firstName
-        })
-    }
+    // const onCreatePatient = (firstName: string) => {
+    //     patientMutation.mutate({
+    //         firstName
+    //     })
+    // }
     const patientOptions = (patientQuery.data ?? []).map(facility => ({
         label: facility.firstName,
         value: facility.id
     }))
 
     //disables the form while the mutation is pending
-    const isPending = createMutation.isPending || facilityMutation.isPending || patientMutation.isPending
+    const isPending = createMutation.isPending
+        // || facilityMutation.isPending || patientMutation.isPending
 
     //displays a loading spinner while the query is in progress
     const isLoading = facilityQuery.isLoading || patientQuery.isLoading
@@ -76,6 +77,7 @@ export const NewAppointmentDialog = () => {
                 onClose()
             }
         })
+        console.log(values)
     }
 
      return(
@@ -98,8 +100,8 @@ export const NewAppointmentDialog = () => {
                         disabled={isPending}
                         facilityOptions={facilityOptions}
                         patientOptions={patientOptions}
-                        onCreateFacility={onCreateFacility}
-                        onCreatePatient={onCreatePatient}
+                        // onCreateFacility={onCreateFacility}
+                        // onCreatePatient={onCreatePatient}
                      />
                  )}
              </DialogContent>

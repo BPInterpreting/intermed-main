@@ -23,7 +23,17 @@ const app = new Hono()
         const data = await db
             .select({
                 id: facilities.id,
-                name: facilities.name
+                name: facilities.name,
+                address: facilities.address,
+                city: facilities.city,
+                state: facilities.state,
+                county: facilities.county,
+                zipCode: facilities.zipCode,
+                email: facilities.email,
+                phoneNumber: facilities.phoneNumber,
+                facilityType: facilities.facilityType,
+                operatingHours: facilities.operatingHours,
+                averageWaitTime: facilities.averageWaitTime,
             })
             .from(facilities)
 
@@ -48,7 +58,17 @@ const app = new Hono()
             const [data] = await db
                 .select({
                     id: facilities.id,
-                    name: facilities.name
+                    name: facilities.name,
+                    address: facilities.address,
+                    city: facilities.city,
+                    state: facilities.state,
+                    county: facilities.county,
+                    zipCode: facilities.zipCode,
+                    email: facilities.email,
+                    phoneNumber: facilities.phoneNumber,
+                    facilityType: facilities.facilityType,
+                    operatingHours: facilities.operatingHours,
+                    averageWaitTime: facilities.averageWaitTime,
                 })
                 .from(facilities)
                 .where(
@@ -71,7 +91,17 @@ const app = new Hono()
             'json',
             // only allow the first name to be passed in the post request for client to see
             insertFacilitySchema.pick({
-                name: true
+                name: true,
+                address: true,
+                city: true,
+                state: true,
+                county: true,
+                zipCode: true,
+                email: true,
+                phoneNumber: true,
+                facilityType: true,
+                operatingHours: true,
+                averageWaitTime: true,
             })
         ),
         async (c) => {
@@ -93,7 +123,17 @@ const app = new Hono()
         })),
         // this route makes sure that the first name is the only value that can be updated
         zValidator("json", insertFacilitySchema.pick({
-            name: true
+            name: true,
+            address: true,
+            city: true,
+            state: true,
+            county: true,
+            zipCode: true,
+            email: true,
+            phoneNumber: true,
+            facilityType: true,
+            operatingHours: true,
+            averageWaitTime: true,
         })),
         async (c) => {
             const { id } = c.req.valid('param')

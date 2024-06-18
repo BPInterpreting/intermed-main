@@ -8,6 +8,7 @@ import {Form, FormControl, FormField, FormItem, FormLabel,} from "@/components/u
 import {Input} from "@/components/ui/input"
 import {Trash} from "lucide-react";
 import {insertFacilitySchema} from "@/db/schema";
+import {PhoneInput} from "@/components/customUi/phone-input";
 
 // modified formSchema to only include firstName based on drizzle insertPatientSchema
 const formSchema = insertFacilitySchema.pick({
@@ -61,15 +62,67 @@ export const FacilityForm = ({
                <Form {...form}>
                    <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 pt-4">
                        <div className='grid grid-cols-2 mr-6'>
+                           <div>
+                               <FormField
+                                   control={form.control}
+                                   name="name"
+                                   render={({field}) => (
+                                       <FormItem>
+                                           <FormLabel>Name</FormLabel>
+                                           <FormControl>
+                                               <Input
+                                                   className='capitalize'
+                                                   placeholder="Clinic Name"
+                                                   {...field}
+                                               />
+                                           </FormControl>
+                                       </FormItem>
+                                   )}
+                               />
+                           </div>
+
                            <FormField
                                control={form.control}
-                               name="name"
+                               name="phoneNumber"
                                render={({field}) => (
                                    <FormItem>
-                                       <FormLabel>Name</FormLabel>
+                                       <FormLabel>Phone Number</FormLabel>
+                                       <FormControl>
+                                           <PhoneInput
+                                               {...field}
+                                               format='(###) ###-####'
+                                               allowEmptyFormatting={true}
+                                               mask="_"
+                                           />
+                                       </FormControl>
+                                   </FormItem>
+                               )}
+                           />
+                           <FormField
+                               control={form.control}
+                               name="email"
+                               render={({field}) => (
+                                   <FormItem>
+                                       <FormLabel>Email</FormLabel>
                                        <FormControl>
                                            <Input
-                                               placeholder="Clinic Name"
+                                               type={"email"}
+                                               placeholder="example@email.com"
+                                               {...field}
+                                           />
+                                       </FormControl>
+                                   </FormItem>
+                               )}
+                           />
+                           <FormField
+                               control={form.control}
+                               name="facilityType"
+                               render={({field}) => (
+                                   <FormItem>
+                                       <FormLabel>Facility Type</FormLabel>
+                                       <FormControl>
+                                           <Input
+                                               placeholder="Facility Type"
                                                {...field}
                                            />
                                        </FormControl>
@@ -145,51 +198,6 @@ export const FacilityForm = ({
                                         <FormControl>
                                              <Input
                                                   placeholder="Zip Code"
-                                                  {...field}
-                                             />
-                                        </FormControl>
-                                      </FormItem>
-                                 )}
-                            />
-                            <FormField
-                                 control={form.control}
-                                 name="email"
-                                 render={({field}) => (
-                                      <FormItem>
-                                        <FormLabel>Email</FormLabel>
-                                        <FormControl>
-                                             <Input
-                                                  placeholder="Email"
-                                                  {...field}
-                                             />
-                                        </FormControl>
-                                      </FormItem>
-                                 )}
-                            />
-                            <FormField
-                                 control={form.control}
-                                 name="phoneNumber"
-                                 render={({field}) => (
-                                      <FormItem>
-                                        <FormLabel>Phone Number</FormLabel>
-                                        <FormControl>
-                                             <Input
-                                                  placeholder="Phone Number"
-                                                  {...field}
-                                             />
-                                        </FormControl>
-                                      </FormItem>
-                                 )}
-                            />
-                            <FormField
-                                 control={form.control}
-                                 name="facilityType"
-                                 render={({field}) => (
-                                      <FormItem>
-                                        <FormLabel>Facility Type</FormLabel>
-                                        <FormControl>
-                                             <Input
-                                                  placeholder="Facility Type"
                                                   {...field}
                                              />
                                         </FormControl>
