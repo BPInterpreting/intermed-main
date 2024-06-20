@@ -6,7 +6,8 @@ import {client} from "@/lib/hono";
 import {Actions} from "./actions";
 import {Button} from "@/components/ui/button";
 import {ArrowUpDown} from "lucide-react";
-import {format} from "date-fns";
+import {format, parse} from "date-fns"
+import {time} from "drizzle-orm/pg-core";
 
 
 // This is a type definition for the data that will be returned from the API part of the github v4.3 doc
@@ -15,71 +16,49 @@ export type ResponseType = InferResponseType<typeof client.api.appointments.$get
 
 export const columns: ColumnDef<ResponseType>[] = [
     {
+        accessorKey: "patient",
+        header: "Patient",
+    },
+    {
         accessorKey: "date",
-        header: ({ column }) => {
-            return (
-                <Button
-                    variant="ghost"
-                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                >
-                    Date
-                    <ArrowUpDown className="ml-2 h-4 w-4" />
-                </Button>
-            )
-        },
+        header: "Appointment Date",
         cell: ({ row }) => {
             const date = row.getValue("date") as Date
 
             return(
                 <span>
-                    {format(date, "dd MMM, yyyy")}
+                    {format(date, "dd/MM/yyyy")}
                 </span>
             )
         }
     },
     {
-        accessorKey: "patient",
-        header: ({ column }) => {
-            return (
-                <Button
-                    variant="ghost"
-                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                >
-                    Patient
-                    <ArrowUpDown className="ml-2 h-4 w-4" />
-                </Button>
-            )
-        },
+        accessorKey: "startTime",
+        header: "Start Time",
         cell: ({ row }) => {
+            const timeString = row.getValue("startTime") as string
+            const parsedTime = parse(timeString, "HH:mm:ss", new Date())
+            const formattedTime = format(parsedTime, "hh:mm a")
 
             return(
                 <span>
-                    {row.original.patient}
+                    {formattedTime}
                 </span>
             )
         }
+
+    },
+    {
+        accessorKey: "endTime",
+        header: "End Time",
     },
     {
         accessorKey: "facility",
-        header: ({ column }) => {
-            return (
-                <Button
-                    variant="ghost"
-                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                >
-                    Facility
-                    <ArrowUpDown className="ml-2 h-4 w-4" />
-                </Button>
-            )
-        },
-        cell: ({ row }) => {
-
-            return(
-                <span>
-                    {row.original.facility}
-                </span>
-            )
-        }
+        header: "Facility",
+    },
+    {
+        accessorKey: "appointmentType",
+        header: "Appointment Type",
     },
     {
         accessorKey: "notes",

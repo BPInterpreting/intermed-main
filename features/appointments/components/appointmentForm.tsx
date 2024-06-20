@@ -11,6 +11,7 @@ import {insertAppointmentSchema} from "@/db/schema";
 import {Select} from "@/components/customUi/select";
 import { DatePicker } from "@/components/customUi/date-picker";
 import {Textarea} from "@/components/ui/textarea";
+import {TimePick} from "@/components/customUi/time-picker";
 
 
 //this shcema is needed since the types are more complicated and it is easier for the types to handle
@@ -92,7 +93,7 @@ export const AppointmentForm = ({
                                    </FormItem>
                                )}
                            />
-                           <div className='flex flex-row items-center gap-x-4'>
+                           <div className=''>
                                <FormField
                                    control={form.control}
                                    name="startTime"
@@ -100,12 +101,10 @@ export const AppointmentForm = ({
                                        <FormItem>
                                            <FormLabel>Start Time</FormLabel>
                                            <FormControl>
-                                               <Input
-                                                   className='w-70'
-                                                   type="time"
-                                                   {...field}
-                                                   value={field.value}
-                                                   disabled={disabled}
+                                               <TimePick
+                                                    value={field.value}
+                                                    onChange={field.onChange}
+                                                    disabled={disabled}
                                                />
                                            </FormControl>
                                        </FormItem>

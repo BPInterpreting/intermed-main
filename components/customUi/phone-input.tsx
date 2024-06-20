@@ -13,10 +13,10 @@ type Props = {
 
 export const PhoneInput = ({
     format,
-                               allowEmptyFormatting,
-                               mask,
-                               value,
-                               onChange
+    allowEmptyFormatting,
+    mask,
+    value,
+    onChange
 }: Props
 ) => {
 

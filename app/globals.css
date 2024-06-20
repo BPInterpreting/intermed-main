@@ -7,6 +7,31 @@ body,
 root {
   @apply h-full
 }
+
+.react-time-picker__wrapper {
+  border-radius: 20px;
+  border:1px solid #e5e7eb;
+  padding: 0 8px; /* Padding inside the input */
+  height: 40px; /* Height to match input fields */
+  display: flex;
+  align-items: center;
+}
+
+.react-time-picker__inputGroup__input {
+  font-size: 12px; /* Font size */
+  background: transparent; /* Transparent background */
+  border: none; /* No border */
+  outline: none; /* Remove default outline */
+  width: auto; /* Auto width */
+}
+
+.react-time-picker__inputGroup__amPm {
+  font: inherit;
+  -webkit-appearance: button;
+  -moz-appearance: menulist;
+  appearance: menulist;
+}
+
  
 @layer base {
   :root {

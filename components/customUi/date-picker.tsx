@@ -23,18 +23,9 @@ value,
 onChange,
 disabled
 }: Props) => {
-    const [open, setOpen] = React.useState(false)
-
-    const handleOpen = () => {
-        setOpen(true)
-    }
-
-    const handleClose = () => {
-        setOpen(false)
-    }
 
     return (
-        <Popover>
+        <Popover modal={true}>
             <PopoverTrigger asChild>
                 <Button
                     variant='ghost'
