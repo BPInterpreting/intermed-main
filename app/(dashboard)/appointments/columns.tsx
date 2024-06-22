@@ -18,6 +18,7 @@ export const columns: ColumnDef<ResponseType>[] = [
     {
         accessorKey: "patient",
         header: "Patient",
+
     },
     {
         accessorKey: "date",
@@ -27,7 +28,7 @@ export const columns: ColumnDef<ResponseType>[] = [
 
             return(
                 <span>
-                    {format(date, "dd/MM/yyyy")}
+                    {format(date, "cccccc, PPP")}
                 </span>
             )
         }
@@ -51,6 +52,17 @@ export const columns: ColumnDef<ResponseType>[] = [
     {
         accessorKey: "endTime",
         header: "End Time",
+        cell: ({ row }) => {
+            const timeString = row.getValue("endTime") as string
+            const parsedTime = parse(timeString, "HH:mm:ss", new Date())
+            const formattedTime = format(parsedTime, "hh:mm a")
+
+            return(
+                <span>
+                    {formattedTime}
+                </span>
+            )
+        }
     },
     {
         accessorKey: "facility",

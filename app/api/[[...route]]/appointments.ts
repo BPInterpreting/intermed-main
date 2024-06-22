@@ -86,6 +86,8 @@ const app = new Hono()
                     notes: appointments.notes,
                     facilityId: appointments.facilityId,
                     patientId: appointments.patientId,
+                    patientFirstName: patient.firstName,
+                    patientLastName: patient.lastName,
                 })
                 .from(appointments)
                 .innerJoin(patient, eq(appointments.patientId, patient.id))

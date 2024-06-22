@@ -58,11 +58,10 @@ export const FacilityForm = ({
 
    return(
        <>
-           <div>
+
                <Form {...form}>
-                   <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 pt-4">
-                       <div className='grid grid-cols-2 mr-6'>
-                           <div>
+                   <form onSubmit={form.handleSubmit(handleSubmit)} className="">
+                       <div className='grid grid-cols-2 mt-4'>
                                <FormField
                                    control={form.control}
                                    name="name"
@@ -79,8 +78,6 @@ export const FacilityForm = ({
                                        </FormItem>
                                    )}
                                />
-                           </div>
-
                            <FormField
                                control={form.control}
                                name="phoneNumber"
@@ -235,7 +232,7 @@ export const FacilityForm = ({
                                  )}
                             />
                        </div>
-                       <Button className='w-full'>
+                       <Button className='w-full mt-4'>
                            {id ? "Update Facility" : "Add Facility"}
                        </Button>
                        {!!id && (
@@ -252,7 +249,7 @@ export const FacilityForm = ({
                        )}
                    </form>
                </Form>
-           </div>
+
        </>
    )
 }

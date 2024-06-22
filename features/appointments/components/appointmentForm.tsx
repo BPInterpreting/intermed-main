@@ -93,7 +93,7 @@ export const AppointmentForm = ({
                                    </FormItem>
                                )}
                            />
-                           <div className=''>
+                           <div className='flex flex-row items-center gap-x-4'>
                                <FormField
                                    control={form.control}
                                    name="startTime"
@@ -117,11 +117,9 @@ export const AppointmentForm = ({
                                        <FormItem>
                                            <FormLabel>End Time</FormLabel>
                                            <FormControl>
-                                               <Input
-                                                   className='w-70'
-                                                   type="time"
-                                                   {...field}
+                                               <TimePick
                                                    value={field.value ?? ""}
+                                                   onChange={field.onChange}
                                                    disabled={disabled}
                                                />
                                            </FormControl>

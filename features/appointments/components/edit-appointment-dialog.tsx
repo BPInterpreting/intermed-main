@@ -41,11 +41,13 @@ export const EditAppointmentDialog = () => {
     const facilityQuery = useGetFacilities()
     const facilityMutation = useCreateFacility()
     //used to create the facility from the dropdown input field
-    const onCreateFacility = (name: string) => {
-        facilityMutation.mutate({
-            name
-        })
-    }
+    // const onCreateFacility = (name: string) => {
+    //     facilityMutation.mutate({
+    //         name,
+    //
+    //     })
+    // }
+
     const facilityOptions = (facilityQuery.data ?? []).map(facility => ({
         label: facility.name,
         value: facility.id
@@ -55,13 +57,14 @@ export const EditAppointmentDialog = () => {
     const patientQuery = useGetPatients()
     const patientMutation = useCreatePatient()
     //used to create the patient from the dropdown input field
-    const onCreatePatient = (firstName: string) => {
-        patientMutation.mutate({
-            firstName
-        })
-    }
+    // const onCreatePatient = (firstName: string) => {
+    //     patientMutation.mutate({
+    //         firstName,
+    //
+    //     })
+    // }
     const patientOptions = (patientQuery.data ?? []).map(facility => ({
-        label: facility.firstName,
+        label: facility.firstName + ' ' + facility.lastName,
         value: facility.id
     }))
 
@@ -86,6 +89,9 @@ export const EditAppointmentDialog = () => {
     } : {
         patientId: '',
         facilityId: '',
+        startTime: '',
+        endTime: '',
+        appointmentType: '',
         date: new Date(),
         notes: ''
     }
@@ -136,8 +142,8 @@ export const EditAppointmentDialog = () => {
                                  onDelete={onDelete}
                                  facilityOptions={facilityOptions}
                                  patientOptions={patientOptions}
-                                 onCreateFacility={onCreateFacility}
-                                 onCreatePatient={onCreatePatient}
+                                 // onCreateFacility={onCreateFacility}
+                                 // onCreatePatient={onCreatePatient}
                              />
                          )
                      }

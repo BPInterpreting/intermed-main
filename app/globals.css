@@ -10,11 +10,12 @@ root {
 
 .react-time-picker__wrapper {
   border-radius: 20px;
-  border:1px solid #e5e7eb;
+  border: none;
   padding: 0 8px; /* Padding inside the input */
-  height: 40px; /* Height to match input fields */
+  height: 37px; /* Height to match input fields */
   display: flex;
   align-items: center;
+  transition: border-color 0.3s, box-shadow 0.3s;
 }
 
 .react-time-picker__inputGroup__input {
@@ -27,11 +28,17 @@ root {
 
 .react-time-picker__inputGroup__amPm {
   font: inherit;
-  -webkit-appearance: button;
+  -webkit-appearance: menulist;
   -moz-appearance: menulist;
   appearance: menulist;
 }
 
+.react-time-picker__button svg {
+    width: 0.75em; /* Width */
+    height: 0.75em; /* Height */
+
+
+}
  
 @layer base {
   :root {

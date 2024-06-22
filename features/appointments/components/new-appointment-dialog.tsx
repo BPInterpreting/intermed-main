@@ -59,7 +59,7 @@ export const NewAppointmentDialog = () => {
     //     })
     // }
     const patientOptions = (patientQuery.data ?? []).map(facility => ({
-        label: facility.firstName,
+        label: facility.firstName + ' ' + facility.lastName,
         value: facility.id
     }))
 

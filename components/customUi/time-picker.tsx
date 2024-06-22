@@ -1,6 +1,8 @@
 import TimePicker from "react-time-picker";
 import 'react-time-picker/dist/TimePicker.css';
 import {className} from "postcss-selector-parser";
+import {Input} from "@/components/ui/input";
+import {Button} from "@/components/ui/button";
 
 
 type Props = {
@@ -17,15 +19,18 @@ export const TimePick = ({
 }: Props) => {
     return (
         <div>
-            <TimePicker
-                value={value}
-                onChange={onChange}
-                disabled={disabled}
-                autoFocus={true}
-                disableClock={true}
+
+                <TimePicker
+                    value={value}
+                    onChange={onChange}
+                    disabled={disabled}
+                    autoFocus={true}
+                    disableClock={true}
 
 
-            />
+                />
+
+
         </div>
     )
 }
