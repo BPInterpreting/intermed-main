@@ -1,15 +1,15 @@
 'use client'
 
 import {useGetPatients} from "@/features/patients/api/use-get-patients";
-import {MyTimeField} from "@/components/customUi/time-picker";
-import TimePicker from 'react-time-picker';
+import {DataGrid} from "@/components/customUi/data-grid";
+
 
 const HomePage = () => {
     const patientsQuery = useGetPatients()
 
   return (
-    <div className='flex flex-col'>
-      <h1>Home Page</h1>
+    <div className='flex flex-col mx-auto p-8'>
+      <DataGrid />
 
     </div>
   )

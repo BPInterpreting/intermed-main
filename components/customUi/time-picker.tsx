@@ -19,18 +19,13 @@ export const TimePick = ({
 }: Props) => {
     return (
         <div>
-
                 <TimePicker
                     value={value}
                     onChange={onChange}
                     disabled={disabled}
                     autoFocus={true}
                     disableClock={true}
-
-
                 />
-
-
         </div>
     )
 }

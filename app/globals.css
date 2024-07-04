@@ -9,11 +9,11 @@ root {
 }
 
 .react-time-picker__wrapper {
-  border-radius: 20px;
-  border: none;
+  border-radius: 15px;
   padding: 0 8px; /* Padding inside the input */
   height: 37px; /* Height to match input fields */
   display: flex;
+  border: 2px solid green;
   align-items: center;
   transition: border-color 0.3s, box-shadow 0.3s;
 }
@@ -38,6 +38,14 @@ root {
     height: 0.75em; /* Height */
 
 
+}
+
+.react-time-picker__inputGroup {
+  min-width: calc((4px * 3) + 0.54em * 6 + 0.217em * 2);
+  flex-grow: 1;
+  padding: 0 2px;
+  box-sizing: content-box;
+  border: none;
 }
  
 @layer base {
@@ -68,7 +76,7 @@ root {
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --ring: 210 100% 60%;
  
     --radius: 0.5rem;
   }
