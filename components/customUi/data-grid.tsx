@@ -15,6 +15,8 @@ export const DataGrid = () => {
             />
             <DataCard icon={CalendarMinus} title={'Appointments not Closed'} />
 
+        {/*    TODO: Pie chart that shows distribution of facilities in percentage */}
+
         </div>
     )
 }
