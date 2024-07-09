@@ -12,22 +12,27 @@ import {
 interface DataCardProps {
     icon: LucideIcon
     title: string
+    value?: number
 
 }
 
 export const DataCard = ({
     icon: Icon,
-    title
+    title,
+    value
 }: DataCardProps) => {
     return(
-        <Card>
+        <Card >
             <CardHeader className='flex flex-row items-center justify-between gap-x-4'>
                 <CardTitle className='text-md font-bold'>
                     {title}
                 </CardTitle>
                     <Icon size={20} />
             </CardHeader>
-            <CardContent>
+            <CardContent className='flex items-center justify-center'>
+                <CardDescription className='text-2xl font-bold'>
+                        {value}
+                </CardDescription>
             </CardContent>
         </Card>
     )
