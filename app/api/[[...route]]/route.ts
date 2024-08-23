@@ -2,6 +2,7 @@
 //the default api route provided by NextJs is hijacked by Hono allowing us to use the Hono API
 
 import { Hono } from 'hono'
+import { cors } from "hono/cors";
 import { handle } from 'hono/vercel'
 
 import patients from "@/app/api/[[...route]]/patients";
@@ -12,6 +13,15 @@ export const runtime = 'edge';
 
 //initialize the new hono api instance where base is out /api route
 const app = new Hono().basePath('/api')
+app.use('*', cors({
+    origin: 'http://localhost:8081',
+    allowHeaders: ['X-Custom-Header', 'Upgrade-Insecure-Requests'],
+    allowMethods: ['POST', 'GET', 'OPTIONS'],
+    exposeHeaders: ['Content-Length', 'X-Kuma-Revision'],
+    maxAge: 600,
+    credentials: true,
+}))
+
 
 //chained elements to the Hono app are the routes that are going to be used
 const route = app

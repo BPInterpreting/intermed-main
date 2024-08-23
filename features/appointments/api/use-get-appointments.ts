@@ -22,7 +22,7 @@ export const useGetAppointments = () => {
                     from,
                     to,
                     patientId
-                }
+                },
             })
 
             if (!response.ok) {

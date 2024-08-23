@@ -4,11 +4,7 @@ import {ColumnDef} from "@tanstack/react-table"
 import {InferResponseType} from "hono";
 import {client} from "@/lib/hono";
 import {Actions} from "./actions";
-import {Button} from "@/components/ui/button";
-import {ArrowUpDown} from "lucide-react";
 import {format, parse} from "date-fns"
-import {time} from "drizzle-orm/pg-core";
-
 
 // This is a type definition for the data that will be returned from the API part of the github v4.3 doc
 export type ResponseType = InferResponseType<typeof client.api.appointments.$get, 200>["data"][0]
@@ -16,8 +12,20 @@ export type ResponseType = InferResponseType<typeof client.api.appointments.$get
 
 export const columns: ColumnDef<ResponseType>[] = [
     {
+        accessorKey: 'status',
+        header: 'Status',
+
+    },
+    {
         accessorKey: "patient",
         header: "Patient",
+        cell: ({ row }) => {
+            return (
+                <div>
+                    {row.original.patient} {row.original.patientLastName}
+                </div>
+            )
+        }
 
     },
     {

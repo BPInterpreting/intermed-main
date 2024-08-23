@@ -41,10 +41,16 @@ const app = new Hono()
                 endTime: appointments.endTime,
                 appointmentType: appointments.appointmentType,
                 facility: facilities.name,
+                facilityAddress: facilities.address,
+                facilityCity: facilities.city,
+                facilityState: facilities.state,
+                facilityZipCode: facilities.zipCode,
                 facilityId: appointments.facilityId,
                 patient: patient.firstName,
+                patientLastName: patient.lastName,
                 patientId: appointments.patientId,
             })
+
             .from(appointments)
             .innerJoin(patient, eq(appointments.patientId, patient.id))
             .innerJoin(facilities, eq(appointments.facilityId, facilities.id))

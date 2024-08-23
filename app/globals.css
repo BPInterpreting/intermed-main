@@ -30,7 +30,7 @@ root {
   font: inherit;
   -webkit-appearance: menulist;
   -moz-appearance: menulist;
-  appearance: menulist;
+  appearance: none;
 }
 
 .react-time-picker__button svg {

@@ -20,7 +20,7 @@ interface Appointment {
 }
 
 export const DataGrid = () => {
-    const {data} = useGetAppointments()
+    const {data, isLoading} = useGetAppointments()
     const params = useSearchParams()
     const [todaysAppointments, setTodaysAppointments] = useState<Appointment[]>([])
 
@@ -34,7 +34,9 @@ export const DataGrid = () => {
         }
     }, [data])
 
-
+    if (isLoading) {
+        return <div>Loading...</div>
+    }
 
     return(
         <div className='grid grid-cols-1 lg:grid-cols-3 gap-8 pb-2 mb-8'>
