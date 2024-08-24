@@ -5,7 +5,7 @@ import { facilities, appointments, patient, insertAppointmentSchema} from "@/db/
 import { z } from 'zod'
 import { zValidator } from '@hono/zod-validator'
 import {createId} from "@paralleldrive/cuid2";
-import {and, desc, eq, gte, inArray, lte, sql} from "drizzle-orm";
+import {and, asc, desc, eq, gte, inArray, lte, sql} from "drizzle-orm";
 import {subDays, parse} from "date-fns";
 
 
@@ -63,7 +63,10 @@ const app = new Hono()
                     // lte(appointments.date, endDate)
                 )
             )
-            .orderBy(desc(appointments.date))
+            .orderBy(
+                desc(appointments.date),
+                asc(appointments.startTime)
+            )
 
             return c.json({ data })
 })
