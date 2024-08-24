@@ -120,13 +120,16 @@ export const EditFacilityDialog = () => {
                                  <Loader2 className='size-4 text-muted-foreground animate-spin' />
                              </div>
                          ) : (
-                             <FacilityForm
-                                 id={id}
-                                 onSubmit={onSubmit}
-                                 disabled={isPending}
-                                 defaultValues={defaultValues}
-                                 onDelete={onDelete}
-                             />
+                             <div className='flex-col'>
+                                     <FacilityForm
+                                         id={id}
+                                         onSubmit={onSubmit}
+                                         disabled={isPending}
+                                         defaultValues={defaultValues}
+                                         onDelete={onDelete}
+                                     />
+                             </div>
+
                          )
                      }
                  </DialogContent>

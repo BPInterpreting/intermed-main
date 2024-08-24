@@ -15,7 +15,7 @@ type Props = {
     placeholder?: string;
 }
 
-export const Select = ({
+export const CustomSelect = ({
     onChange,
     onCreate,
     options = [],

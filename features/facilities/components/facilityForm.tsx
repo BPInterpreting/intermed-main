@@ -57,11 +57,9 @@ export const FacilityForm = ({
     }
 
    return(
-       <>
-
                <Form {...form}>
-                   <form onSubmit={form.handleSubmit(handleSubmit)} className="">
-                       <div className='grid grid-cols-2 mt-4'>
+                   <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8 w-full">
+                       <div className='grid grid-cols-2 '>
                                <FormField
                                    control={form.control}
                                    name="name"
@@ -249,7 +247,5 @@ export const FacilityForm = ({
                        )}
                    </form>
                </Form>
-
-       </>
    )
 }

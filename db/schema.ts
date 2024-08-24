@@ -47,6 +47,7 @@ export const appointments = pgTable("appointments", {
     endTime: time("end_time", {withTimezone: false}),
     notes: text("notes"),
     appointmentType : varchar("appointmentType"),
+    status: varchar("status").default('Pending'),
     patientId: text("patient_id").references(() => patient.id, {
         onDelete: "cascade",
     }),

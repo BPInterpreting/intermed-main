@@ -85,7 +85,9 @@ export const EditAppointmentDialog = () => {
         startTime: appointmentQuery.data.startTime,
         endTime: appointmentQuery.data.endTime,
         appointmentType: appointmentQuery.data.appointmentType,
-        notes: appointmentQuery.data.notes
+        notes: appointmentQuery.data.notes,
+        status: appointmentQuery.data.status,
+
     } : {
         patientId: '',
         facilityId: '',
@@ -93,7 +95,8 @@ export const EditAppointmentDialog = () => {
         endTime: '',
         appointmentType: '',
         date: new Date(),
-        notes: ''
+        notes: '',
+        status: ''
     }
 
     const onDelete = async () => {

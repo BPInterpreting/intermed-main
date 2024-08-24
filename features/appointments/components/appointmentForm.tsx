@@ -8,10 +8,21 @@ import {Form, FormControl, FormField, FormItem, FormLabel,} from "@/components/u
 import {Input} from "@/components/ui/input"
 import {Trash} from "lucide-react";
 import {insertAppointmentSchema} from "@/db/schema";
-import {Select} from "@/components/customUi/select";
+import {CustomSelect} from "@/components/customUi/customSelect";
 import { DatePicker } from "@/components/customUi/date-picker";
 import {Textarea} from "@/components/ui/textarea";
 import {TimePick} from "@/components/customUi/time-picker";
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectLabel,
+    SelectTrigger,
+    SelectValue
+} from "@/components/ui/select";
+
+
 
 
 //this shcema is needed since the types are more complicated and it is easier for the types to handle
@@ -22,7 +33,8 @@ const formSchema = z.object({
     startTime: z.string(),
     endTime: z.string().nullable(),
     appointmentType: z.string().nullable(),
-    notes: z.string().nullable().optional()
+    notes: z.string().nullable().optional(),
+    status: z.string().nullable()
 })
 
 //regular api schema that is used in other forms
@@ -134,8 +146,8 @@ export const AppointmentForm = ({
                                    <FormItem>
                                        <FormLabel>Patient</FormLabel>
                                        <FormControl>
-                                           <Select
-                                               placeholder="Select a patient..."
+                                           <CustomSelect
+                                               placeholder="CustomSelect a patient..."
                                                options={patientOptions}
                                                // onCreate={onCreatePatient}
                                                value={field.value}
@@ -153,12 +165,12 @@ export const AppointmentForm = ({
                                    <FormItem>
                                        <FormLabel>Facility</FormLabel>
                                        <FormControl>
-                                           <Select
+                                           <CustomSelect
                                                options={facilityOptions}
                                                value={field.value}
                                                onChange={field.onChange}
                                                // onCreate={onCreateFacility}
-                                               placeholder="Select a facility..."
+                                               placeholder="CustomSelect a facility..."
                                                disabled={disabled}
                                            />
                                        </FormControl>
@@ -168,7 +180,7 @@ export const AppointmentForm = ({
                            {/*<FormItem>*/}
                            {/*    <FormLabel>Appointment Type</FormLabel>*/}
                            {/*    <FormControl>*/}
-                           {/*        <Select*/}
+                           {/*        <CustomSelect*/}
                            {/*            options={[*/}
                            {/*                {label: "In-person", value: "in-person"},*/}
                            {/*                {label: "Virtual", value: "virtual"},*/}
@@ -180,23 +192,64 @@ export const AppointmentForm = ({
                            {/*        />*/}
                            {/*    </FormControl>*/}
                            {/*</FormItem>*/}
-                           <FormField
-                               control={form.control}
-                               name="appointmentType"
-                               render={({ field }) => (
-                                   <FormItem>
-                                       <FormLabel>Appointment Type</FormLabel>
-                                       <FormControl>
-                                             <Input
-                                                  {...field}
-                                                  value={field.value ?? ""}
-                                                  disabled={disabled}
-                                                  placeholder="Enter appointment type..."
-                                             />
-                                       </FormControl>
-                                   </FormItem>
-                               )}
-                           />
+                           <div className='flex flex-row gap-x-4 '>
+                               <FormField
+                                   control={form.control}
+                                   name="appointmentType"
+                                   render={({ field }) => (
+                                       <FormItem>
+                                           <FormLabel>Appointment Type</FormLabel>
+                                           <FormControl>
+                                               <Select onValueChange={field.onChange} value={field.value ?? ''}>
+                                                   {/* eslint-disable-next-line react/jsx-no-undef */}
+                                                   <SelectTrigger className="w-[180px]">
+                                                       <SelectValue placeholder="Select type" />
+                                                   </SelectTrigger>
+                                                   <SelectContent>
+                                                       <SelectGroup>
+                                                           <SelectLabel>Type</SelectLabel>
+                                                           <SelectItem value="Follow-Up">Follow Up</SelectItem>
+                                                           <SelectItem value="Initial">Initial</SelectItem>
+                                                           <SelectItem value="IME/AME">IME/AME</SelectItem>
+                                                           <SelectItem value="Second-Opinion">Second Opinion</SelectItem>
+                                                           <SelectItem value="QME">QME</SelectItem>
+                                                           <SelectItem value="IEP">IEP</SelectItem>
+                                                           <SelectItem value="Conference">Conference</SelectItem>
+                                                           <SelectItem value="Other">Other</SelectItem>
+                                                       </SelectGroup>
+                                                   </SelectContent>
+                                               </Select>
+                                           </FormControl>
+                                       </FormItem>
+                                   )}
+                               />
+                               <FormField
+                                   control={form.control}
+                                   name="status"
+                                   render={({ field }) => (
+                                       <FormItem>
+                                           <FormLabel>Status</FormLabel>
+                                           <FormControl>
+                                               <Select onValueChange={field.onChange} value={field.value ?? ''}>
+                                                   {/* eslint-disable-next-line react/jsx-no-undef */}
+                                                   <SelectTrigger className="w-[180px]">
+                                                       <SelectValue className='pr-4' placeholder="Select Status" />
+                                                   </SelectTrigger>
+                                                   <SelectContent>
+                                                       <SelectGroup>
+                                                           <SelectLabel>Status</SelectLabel>
+                                                           <SelectItem value="Pending">Pending</SelectItem>
+                                                           <SelectItem value="Confirmed">Confirmed</SelectItem>
+                                                           <SelectItem value="Cancelled">Cancelled</SelectItem>
+                                                           <SelectItem value="Closed">Closed</SelectItem>
+                                                       </SelectGroup>
+                                                   </SelectContent>
+                                               </Select>
+                                           </FormControl>
+                                       </FormItem>
+                                   )}
+                               />
+                           </div>
                            <FormField
                                control={form.control}
                                name="notes"

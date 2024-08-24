@@ -5,6 +5,8 @@ import {InferResponseType} from "hono";
 import {client} from "@/lib/hono";
 import {Actions} from "./actions";
 import {format, parse} from "date-fns"
+import { Badge } from "@/components/ui/badge"
+
 
 // This is a type definition for the data that will be returned from the API part of the github v4.3 doc
 export type ResponseType = InferResponseType<typeof client.api.appointments.$get, 200>["data"][0]
@@ -14,7 +16,42 @@ export const columns: ColumnDef<ResponseType>[] = [
     {
         accessorKey: 'status',
         header: 'Status',
-
+        cell: ({ row }) => {
+            switch (row.original.status) {
+                case "Cancelled":
+                    return (
+                        <div>
+                            <Badge variant={'cancelled'}>
+                                {row.original.status}
+                            </Badge>
+                        </div>
+                    )
+                case "Closed":
+                    return (
+                        <div>
+                            <Badge variant={'closed'}>
+                                {row.original.status}
+                            </Badge>
+                        </div>
+                    )
+                case "Pending":
+                    return (
+                        <div>
+                            <Badge variant={'pending'}>
+                                {row.original.status}
+                            </Badge>
+                        </div>
+                    )
+                case "Confirmed":
+                    return (
+                        <div>
+                            <Badge variant={'confirmed'}>
+                                {row.original.status}
+                            </Badge>
+                        </div>
+                    )
+            }
+        }
     },
     {
         accessorKey: "patient",
