@@ -79,7 +79,6 @@ export const AppointmentForm = ({
         onSubmit({
             ...values
         })
-        console.log(values)
     }
 
     const handleDelete = () => {

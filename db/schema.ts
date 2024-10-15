@@ -40,6 +40,24 @@ export const facilitiesRelations = relations(facilities, ({ many }) => ({
 
 export const insertFacilitySchema = createInsertSchema(facilities)
 
+export const interpreters =pgTable("interpreters", {
+    id: text("id").primaryKey(),
+    firstName: varchar("firstName").notNull(),
+    lastName: varchar("lastName").notNull(),
+    email: varchar("email").notNull(),
+    phoneNumber: varchar("phoneNumber").notNull(),
+    targetLanguages: varchar("targetLanguages").notNull(),
+    certified: varchar("certified").notNull(),
+    specialty: varchar("specialty").notNull(),
+    coverageArea: varchar("coverageArea").notNull(),
+})
+
+export const interpreterRelations = relations(interpreters, ({ many }) => ({
+    appointments: many(appointments)
+}))
+
+const insertInterpreterSchema = createInsertSchema(interpreters)
+
 export const appointments = pgTable("appointments", {
     id: text("id").primaryKey(),
     date: timestamp("date", {mode: "date"}).notNull(),
