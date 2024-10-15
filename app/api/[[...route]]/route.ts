@@ -8,6 +8,7 @@ import { handle } from 'hono/vercel'
 import patients from "@/app/api/[[...route]]/patients";
 import facilities from "@/app/api/[[...route]]/facilities";
 import appointments from "@/app/api/[[...route]]/appointments";
+import interpreters from "@/app/api/[[...route]]/interpreters";
 
 export const runtime = 'edge';
 
@@ -28,6 +29,7 @@ const route = app
     .route('/patients', patients)
     .route('/facilities', facilities)
     .route('/appointments', appointments)
+    .route('interpreter', interpreters)
 
 export const GET = handle(app)
 export const POST = handle(app)

@@ -1,4 +1,4 @@
-import {pgTable, serial, text, time, timestamp, varchar} from "drizzle-orm/pg-core";
+import {boolean, pgTable, serial, text, time, timestamp, varchar} from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import {relations} from "drizzle-orm";
 import {z} from "zod";
@@ -40,23 +40,23 @@ export const facilitiesRelations = relations(facilities, ({ many }) => ({
 
 export const insertFacilitySchema = createInsertSchema(facilities)
 
-export const interpreters =pgTable("interpreters", {
+export const interpreter =pgTable("interpreter", {
     id: text("id").primaryKey(),
     firstName: varchar("firstName").notNull(),
     lastName: varchar("lastName").notNull(),
     email: varchar("email").notNull(),
     phoneNumber: varchar("phoneNumber").notNull(),
     targetLanguages: varchar("targetLanguages").notNull(),
-    certified: varchar("certified").notNull(),
+    isCertified: boolean("isCertified").notNull(),
     specialty: varchar("specialty").notNull(),
     coverageArea: varchar("coverageArea").notNull(),
 })
 
-export const interpreterRelations = relations(interpreters, ({ many }) => ({
+export const interpreterRelations = relations(interpreter, ({ many }) => ({
     appointments: many(appointments)
 }))
 
-const insertInterpreterSchema = createInsertSchema(interpreters)
+export const insertInterpreterSchema = createInsertSchema(interpreter)
 
 export const appointments = pgTable("appointments", {
     id: text("id").primaryKey(),
@@ -72,7 +72,7 @@ export const appointments = pgTable("appointments", {
     facilityId: text("facility_id").references(() => facilities.id, {
         onDelete: "cascade",
     }),
-    interpreterId: text("interpreter_id").references(() => interpreters.id, {
+    interpreterId: text("interpreter_id").references(() => interpreter.id, {
         onDelete: "cascade",
     }),
 })
@@ -87,9 +87,9 @@ export const appointmentsRelations = relations(appointments, ({ one }) => ({
         fields: [appointments.facilityId],
         references: [facilities.id]
     }),
-    interpreter: one(interpreters, {
+    interpreter: one(interpreter, {
         fields: [appointments.interpreterId],
-        references: [interpreters.id]
+        references: [interpreter.id]
     })
 }))
 
