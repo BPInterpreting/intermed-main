@@ -72,6 +72,9 @@ export const appointments = pgTable("appointments", {
     facilityId: text("facility_id").references(() => facilities.id, {
         onDelete: "cascade",
     }),
+    interpreterId: text("interpreter_id").references(() => interpreters.id, {
+        onDelete: "cascade",
+    }),
 })
 
 // create a relation between appointments and patients which references the patient id
@@ -83,6 +86,10 @@ export const appointmentsRelations = relations(appointments, ({ one }) => ({
     facility: one(facilities, {
         fields: [appointments.facilityId],
         references: [facilities.id]
+    }),
+    interpreter: one(interpreters, {
+        fields: [appointments.interpreterId],
+        references: [interpreters.id]
     })
 }))
 
