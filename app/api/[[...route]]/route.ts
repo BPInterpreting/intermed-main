@@ -29,7 +29,7 @@ const route = app
     .route('/patients', patients)
     .route('/facilities', facilities)
     .route('/appointments', appointments)
-    .route('interpreter', interpreters)
+    .route('/interpreters', interpreters)
 
 export const GET = handle(app)
 export const POST = handle(app)
