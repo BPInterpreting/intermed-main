@@ -36,8 +36,8 @@ type FormValues = z.input<typeof formSchema>
 export const EditPatientDialog = () => {
     //the id from the useUpdatePatient hook is used to get the patient data in the useGetIndividualPatient hook
     const {isOpen, onClose, id} = useUpdatePatient()
-    const editMutation = useEditPatient(id)
-    const deleteMutation = useDeletePatient(id)
+    const editMutation = useEditPatient(id ?? '')
+    const deleteMutation = useDeletePatient(id ?? '')
     const patientQuery = useGetIndividualPatient(id)
 
     const [ConfirmDialog, confirm] = useConfirm(
