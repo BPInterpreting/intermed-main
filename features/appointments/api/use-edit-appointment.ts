@@ -9,7 +9,7 @@ type ResponseType = InferResponseType<typeof client.api.appointments[':id']['$pa
 //what the endpoint is expecting to be sent which needs the zValidator from the api accessed by json
 type RequestType = InferRequestType<typeof client.api.appointments[':id']['$patch']>["json"]
 
-export const useEditAppointment = (id?:string ) => {
+export const useEditAppointment = (id:string ) => {
     const queryClient = useQueryClient()
 
     const mutation = useMutation<
@@ -20,7 +20,7 @@ export const useEditAppointment = (id?:string ) => {
         //the mutation function is what is used to pass json and id
         mutationFn: async (json) => {
             const response = await client.api.appointments[':id']['$patch']({
-                param: { id },
+                param: {id},
                 json
             })
             return await response.json()

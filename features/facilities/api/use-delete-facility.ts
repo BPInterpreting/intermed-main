@@ -7,7 +7,7 @@ import {toast} from "sonner";
 // only the ResponseType is needed to delete
 type ResponseType = InferResponseType<typeof client.api.facilities[":id"]["$delete"]>;
 
-export const useDeleteFacility = (id?: string) => {
+export const useDeleteFacility = (id: string) => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation<

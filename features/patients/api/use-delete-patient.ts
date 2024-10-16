@@ -10,7 +10,7 @@ type ResponseType = InferResponseType<typeof client.api.patients[':id']['$delete
 
 
 
-export const useDeletePatient = (id?:string ) => {
+export const useDeletePatient = (id:string ) => {
     const queryClient = useQueryClient()
 
     const mutation = useMutation<

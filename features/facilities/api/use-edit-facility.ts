@@ -9,7 +9,7 @@ type ResponseType = InferResponseType<typeof client.api.facilities[':id']['$patc
 //what the endpoint is expecting to be sent which needs the zValidator from the api accessed by json
 type RequestType = InferRequestType<typeof client.api.facilities[':id']['$patch']>["json"]
 
-export const useEditFacility = (id?:string ) => {
+export const useEditFacility = (id:string ) => {
     const queryClient = useQueryClient()
 
     const mutation = useMutation<
