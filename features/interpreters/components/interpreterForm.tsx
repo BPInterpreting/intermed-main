@@ -42,7 +42,7 @@ type Props ={
     disabled?: boolean;
 }
 
-export const PatientForm = ({
+export const InterpreterForm = ({
     id,
     defaultValues,
     onSubmit,

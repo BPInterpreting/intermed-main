@@ -1,13 +1,13 @@
 import { create } from "zustand";
 
-type UpdatePatientState = {
+type UpdateInterpreterState = {
     id?: string;
     isOpen: boolean;
     onOpen: ( id:string ) => void;
     onClose: () => void;
 }
 
-export const useUpdatePatient = create<UpdatePatientState>((set) => ({
+export const useUpdateInterpreter = create<UpdateInterpreterState>((set) => ({
     id: undefined,
     isOpen: false,
     onOpen: (id: string) => set({ isOpen: true, id }),
