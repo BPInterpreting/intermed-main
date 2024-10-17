@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch";
-import {Heading} from "@/components/customUi/heading";
 import {Trash} from "lucide-react";
 import {insertInterpreterSchema} from "@/db/schema";
 import {PhoneInput} from "@/components/customUi/phone-input";

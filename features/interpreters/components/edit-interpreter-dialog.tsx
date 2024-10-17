@@ -81,7 +81,6 @@ export const EditPatientDialog = () => {
         isCertified: interpreterQuery.data.isCertified,
         specialty: interpreterQuery.data.specialty,
         coverageArea: interpreterQuery.data.coverageArea
-
     }: {
         firstName: '',
         lastName: '',
@@ -91,7 +90,6 @@ export const EditPatientDialog = () => {
         isCertified: false,
         specialty: '',
         coverageArea: ''
-
     }
 
      return(
