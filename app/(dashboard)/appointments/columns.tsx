@@ -110,6 +110,18 @@ export const columns: ColumnDef<ResponseType>[] = [
         }
     },
     {
+        accessorKey: "interpreter",
+        header: "Interpreter",
+        cell: ({ row }) => {
+            return (
+                <div>
+                    {row.original.interpreterFirstName} {row.original.interpreterLastName}
+                </div>
+            )
+        }
+
+    },
+    {
         accessorKey: "facility",
         header: "Facility",
     },

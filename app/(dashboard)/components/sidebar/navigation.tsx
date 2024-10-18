@@ -2,6 +2,7 @@
 
 import {usePathname} from "next/navigation";
 import {
+    BriefcaseIcon,
     ClipboardPlusIcon,
     LayoutGridIcon,
     LucideBriefcase,
@@ -14,6 +15,8 @@ import {map} from "zod";
 import {Separator} from "@/components/ui/separator";
 import {ModeToggle} from "@/components/theme/mode-toggle";
 import Image from 'next/image'
+import {FcBusinessman} from "react-icons/fc";
+import {BiBriefcase, BiSolidBriefcaseAlt} from "react-icons/bi";
 
 export const Navigation = () => {
     // this is the hook that is used to read the pathname. if the pathname mathces the route it will be true
