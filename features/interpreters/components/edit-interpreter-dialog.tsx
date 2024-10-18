@@ -35,7 +35,7 @@ const formSchema  = insertInterpreterSchema.pick({
 
 type FormValues = z.input<typeof formSchema>
 
-export const EditPatientDialog = () => {
+export const EditInterpreterDialog = () => {
     //the id from the useUpdatePatient hook is used to get the patient data in the useGetIndividualPatient hook
     const {isOpen, onClose, id} = useUpdateInterpreter()
     const editMutation = useEditInterpreter(id ?? '')

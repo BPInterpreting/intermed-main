@@ -41,6 +41,11 @@ export const Navigation = () => {
              href: `/facilities`,
              icon: ClipboardPlusIcon
          },
+         {
+             label: "Interpreters ",
+             href: `/interpreters`,
+             icon: LucideBriefcase
+         },
 
      ]
 

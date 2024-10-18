@@ -21,7 +21,7 @@ const formSchema  = insertInterpreterSchema.pick({
 
 type FormValues = z.input<typeof formSchema>
 
-export const NewPatientDialog = () => {
+export const NewInterpreterDialog = () => {
     const {isOpen, onClose} = useNewInterpreter()
     const mutation = useCreateInterpreter()
 
