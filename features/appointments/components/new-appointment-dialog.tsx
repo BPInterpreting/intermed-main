@@ -24,6 +24,7 @@ import {useGetFacilities} from "@/features/facilities/api/use-get-facilities";
 import {useCreatePatient} from "@/features/patients/api/use-create-patient";
 import {AppointmentForm} from "@/features/appointments/components/appointmentForm";
 import {Loader2} from "lucide-react";
+import {useGetInterpreters} from "@/features/interpreters/api/use-get-interpreters";
 
 const formSchema  = insertAppointmentSchema.omit({
     id: true,
@@ -63,6 +64,12 @@ export const NewAppointmentDialog = () => {
         value: facility.id
     }))
 
+    const interpreterQuery = useGetInterpreters()
+    const interpreterOptions = (interpreterQuery.data ?? []).map(interpreter => ({
+        label: interpreter.firstName + ' ' + interpreter.lastName,
+        value: interpreter.id
+    }))
+
     //disables the form while the mutation is pending
     const isPending = createMutation.isPending
         // || facilityMutation.isPending || patientMutation.isPending
@@ -100,6 +107,7 @@ export const NewAppointmentDialog = () => {
                         disabled={isPending}
                         facilityOptions={facilityOptions}
                         patientOptions={patientOptions}
+                        interpreterOptions={interpreterOptions}
                         // onCreateFacility={onCreateFacility}
                         // onCreatePatient={onCreatePatient}
                      />

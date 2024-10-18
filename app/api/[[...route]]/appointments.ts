@@ -1,7 +1,7 @@
 // authors.ts
 import { Hono } from 'hono'
 import { db } from '@/db/drizzle'
-import { facilities, appointments, patient, insertAppointmentSchema} from "@/db/schema";
+import {facilities, appointments, patient, insertAppointmentSchema, interpreter} from "@/db/schema";
 import { z } from 'zod'
 import { zValidator } from '@hono/zod-validator'
 import {createId} from "@paralleldrive/cuid2";
@@ -50,11 +50,19 @@ const app = new Hono()
                 patient: patient.firstName,
                 patientLastName: patient.lastName,
                 patientId: appointments.patientId,
+                interpreterId: appointments.interpreterId,
+                interpreterFirstName: interpreter.firstName,
+                interpreterLastName: interpreter.lastName,
+                interpreterIsCertified: interpreter.isCertified,
+                interpreterSpecialty: interpreter.specialty,
+                interpreterCoverageArea: interpreter.coverageArea,
+                interpreterTargetLanguages: interpreter.targetLanguages
             })
 
             .from(appointments)
             .innerJoin(patient, eq(appointments.patientId, patient.id))
             .innerJoin(facilities, eq(appointments.facilityId, facilities.id))
+            .innerJoin(interpreter, eq(appointments.interpreterId, interpreter.id))
             .where(
                 and(
                     //makes sure patientId matches up the the patientId from the appointments table or else it is undefined
@@ -99,6 +107,13 @@ const app = new Hono()
                     patientId: appointments.patientId,
                     patientFirstName: patient.firstName,
                     patientLastName: patient.lastName,
+                    interpreterId: appointments.interpreterId,
+                    interpreterFirstName: interpreter.firstName,
+                    interpreterLastName: interpreter.lastName,
+                    interpreterIsCertified: interpreter.isCertified,
+                    interpreterSpecialty: interpreter.specialty,
+                    interpreterCoverageArea: interpreter.coverageArea,
+                    interpreterTargetLanguages: interpreter.targetLanguages
                 })
                 .from(appointments)
                 .innerJoin(patient, eq(appointments.patientId, patient.id))

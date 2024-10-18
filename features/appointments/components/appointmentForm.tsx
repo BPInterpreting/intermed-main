@@ -30,6 +30,7 @@ const formSchema = z.object({
     date: z.coerce.date(),
     patientId: z.string().nullable(),
     facilityId: z.string().nullable(),
+    interpreterId: z.string().nullable(),
     startTime: z.string(),
     endTime: z.string().nullable(),
     appointmentType: z.string().nullable(),
@@ -54,6 +55,7 @@ type Props ={
     //arrays of values for label and value
     patientOptions: {label: string, value: string}[];
     facilityOptions: {label: string, value: string}[];
+    interpreterOptions: {label: string, value: string}[];
     // onCreateFacility: (name: string) => void
     // onCreatePatient: (firstName: string) => void
 }
@@ -66,6 +68,7 @@ export const AppointmentForm = ({
     disabled,
     patientOptions,
     facilityOptions,
+    interpreterOptions
     // onCreateFacility,
     // onCreatePatient
 }: Props) => {
@@ -176,6 +179,26 @@ export const AppointmentForm = ({
                                    </FormItem>
                                )}
                            />
+                           <FormField
+                               control={form.control}
+                               name="interpreterId"
+                               render={({ field }) => (
+                                   <FormItem>
+                                       <FormLabel>Facility</FormLabel>
+                                       <FormControl>
+                                           <CustomSelect
+                                               options={interpreterOptions}
+                                               value={field.value}
+                                               onChange={field.onChange}
+                                               // onCreate={onCreateFacility}
+                                               placeholder="Select an Interpreter..."
+                                               disabled={disabled}
+                                           />
+                                       </FormControl>
+                                   </FormItem>
+                               )}
+                           />
+
                            {/*<FormItem>*/}
                            {/*    <FormLabel>Appointment Type</FormLabel>*/}
                            {/*    <FormControl>*/}

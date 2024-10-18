@@ -23,6 +23,7 @@ import {useGetFacilities} from "@/features/facilities/api/use-get-facilities";
 import {useCreateFacility} from "@/features/facilities/api/use-create-facility";
 import {useGetPatients} from "@/features/patients/api/use-get-patients";
 import {useCreatePatient} from "@/features/patients/api/use-create-patient";
+import {useGetInterpreters} from "@/features/interpreters/api/use-get-interpreters";
 
 const formSchema  = insertAppointmentSchema.omit
 ({
@@ -33,9 +34,9 @@ type FormValues = z.input<typeof formSchema>
 
 export const EditAppointmentDialog = () => {
     const {isOpen, onClose, id} = useUpdateAppointment()
-    const editMutation = useEditAppointment(id)
-    const appointmentQuery = useGetIndividualAppointment(id)
-    const deleteMutation = useDeleteAppointment(id)
+    const editMutation = useEditAppointment(id ?? '')
+    const appointmentQuery = useGetIndividualAppointment(id ?? '')
+    const deleteMutation = useDeleteAppointment(id ?? '')
 
     // facilityQuery is used to load the facilities from the database
     const facilityQuery = useGetFacilities()
@@ -68,10 +69,19 @@ export const EditAppointmentDialog = () => {
         value: facility.id
     }))
 
+    const interpreterQuery = useGetInterpreters()
+    const interpreterOptions = (interpreterQuery.data ?? []).map(interpreter => ({
+        label: interpreter.firstName + ' ' + interpreter.lastName,
+        value: interpreter.id
+    }))
 
-    const isPending = editMutation.isPending || deleteMutation.isPending || patientMutation.isPending || facilityMutation.isPending || appointmentQuery.isLoading
 
-    const isLoading = appointmentQuery.isLoading || patientQuery.isLoading || facilityQuery.isLoading
+
+    const isPending = editMutation.isPending || deleteMutation.isPending || patientMutation.isPending || facilityMutation.isPending || appointmentQuery.isLoading || interpreterQuery.isLoading
+
+    const isLoading = appointmentQuery.isLoading || patientQuery.isLoading || facilityQuery.isLoading || interpreterQuery.isLoading
+
+
 
     const [ConfirmDialog, confirm] = useConfirm(
         'Are you sure you want to delete this appointment?',
@@ -81,6 +91,7 @@ export const EditAppointmentDialog = () => {
     const defaultValues = appointmentQuery.data ? {
         patientId: appointmentQuery.data.patientId,
         facilityId: appointmentQuery.data.facilityId,
+        interpreterId: appointmentQuery.data.interpreterId,
         date: appointmentQuery.data.date ? new Date(appointmentQuery.data.date) : new Date(),
         startTime: appointmentQuery.data.startTime,
         endTime: appointmentQuery.data.endTime,
@@ -145,6 +156,7 @@ export const EditAppointmentDialog = () => {
                                  onDelete={onDelete}
                                  facilityOptions={facilityOptions}
                                  patientOptions={patientOptions}
+                                    interpreterOptions={interpreterOptions}
                                  // onCreateFacility={onCreateFacility}
                                  // onCreatePatient={onCreatePatient}
                              />
