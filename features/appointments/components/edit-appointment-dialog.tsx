@@ -102,6 +102,7 @@ export const EditAppointmentDialog = () => {
     } : {
         patientId: '',
         facilityId: '',
+        interpreterId: '',
         startTime: '',
         endTime: '',
         appointmentType: '',
@@ -156,7 +157,7 @@ export const EditAppointmentDialog = () => {
                                  onDelete={onDelete}
                                  facilityOptions={facilityOptions}
                                  patientOptions={patientOptions}
-                                    interpreterOptions={interpreterOptions}
+                                 interpreterOptions={interpreterOptions}
                                  // onCreateFacility={onCreateFacility}
                                  // onCreatePatient={onCreatePatient}
                              />
