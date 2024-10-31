@@ -13,10 +13,10 @@ const formSchema  = insertInterpreterSchema.pick({
     lastName: true,
     email: true,
     phoneNumber: true,
-    targetLanguages: true,
-    isCertified: true,
-    specialty: true,
-    coverageArea: true
+    // targetLanguages: true,
+    // isCertified: true,
+    // specialty: true,
+    // coverageArea: true
 })
 
 type FormValues = z.input<typeof formSchema>
@@ -50,10 +50,10 @@ export const NewInterpreterDialog = () => {
                             lastName: '',
                             email: '',
                             phoneNumber: '',
-                            targetLanguages: '',
-                            isCertified: false,
-                            specialty: '',
-                            coverageArea: ''
+                            // targetLanguages: '',
+                            // isCertified: false,
+                            // specialty: '',
+                            // coverageArea: ''
                     }}
                  />
              </DialogContent>

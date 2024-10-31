@@ -27,10 +27,10 @@ const formSchema  = insertInterpreterSchema.pick({
     lastName: true,
     email: true,
     phoneNumber: true,
-    targetLanguages: true,
-    isCertified: true,
-    specialty: true,
-    coverageArea: true
+    // targetLanguages: true,
+    // isCertified: true,
+    // specialty: true,
+    // coverageArea: true
 })
 
 type FormValues = z.input<typeof formSchema>
@@ -77,19 +77,19 @@ export const EditInterpreterDialog = () => {
         lastName: interpreterQuery.data.lastName,
         email: interpreterQuery.data.email,
         phoneNumber: interpreterQuery.data.phoneNumber,
-        targetLanguages: interpreterQuery.data.targetLanguages,
-        isCertified: interpreterQuery.data.isCertified,
-        specialty: interpreterQuery.data.specialty,
-        coverageArea: interpreterQuery.data.coverageArea
+        // targetLanguages: interpreterQuery.data.targetLanguages,
+        // isCertified: interpreterQuery.data.isCertified,
+        // specialty: interpreterQuery.data.specialty,
+        // coverageArea: interpreterQuery.data.coverageArea
     }: {
         firstName: '',
         lastName: '',
         email: '',
         phoneNumber: '',
-        targetLanguages: '',
-        isCertified: false,
-        specialty: '',
-        coverageArea: ''
+        // targetLanguages: '',
+        // isCertified: false,
+        // specialty: '',
+        // coverageArea: ''
     }
 
      return(

@@ -46,10 +46,10 @@ export const interpreter =pgTable("interpreter", {
     lastName: varchar("lastName").notNull(),
     email: varchar("email").notNull(),
     phoneNumber: varchar("phoneNumber").notNull(),
-    targetLanguages: varchar("targetLanguages").notNull(),
-    isCertified: boolean("isCertified").notNull(),
-    specialty: varchar("specialty").notNull(),
-    coverageArea: varchar("coverageArea").notNull(),
+    // targetLanguages: varchar("targetLanguages").notNull(),
+    // isCertified: boolean("isCertified").notNull(),
+    // specialty: varchar("specialty").notNull(),
+    // coverageArea: varchar("coverageArea").notNull(),
 })
 
 export const interpreterRelations = relations(interpreter, ({ many }) => ({

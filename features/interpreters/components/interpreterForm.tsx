@@ -25,10 +25,10 @@ const formSchema = insertInterpreterSchema.pick({
     lastName: true,
     email: true,
     phoneNumber: true,
-    targetLanguages: true,
-    isCertified: true,
-    specialty: true,
-    coverageArea: true
+    // targetLanguages: true,
+    // isCertified: true,
+    // specialty: true,
+    // coverageArea: true
 })
 
 type FormValues = z.input<typeof formSchema>
@@ -130,37 +130,37 @@ export const InterpreterForm = ({
                                    </FormItem>
                                )}
                            />
-                           <FormField
-                               control={form.control}
-                               name="targetLanguages"
-                               render={({field}) => (
-                                   <FormItem>
-                                       <FormLabel>Target Language</FormLabel>
-                                       <FormControl>
-                                           <Input
-                                               placeholder="Language"
-                                               {...field}
-                                               value={field.value || ""}
-                                           />
-                                       </FormControl>
-                                   </FormItem>
-                               )}
-                           />
-                            <FormField
-                                 control={form.control}
-                                 name="isCertified"
-                                 render={({field}) => (
-                                      <FormItem>
-                                        <FormLabel>Is Certified? </FormLabel>
-                                        <FormControl>
-                                            <Switch
-                                                checked={field.value}
-                                                onCheckedChange={field.onChange}
-                                            />
-                                        </FormControl>
-                                      </FormItem>
-                                 )}
-                            />
+                           {/*<FormField*/}
+                           {/*    control={form.control}*/}
+                           {/*    name="targetLanguages"*/}
+                           {/*    render={({field}) => (*/}
+                           {/*        <FormItem>*/}
+                           {/*            <FormLabel>Target Language</FormLabel>*/}
+                           {/*            <FormControl>*/}
+                           {/*                <Input*/}
+                           {/*                    placeholder="Language"*/}
+                           {/*                    {...field}*/}
+                           {/*                    value={field.value || ""}*/}
+                           {/*                />*/}
+                           {/*            </FormControl>*/}
+                           {/*        </FormItem>*/}
+                           {/*    )}*/}
+                           {/*/>*/}
+                           {/* <FormField*/}
+                           {/*      control={form.control}*/}
+                           {/*      name="isCertified"*/}
+                           {/*      render={({field}) => (*/}
+                           {/*           <FormItem>*/}
+                           {/*             <FormLabel>Is Certified? </FormLabel>*/}
+                           {/*             <FormControl>*/}
+                           {/*                 <Switch*/}
+                           {/*                     checked={field.value}*/}
+                           {/*                     onCheckedChange={field.onChange}*/}
+                           {/*                 />*/}
+                           {/*             </FormControl>*/}
+                           {/*           </FormItem>*/}
+                           {/*      )}*/}
+                           {/* />*/}
                        </div>
                        <Button className='w-full'>
                            {id ? "Update Interpreter" : "Add Interpreter"}

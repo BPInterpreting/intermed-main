@@ -43,17 +43,17 @@ export const columns: ColumnDef<ResponseType>[] = [
             )
         }
     },
-    {
-        accessorKey: "targetLanguage",
-        header: "Target Languages",
-        cell: ({ row }) => {
-            return <div>{row.original.targetLanguages}</div>
-        }
-    },
-    {
-        accessorKey: 'isCertified',
-        header: 'isCertified',
-    },
+    // {
+    //     accessorKey: "targetLanguage",
+    //     header: "Target Languages",
+    //     cell: ({ row }) => {
+    //         return <div>{row.original.targetLanguages}</div>
+    //     }
+    // },
+    // {
+    //     accessorKey: 'isCertified',
+    //     header: 'isCertified',
+    // },
     {
         id: "actions",
         cell: ({ row }) => <Actions id={row.original.id} />

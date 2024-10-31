@@ -53,10 +53,10 @@ const app = new Hono()
                 interpreterId: appointments.interpreterId,
                 interpreterFirstName: interpreter.firstName,
                 interpreterLastName: interpreter.lastName,
-                interpreterIsCertified: interpreter.isCertified,
-                interpreterSpecialty: interpreter.specialty,
-                interpreterCoverageArea: interpreter.coverageArea,
-                interpreterTargetLanguages: interpreter.targetLanguages
+                // interpreterIsCertified: interpreter.isCertified,
+                // interpreterSpecialty: interpreter.specialty,
+                // interpreterCoverageArea: interpreter.coverageArea,
+                // interpreterTargetLanguages: interpreter.targetLanguages
             })
 
             .from(appointments)
@@ -110,10 +110,10 @@ const app = new Hono()
                     interpreterId: appointments.interpreterId,
                     interpreterFirstName: interpreter.firstName,
                     interpreterLastName: interpreter.lastName,
-                    interpreterIsCertified: interpreter.isCertified,
-                    interpreterSpecialty: interpreter.specialty,
-                    interpreterCoverageArea: interpreter.coverageArea,
-                    interpreterTargetLanguages: interpreter.targetLanguages
+                    // interpreterIsCertified: interpreter.isCertified,
+                    // interpreterSpecialty: interpreter.specialty,
+                    // interpreterCoverageArea: interpreter.coverageArea,
+                    // interpreterTargetLanguages: interpreter.targetLanguages
                 })
                 .from(appointments)
                 .innerJoin(patient, eq(appointments.patientId, patient.id))

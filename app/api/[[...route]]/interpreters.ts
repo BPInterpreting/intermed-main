@@ -27,10 +27,10 @@ const app = new Hono()
                     lastName: interpreter.lastName,
                     email: interpreter.email,
                     phoneNumber: interpreter.phoneNumber,
-                    targetLanguages: interpreter.targetLanguages,
-                    isCertified: interpreter.isCertified,
-                    specialty: interpreter.specialty,
-                    coverageArea: interpreter.coverageArea,
+                    // targetLanguages: interpreter.targetLanguages,
+                    // isCertified: interpreter.isCertified,
+                    // specialty: interpreter.specialty,
+                    // coverageArea: interpreter.coverageArea,
                 })
                 .from(interpreter)
 
@@ -59,10 +59,10 @@ const app = new Hono()
                     lastName: interpreter.lastName,
                     email: interpreter.email,
                     phoneNumber: interpreter.phoneNumber,
-                    targetLanguages: interpreter.targetLanguages,
-                    isCertified: interpreter.isCertified,
-                    specialty: interpreter.specialty,
-                    coverageArea: interpreter.coverageArea,
+                    // targetLanguages: interpreter.targetLanguages,
+                    // isCertified: interpreter.isCertified,
+                    // specialty: interpreter.specialty,
+                    // coverageArea: interpreter.coverageArea,
                 })
                 .from(interpreter)
                 .where(
@@ -89,10 +89,10 @@ const app = new Hono()
                 lastName: true,
                 email: true,
                 phoneNumber: true,
-                targetLanguages: true,
-                isCertified: true,
-                specialty: true,
-                coverageArea: true
+                // targetLanguages: true,
+                // isCertified: true,
+                // specialty: true,
+                // coverageArea: true
             })
         ),
         async (c) => {
@@ -118,10 +118,10 @@ const app = new Hono()
             lastName: true,
             email: true,
             phoneNumber: true,
-            targetLanguages: true,
-            isCertified: true,
-            specialty: true,
-            coverageArea: true
+            // targetLanguages: true,
+            // isCertified: true,
+            // specialty: true,
+            // coverageArea: true
         })),
         async (c) => {
             const { id } = c.req.valid('param')
