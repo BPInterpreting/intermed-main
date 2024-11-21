@@ -10,7 +10,7 @@ import {
     UsersIcon
 } from "lucide-react";
 import { FaRegHospital } from "react-icons/fa6"
-import {NavItems} from "@/app/(dashboard)/components/sidebar/nav-items";
+import {NavItems} from "@/app/admin/(dashboard)/components/sidebar/nav-items";
 import {map} from "zod";
 import {Separator} from "@/components/ui/separator";
 import {ModeToggle} from "@/components/theme/mode-toggle";
@@ -26,27 +26,27 @@ export const Navigation = () => {
      const routes = [
          {
              label: "Home",
-             href: `/home`,
+             href: `/admin/home`,
              icon: LayoutGridIcon
          },
         {
             label: "Appointments ",
-            href: `/appointments`,
+            href: `/admin/appointments`,
             icon: NotebookText
         },
          {
              label: "Patients ",
-             href: `/patients`,
+             href: `/admin/patients`,
              icon: UsersIcon
          },
          {
              label: "Facilities ",
-             href: `/facilities`,
+             href: `/admin/facilities`,
              icon: ClipboardPlusIcon
          },
          {
              label: "Interpreters ",
-             href: `/interpreters`,
+             href: `/admin/interpreters`,
              icon: LucideBriefcase
          },
 

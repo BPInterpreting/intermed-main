@@ -2,20 +2,21 @@
 
 import {Button} from "@/components/ui/button";
 import {DataTable} from "@/components/ui/data-table";
-import {columns} from "../../../app/(dashboard)/patients/columns";
-import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
+import {Card, CardContent, CardHeader, CardTitle,} from "@/components/ui/card"
 import {Loader2, Plus} from "lucide-react";
-import {useNewPatient} from "@/features/patients/hooks/use-new-patient";
-import {useGetPatients} from "@/features/patients/api/use-get-patients";
+import {columns} from "@/app/admin/(dashboard)/interpreters/columns";
+import {useGetInterpreters} from "@/features/interpreters/api/use-get-interpreters";
+import {useNewInterpreter} from "@/features/interpreters/hooks/use-new-interpreter";
 import {Skeleton} from "@/components/ui/skeleton";
 
-const PatientsClient = (
-) => {
-    const newPatient = useNewPatient()
-    const patientsQuery = useGetPatients()
-    const patients = patientsQuery.data || []
 
-    if(patientsQuery.isLoading){
+const InterpretersClient = (
+) => {
+    const newInterpreter = useNewInterpreter()
+    const interpretersQuery = useGetInterpreters()
+    const interpreters  = interpretersQuery.data || []
+
+    if(interpretersQuery.isLoading){
         return (
             <div>
                 <Card className='w-full pb-10'>
@@ -37,21 +38,23 @@ const PatientsClient = (
             <div className='flex-1 px-4 w-full pb-10'>
                 <Card className='border-none shadow-none'>
                     <CardHeader className='gap-y-2 lg:flex-row lg:justify-between'>
-                        <CardTitle className='text-3xl line-clamp-1'>Patients</CardTitle>
+                        <CardTitle className='text-3xl line-clamp-1'>Interpreters</CardTitle>
                         <Button
-                            onClick = {newPatient.onOpen}
+                            onClick={newInterpreter.onOpen}
                         >
                             <Plus className='size-4 mr-2'/>
-                            Add Patient
+                            Add Interpreter
                         </Button>
                     </CardHeader>
                     <CardContent>
-                        <DataTable columns={columns} data={patients}/>
+                        <DataTable columns={columns} data={interpreters}/>
                     </CardContent>
                 </Card>
             </div>
         </>
+
     )
 }
 
-export default PatientsClient;
+export default InterpretersClient;
+

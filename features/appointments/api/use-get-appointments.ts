@@ -5,7 +5,7 @@ import { client } from '@/lib/hono';
 import {useSearchParams} from "next/navigation";
 
 export const useGetAppointments = () => {
-    const params = useSearchParams()
+    const params =  useSearchParams()
     const from = params.get('from') || ''
     const to = params.get('to') || ''
     const patientId = params.get('patientId') || ''

@@ -3,7 +3,7 @@
 import { ColumnDef } from "@tanstack/react-table"
 import { InferResponseType } from "hono";
 import { client } from "@/lib/hono";
-import { Actions } from "@/app/(dashboard)/patients/actions";
+import { Actions } from "@/app/admin/(dashboard)/patients/actions";
 import { formatPhoneNumber } from "@/lib/utils";
 
 export type ResponseType = InferResponseType<typeof client.api.patients.$get, 200>["data"][0]

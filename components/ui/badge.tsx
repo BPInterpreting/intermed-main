@@ -23,7 +23,6 @@ const badgeVariants = cva(
               "border-transparent bg-[#ef4444] text-success-foreground hover:bg-success/80",
           closed:
               "border-transparent bg-[#0ea5e9] text-success-foreground hover:bg-success/80",
-
       },
     },
     defaultVariants: {

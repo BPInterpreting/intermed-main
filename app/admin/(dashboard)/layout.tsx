@@ -1,5 +1,5 @@
-import {Navbar} from "@/app/(dashboard)/components/navbar";
-import {Sidebar} from "@/app/(dashboard)/components/sidebar";
+import {Navbar} from "@/app/admin/(dashboard)/components/navbar";
+import {Sidebar} from "@/app/admin/(dashboard)/components/sidebar";
 
 export default function DashboardLayout({
                                             children, // will be a page or nested layout

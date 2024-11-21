@@ -7,6 +7,7 @@ import { zValidator } from '@hono/zod-validator'
 import {createId} from "@paralleldrive/cuid2";
 import {and, asc, desc, eq, gte, inArray, lte, sql} from "drizzle-orm";
 import {subDays, parse} from "date-fns";
+import { clerkMiddleware, getAuth } from "@hono/clerk-auth";
 
 
 //all the routes are chained to the main Hono app
@@ -15,6 +16,7 @@ const app = new Hono()
 // all the '/' routes are relative to the base path of this file which is /api/facility
     .get(
         '/',
+        clerkMiddleware(),
         // validate the query that is being passed in the get request
         zValidator('query', z.object({
             // //allows for filtering by date range from to
@@ -23,7 +25,13 @@ const app = new Hono()
             patientId: z.string().optional() //allows for filtering by patient id
         })),
         async (c) => {
+            const auth = getAuth(c)
+            const userId = auth?.userId
             const {from, to, patientId } = c.req.valid('query')
+
+            if (!auth?.userId) {
+                return c.json({ error: "Unauthorized" }, 401);
+            }
 
             const defaultTo = new Date()
             //TODO: the default date is set to 30 days before the current date change it so it shows all appointments including future

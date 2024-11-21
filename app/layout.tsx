@@ -22,17 +22,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-      <ClerkProvider
-      >
+      <ClerkProvider>
         <html lang="en">
         <body className={inter.className}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        {/*<ThemeProvider attribute="class" defaultTheme="system" enableSystem>*/}
           <QueryProvider>
             <DialogProvider />
             <Toaster position='top-center' richColors />
             {children}
           </QueryProvider>
-        </ThemeProvider>
+        {/*</ThemeProvider>*/}
         </body>
         </html>
       </ClerkProvider>
