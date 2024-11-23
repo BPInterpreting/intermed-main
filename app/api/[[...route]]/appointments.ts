@@ -16,28 +16,27 @@ const app = new Hono()
 // all the '/' routes are relative to the base path of this file which is /api/facility
     .get(
         '/',
-        clerkMiddleware(),
         // validate the query that is being passed in the get request
-        zValidator('query', z.object({
-            // //allows for filtering by date range from to
-            from: z.string().optional(),
-            to: z.string().optional(),
-            patientId: z.string().optional() //allows for filtering by patient id
-        })),
+        // zValidator('query', z.object({
+        //     // //allows for filtering by date range from to
+        //     from: z.string().optional(),
+        //     to: z.string().optional(),
+        //     patientId: z.string().optional() //allows for filtering by patient id
+        // })),
         async (c) => {
-            const auth = getAuth(c)
-            const userId = auth?.userId
-            const {from, to, patientId } = c.req.valid('query')
+            // const auth = getAuth(c)
+            // const userId = auth?.userId
+            // const {from, to, patientId } = c.req.valid('query')
 
-            if (!auth?.userId) {
-                return c.json({ error: "Unauthorized" }, 401);
-            }
+            // if (!auth?.userId) {
+            //     return c.json({ error: "Unauthorized" }, 401);
+            // }
 
-            const defaultTo = new Date()
-            //TODO: the default date is set to 30 days before the current date change it so it shows all appointments including future
-            const defaultFrom = subDays(defaultTo, 0)
-            const startDate = from ? parse(from, 'yyyy-MM-dd', new Date()) : defaultFrom
-            const endDate = to ? parse(to, 'yyyy-MM-dd', new Date()) : defaultTo
+            // const defaultTo = new Date()
+            // //TODO: the default date is set to 30 days before the current date change it so it shows all appointments including future
+            // const defaultFrom = subDays(defaultTo, 0)
+            // const startDate = from ? parse(from, 'yyyy-MM-dd', new Date()) : defaultFrom
+            // const endDate = to ? parse(to, 'yyyy-MM-dd', new Date()) : defaultTo
 
             // the get request will return all the facility in the database
         const data = await db
@@ -74,7 +73,7 @@ const app = new Hono()
             .where(
                 and(
                     //makes sure patientId matches up the the patientId from the appointments table or else it is undefined
-                    patientId ? eq(appointments.patientId, patientId) : undefined,
+                    // patientId ? eq(appointments.patientId, patientId) : undefined,
                     // gte(appointments.date, startDate),
                     // lte(appointments.date, endDate)
                 )

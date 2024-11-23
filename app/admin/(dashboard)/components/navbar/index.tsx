@@ -12,7 +12,6 @@ export const Navbar = () => {
             <div className='flex  items-center justify-between p-2'>
                 <div>
                     <UserButton
-                        afterSignOutUrl='/'
                         showName
                         appearance={{
 

@@ -5,25 +5,19 @@ import { client } from '@/lib/hono';
 import {useSearchParams} from "next/navigation";
 
 export const useGetAppointments = () => {
-    const params =  useSearchParams()
-    const from = params.get('from') || ''
-    const to = params.get('to') || ''
-    const patientId = params.get('patientId') || ''
+    // const params =  useSearchParams()
+    // const from = params.get('from') || ''
+    // const to = params.get('to') || ''
+    // const patientId = params.get('patientId') || ''
 
     //define the query
     const query = useQuery({
 
         //queryKey is the name of the data stored in cache to be reused later again instead or parsing data all over again
-        queryKey: ['appointments', {from, to, patientId}],
+        queryKey: ['appointments'],
          //queryFn is function that query will use to request data as promise which resloves data or a throws error if it fails
         queryFn: async () => {
-            const response = await client.api.appointments.$get({
-                query: {
-                    from,
-                    to,
-                    patientId
-                },
-            })
+            const response = await client.api.appointments.$get()
 
             if (!response.ok) {
                 throw new Error('Failed to fetch appointments')
