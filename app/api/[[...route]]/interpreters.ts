@@ -6,19 +6,25 @@ import { z } from 'zod'
 import { zValidator } from '@hono/zod-validator'
 import {createId} from "@paralleldrive/cuid2";
 import {and, eq} from "drizzle-orm";
+import {clerkMiddleware, getAuth} from "@hono/clerk-auth";
 
 //part of RPC is to create a schema for the validation that is used in the post request
 const schema = z.object({
     firstName: z.string(),
 })
 
-//all of the routes are chained to the main Hono app
+//all  routes are chained to the main Hono app
 const app = new Hono()
 
     // all the '/' routes are relative to the base path of this file which is /api/patients
     .get(
         '/',
         async (c) => {
+            const auth = await getAuth(c)
+
+            if (!auth?.userId) {
+                return c.json({ error: "Unauthorized" }, 401)
+            }
             // the get request will return all the patients in the database
             const data = await db
                 .select({
@@ -27,6 +33,7 @@ const app = new Hono()
                     lastName: interpreter.lastName,
                     email: interpreter.email,
                     phoneNumber: interpreter.phoneNumber,
+                    clerkUserId: interpreter.clerkUserId,
                     // targetLanguages: interpreter.targetLanguages,
                     // isCertified: interpreter.isCertified,
                     // specialty: interpreter.specialty,
@@ -59,10 +66,12 @@ const app = new Hono()
                     lastName: interpreter.lastName,
                     email: interpreter.email,
                     phoneNumber: interpreter.phoneNumber,
+                    clerkUserId: interpreter.clerkUserId,
                     // targetLanguages: interpreter.targetLanguages,
                     // isCertified: interpreter.isCertified,
                     // specialty: interpreter.specialty,
                     // coverageArea: interpreter.coverageArea,
+
                 })
                 .from(interpreter)
                 .where(
@@ -80,6 +89,7 @@ const app = new Hono()
         })
     .post(
         '/',
+        clerkMiddleware(),
         // validate with zod what type of data is being passed in the post request
         zValidator(
             'json',
@@ -96,18 +106,35 @@ const app = new Hono()
             })
         ),
         async (c) => {
+            console.log("incoming request body", c.req.json())
             const values = c.req.valid('json')
+            console.log("validated values", values)
+            const auth = await getAuth(c)
+
+            if (!auth?.userId) {
+                console.error("Unauthorized access attempt");
+                return c.json({ error: "Unauthorized" }, 401)
+            }
 
             // insert patient values using spread which only allows picked values
             const [data] = await db.insert(interpreter).values({
                 id: createId(),
+                clerkUserId: auth.userId,
                 ...values
             }).returning()
+            console.log("Inserted data:", data);
+            if (!data) {
+                console.error("Error inserting data into database:", data);
+                return c.json({ error: "Interpreter not found" }, 404)
+            }
             return c.json({ data })
+
+
         })
     //individual patient can be updated by id
     .patch(
         '/:id',
+        clerkMiddleware(),
         // validate the id that is being passed in the patch request
         zValidator('param', z.object({
             id: z.string()
@@ -126,6 +153,12 @@ const app = new Hono()
         async (c) => {
             const { id } = c.req.valid('param')
             const values = c.req.valid('json')
+            const auth = await getAuth(c)
+
+
+            if (!auth?.userId) {
+                return c.json({ error: "Unauthorized" }, 401)
+            }
 
             if (!id) {
                 return c.json({ error: "Invalid id" }, 400)
@@ -141,7 +174,9 @@ const app = new Hono()
                     )
                 ).returning()
 
+
             if (!data) {
+                console.error("Error inserting data into database:", data);
                 return c.json({ error: "Interpreter not found" }, 404)
             }
             return c.json({ data })
@@ -149,12 +184,18 @@ const app = new Hono()
     )
     .delete(
         '/:id',
+        clerkMiddleware(),
         // validate the id that is being passed in the delete request
         zValidator('param', z.object({
             id: z.string()
         })),
         async (c) => {
             const { id } = c.req.valid('param')
+            const auth = await getAuth(c)
+
+            if (!auth?.userId) {
+                return c.json({ error: "Unauthorized" }, 401)
+            }
 
             if (!id) {
                 return c.json({ error: "Invalid id" }, 400)

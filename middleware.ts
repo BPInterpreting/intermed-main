@@ -6,11 +6,13 @@ const isAdminRoute = createRouteMatcher(['/admin(.*)'])
 const isProtectedRoute = createRouteMatcher(['/admin(.*)', '/'])
 
 export default clerkMiddleware(async (auth, req) => {
-    if (isProtectedRoute(req)) await auth().protect()
+    if (isProtectedRoute(req)) await auth.protect()
 
     const { sessionId, sessionClaims } = await auth();
 
     console.log("Session Claims: ", sessionClaims)
+    console.log("Publishable Key: ", process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY)
+
 
     if (isAdminRoute(req) && (await auth()).sessionClaims?.metadata?.role !== 'admin') {
         const url = new URL('/', req.url)

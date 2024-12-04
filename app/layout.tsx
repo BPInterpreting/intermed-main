@@ -22,7 +22,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-      <ClerkProvider>
+      <ClerkProvider >
         <html lang="en">
         <body className={inter.className}>
         {/*<ThemeProvider attribute="class" defaultTheme="system" enableSystem>*/}

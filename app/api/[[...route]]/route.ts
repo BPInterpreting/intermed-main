@@ -9,6 +9,7 @@ import patients from "@/app/api/[[...route]]/patients";
 import facilities from "@/app/api/[[...route]]/facilities";
 import appointments from "@/app/api/[[...route]]/appointments";
 import interpreters from "@/app/api/[[...route]]/interpreters";
+import {clerkMiddleware} from "@hono/clerk-auth";
 
 export const runtime = 'edge';
 
@@ -22,7 +23,6 @@ app.use('*', cors({
     maxAge: 600,
     credentials: true,
 }))
-
 
 //chained elements to the Hono app are the routes that are going to be used
 const route = app

@@ -46,6 +46,7 @@ export const interpreter =pgTable("interpreter", {
     lastName: varchar("lastName").notNull(),
     email: varchar("email").notNull(),
     phoneNumber: varchar("phoneNumber").notNull(),
+    clerkUserId: text("clerkUserId").notNull().unique(), //stores the clerk id of the user
     // targetLanguages: varchar("targetLanguages").notNull(),
     // isCertified: boolean("isCertified").notNull(),
     // specialty: varchar("specialty").notNull(),
