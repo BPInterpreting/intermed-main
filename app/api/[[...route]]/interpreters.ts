@@ -19,6 +19,7 @@ const app = new Hono()
     // all the '/' routes are relative to the base path of this file which is /api/patients
     .get(
         '/',
+        clerkMiddleware(),
         async (c) => {
             const auth = await getAuth(c)
 
@@ -46,6 +47,7 @@ const app = new Hono()
     // get the patient by id
     .get(
         '/:id',
+        clerkMiddleware(),
         zValidator('param', z.object({
             id: z.string().optional()
         })),

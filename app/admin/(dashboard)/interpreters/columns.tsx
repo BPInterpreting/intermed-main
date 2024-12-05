@@ -6,6 +6,7 @@ import {client} from "@/lib/hono";
 import {Actions} from "@/app/admin/(dashboard)/interpreters/actions";
 
 import {formatPhoneNumber} from "@/lib/utils";
+import {UserButton} from "@clerk/nextjs";
 
 
 // This is a type definition for the data that will be returned from the API part of the github v4.3 doc
@@ -41,6 +42,15 @@ export const columns: ColumnDef<ResponseType>[] = [
                     {formatPhoneNumber(row.original.phoneNumber)}
                 </div>
             )
+        }
+    },
+    {
+        accessorKey: "clerkUserId",
+        header: "Clerk User ID",
+        cell: ({ row }) => {
+            return <div>{
+
+            }</div>
         }
     },
     // {
