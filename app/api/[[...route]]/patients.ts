@@ -7,6 +7,7 @@ import { zValidator } from '@hono/zod-validator'
 import {createId} from "@paralleldrive/cuid2";
 import {and, eq} from "drizzle-orm";
 import {parseTemplate} from "sucrase/dist/types/parser/traverser/expression";
+import {clerkMiddleware, getAuth} from "@hono/clerk-auth";
 
 //part of RPC is to create a schema for the validation that is used in the post request
 const schema = z.object({
@@ -19,7 +20,13 @@ const app = new Hono()
 // all the '/' routes are relative to the base path of this file which is /api/patients
     .get(
         '/',
+        clerkMiddleware(),
         async (c) => {
+            const auth = getAuth(c)
+
+            if (!auth?.userId) {
+                return c.json({ error: "Unauthorized" }, 401)
+            }
             // the get request will return all the patients in the database
         const data = await db
             .select({
@@ -38,10 +45,16 @@ const app = new Hono()
     // get the patient by id
     .get(
         '/:id',
+        clerkMiddleware(),
         zValidator('param', z.object({
             id: z.string().optional()
         })),
         async (c) => {
+            const auth = getAuth(c)
+
+            if (!auth?.userId) {
+                return c.json({ error: "Unauthorized" }, 401)
+            }
 
             //the param is validated
             const { id } = c.req.valid('param')
@@ -77,6 +90,7 @@ const app = new Hono()
         })
     .post(
         '/',
+        clerkMiddleware(),
         // validate with zod what type of data is being passed in the post request
         zValidator(
             'json',
@@ -92,6 +106,11 @@ const app = new Hono()
         ),
         async (c) => {
             const values = c.req.valid('json')
+            const auth = getAuth(c)
+
+            if (!auth?.userId) {
+                return c.json({ error: "Unauthorized" }, 401)
+            }
 
             // insert patient values using spread which only allows picked values
             const [data] = await db.insert(patient).values({
@@ -103,6 +122,7 @@ const app = new Hono()
     //individual patient can be updated by id
     .patch(
         '/:id',
+        clerkMiddleware(),
         // validate the id that is being passed in the patch request
         zValidator('param', z.object({
             id: z.string()
@@ -119,6 +139,11 @@ const app = new Hono()
         async (c) => {
             const { id } = c.req.valid('param')
             const values = c.req.valid('json')
+            const auth = getAuth(c)
+
+            if (!auth?.userId) {
+                return c.json({ error: "Unauthorized" }, 401)
+            }
 
             if (!id) {
                 return c.json({ error: "Invalid id" }, 400)
@@ -142,12 +167,18 @@ const app = new Hono()
     )
     .delete(
         '/:id',
+        clerkMiddleware(),
         // validate the id that is being passed in the delete request
         zValidator('param', z.object({
             id: z.string()
         })),
         async (c) => {
             const { id } = c.req.valid('param')
+            const auth = getAuth(c)
+
+            if (!auth?.userId) {
+                return c.json({ error: "Unauthorized" }, 401)
+            }
 
             if (!id) {
                 return c.json({ error: "Invalid id" }, 400)

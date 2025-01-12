@@ -88,6 +88,7 @@ export const AppointmentForm = ({
         onDelete?.()
     }
 
+
    return(
                <Form {...form}>
                    <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 pt-4">
@@ -199,6 +200,8 @@ export const AppointmentForm = ({
                                )}
                            />
 
+
+
                            {/*<FormItem>*/}
                            {/*    <FormLabel>Appointment Type</FormLabel>*/}
                            {/*    <FormControl>*/}
@@ -290,6 +293,7 @@ export const AppointmentForm = ({
                                )}
                            />
                        </div>
+
                        <Button className='w-full'>
                            {id ? "Update Appointment" : "Add Appointment"}
                        </Button>
@@ -309,4 +313,5 @@ export const AppointmentForm = ({
                </Form>
 
    )
+
 }

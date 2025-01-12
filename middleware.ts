@@ -14,9 +14,11 @@ export default clerkMiddleware(async (auth, req) => {
     console.log("Publishable Key: ", process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY)
 
 
-    if (isAdminRoute(req) && (await auth()).sessionClaims?.metadata?.role !== 'admin') {
+    const role = (sessionClaims?.metadata as { role?: string })?.role;
+    if (isAdminRoute(req) && role !== 'admin') {
         const url = new URL('/', req.url)
         return NextResponse.redirect(url)
+        // (await auth()).sessionClaims?.metadata?.
     }
 })
 

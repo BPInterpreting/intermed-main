@@ -36,7 +36,6 @@ export const columns: ColumnDef<ResponseType>[] = [
         accessorKey: "phoneNumber",
         header: "Phone Number",
         cell: ({ row }) => {
-
             return (
                 <div>
                     {formatPhoneNumber(row.original.phoneNumber)}
@@ -48,9 +47,7 @@ export const columns: ColumnDef<ResponseType>[] = [
         accessorKey: "clerkUserId",
         header: "Clerk User ID",
         cell: ({ row }) => {
-            return <div>{
-
-            }</div>
+            return <div>{row.original.clerkUserId}</div>
         }
     },
     // {

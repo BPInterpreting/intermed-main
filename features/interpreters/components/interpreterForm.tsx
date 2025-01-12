@@ -7,11 +7,9 @@ import { Button } from "@/components/ui/button"
 import {
     Form,
     FormControl,
-    FormDescription,
     FormField,
     FormItem,
     FormLabel,
-    FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch";
@@ -72,9 +70,10 @@ export const InterpreterForm = ({
                                name="firstName"
                                render={({field}) => (
                                    <FormItem>
-                                       <FormLabel>First Name</FormLabel>
+                                       <FormLabel htmlFor='firstName'>First Name</FormLabel>
                                        <FormControl>
                                            <Input
+                                               id='firstName'
                                                placeholder="first name..."
                                                {...field}
                                            />
@@ -87,9 +86,10 @@ export const InterpreterForm = ({
                                name="lastName"
                                render={({field}) => (
                                    <FormItem>
-                                       <FormLabel>Last Name</FormLabel>
+                                       <FormLabel htmlFor='lastName'>Last Name</FormLabel>
                                        <FormControl>
                                            <Input
+                                               id='lastName'
                                                placeholder="last name..."
                                                {...field}
                                            />
@@ -102,9 +102,10 @@ export const InterpreterForm = ({
                                name="email"
                                render={({field}) => (
                                    <FormItem>
-                                       <FormLabel>Email</FormLabel>
+                                       <FormLabel htmlFor='email'>Email</FormLabel>
                                        <FormControl>
                                            <Input
+                                               id='email'
                                                placeholder="example@email.com"
                                                type={"email"}
                                                {...field}

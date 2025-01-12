@@ -1,7 +1,7 @@
 // authors.ts
 import { Hono } from 'hono'
 import { db } from '@/db/drizzle'
-import {insertInterpreterSchema, interpreter} from "@/db/schema";
+import {insertInterpreterSchema, interpreter, patient} from "@/db/schema";
 import { z } from 'zod'
 import { zValidator } from '@hono/zod-validator'
 import {createId} from "@paralleldrive/cuid2";
@@ -21,7 +21,7 @@ const app = new Hono()
         '/',
         clerkMiddleware(),
         async (c) => {
-            const auth = await getAuth(c)
+            const auth = getAuth(c)
 
             if (!auth?.userId) {
                 return c.json({ error: "Unauthorized" }, 401)
@@ -42,6 +42,7 @@ const app = new Hono()
                 })
                 .from(interpreter)
 
+
             return c.json({ data })
         })
     // get the patient by id
@@ -52,6 +53,11 @@ const app = new Hono()
             id: z.string().optional()
         })),
         async (c) => {
+            const auth = getAuth(c)
+
+            if (!auth?.userId) {
+                return c.json({ error: "Unauthorized" }, 401)
+            }
 
             //the param is validated
             const { id } = c.req.valid('param')
@@ -85,9 +91,7 @@ const app = new Hono()
             if (!data) {
                 return c.json({ error: "Interpreter not found" }, 404)
             }
-
             return c.json({data})
-
         })
     .post(
         '/',
@@ -111,7 +115,7 @@ const app = new Hono()
             console.log("incoming request body", c.req.json())
             const values = c.req.valid('json')
             console.log("validated values", values)
-            const auth = await getAuth(c)
+            const auth = getAuth(c)
 
             if (!auth?.userId) {
                 console.error("Unauthorized access attempt");
@@ -155,7 +159,7 @@ const app = new Hono()
         async (c) => {
             const { id } = c.req.valid('param')
             const values = c.req.valid('json')
-            const auth = await getAuth(c)
+            const auth = getAuth(c)
 
 
             if (!auth?.userId) {
@@ -193,7 +197,7 @@ const app = new Hono()
         })),
         async (c) => {
             const { id } = c.req.valid('param')
-            const auth = await getAuth(c)
+            const auth = getAuth(c)
 
             if (!auth?.userId) {
                 return c.json({ error: "Unauthorized" }, 401)

@@ -2,12 +2,13 @@
 import { Hono } from 'hono'
 import { db } from '@/db/drizzle'
 import {facilities, appointments, patient, insertAppointmentSchema, interpreter} from "@/db/schema";
-import { z } from 'zod'
+import {undefined, z} from 'zod'
 import { zValidator } from '@hono/zod-validator'
 import {createId} from "@paralleldrive/cuid2";
 import {and, asc, desc, eq, gte, inArray, lte, sql} from "drizzle-orm";
 import {subDays, parse} from "date-fns";
 import { clerkMiddleware, getAuth } from "@hono/clerk-auth";
+import interpreters from "@/app/api/[[...route]]/interpreters";
 
 
 //all the routes are chained to the main Hono app
@@ -16,30 +17,29 @@ const app = new Hono()
 // all the '/' routes are relative to the base path of this file which is /api/facility
     .get(
         '/',
-        // validate the query that is being passed in the get request
-        // zValidator('query', z.object({
-        //     // //allows for filtering by date range from to
-        //     from: z.string().optional(),
-        //     to: z.string().optional(),
-        //     patientId: z.string().optional() //allows for filtering by patient id
-        // })),
+        clerkMiddleware(),
         async (c) => {
-            // const auth = getAuth(c)
-            // const userId = auth?.userId
+            const auth = getAuth(c)
+            const userId = auth?.userId
+            // const userRole =  await auth?.sessionClaims?.metadata.role
+            const userRole = (auth?.sessionClaims?.metadata as {role: string})?.role
             // const {from, to, patientId } = c.req.valid('query')
+            console.log("User Role: ", userRole)
+            console.log("User Id: ", userId)
 
-            // if (!auth?.userId) {
-            //     return c.json({ error: "Unauthorized" }, 401);
-            // }
+            if (!userId) {
+                return c.json({ error: "Unauthorized" }, 401)
+            }
 
-            // const defaultTo = new Date()
-            // //TODO: the default date is set to 30 days before the current date change it so it shows all appointments including future
-            // const defaultFrom = subDays(defaultTo, 0)
-            // const startDate = from ? parse(from, 'yyyy-MM-dd', new Date()) : defaultFrom
-            // const endDate = to ? parse(to, 'yyyy-MM-dd', new Date()) : defaultTo
+            if (!auth?.userId) {
+                return c.json({ error: "Unauthorized" }, 401);
+            }
 
-            // the get request will return all the facility in the database
-        const data = await db
+            if (!userRole) {
+                return c.json({ error: "No role found" }, 403);
+            }
+
+            let data = await db
             .select({
                 id: appointments.id,
                 date: appointments.date,
@@ -65,33 +65,32 @@ const app = new Hono()
                 // interpreterCoverageArea: interpreter.coverageArea,
                 // interpreterTargetLanguages: interpreter.targetLanguages
             })
-
             .from(appointments)
             .innerJoin(patient, eq(appointments.patientId, patient.id))
             .innerJoin(facilities, eq(appointments.facilityId, facilities.id))
             .innerJoin(interpreter, eq(appointments.interpreterId, interpreter.id))
-            .where(
-                and(
-                    //makes sure patientId matches up the the patientId from the appointments table or else it is undefined
-                    // patientId ? eq(appointments.patientId, patientId) : undefined,
-                    // gte(appointments.date, startDate),
-                    // lte(appointments.date, endDate)
-                )
-            )
+            .where(userRole === 'admin' ? and() : eq(interpreter.clerkUserId, userId))
             .orderBy(
                 desc(appointments.date),
                 asc(appointments.startTime)
             )
+            console.log("Fetched Appointments Data:", data); // Log full data for debugging
+            console.log("Number of Appointments Fetched:", data.length);
+
 
             return c.json({ data })
 })
     // get the facility by id
     .get(
         '/:id',
+        clerkMiddleware(),
         zValidator('param', z.object({
             id: z.string().optional()
         })),
         async (c) => {
+            const auth = getAuth(c)
+            const userId = auth?.userId
+            const userRole = (auth?.sessionClaims?.metadata as {role: string})?.role
 
             //the param is validated
             const { id } = c.req.valid('param')
@@ -99,6 +98,15 @@ const app = new Hono()
             if (!id) {
                 return c.json({ error: "Invalid id" }, 400)
             }
+
+            if (!userId) {
+                return c.json({error: "Unauthorized"}, 401)
+            }
+
+            if (!userRole) {
+                return c.json({error: "Role not found"}, 403)
+            }
+
 
             //data that is returned is the id and first name of the facility from the facility table
             const [data] = await db
@@ -124,11 +132,20 @@ const app = new Hono()
                 })
                 .from(appointments)
                 .innerJoin(patient, eq(appointments.patientId, patient.id))
-                .where(
-                    and(
-                        eq(appointments.id, id)
-                    )
-                )
+                .innerJoin(interpreter, eq(appointments.interpreterId, interpreter.id))
+                .innerJoin(facilities, eq(appointments.facilityId, facilities.id))
+                .where(userRole === 'admin' ? and(eq(appointments.id, id)) : eq(interpreter.clerkUserId, userId))
+
+                // .where(
+                //     userRole === 'admin' ?
+                //         eq(appointments.id, id)
+                //         : and(
+                //             eq(appointments.id, id),
+                //             eq(appointments.interpreterId, userId)
+                //     // and(
+                //     //     eq(appointments.id, id)
+                //     // )
+                // ))
 
             if (!data) {
                 return c.json({ error: "Facility not found" }, 404)
