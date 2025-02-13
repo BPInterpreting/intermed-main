@@ -1,4 +1,4 @@
-import {boolean, pgTable, serial, text, time, timestamp, varchar} from "drizzle-orm/pg-core";
+import {boolean, interval, pgTable, serial, text, time, timestamp, varchar} from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import {relations} from "drizzle-orm";
 import {z} from "zod";
@@ -63,7 +63,10 @@ export const appointments = pgTable("appointments", {
     id: text("id").primaryKey(),
     date: timestamp("date", {mode: "date"}).notNull(),
     startTime: time("start_time", {withTimezone: false}).notNull(),
+    projectedEndTime: time("projected_end_time", {withTimezone: false}),
     endTime: time("end_time", {withTimezone: false}),
+    projectedDuration: varchar("projected_duration"),
+    duration: interval("duration"),
     notes: text("notes"),
     appointmentType : varchar("appointmentType"),
     status: varchar("status").default('Pending'),

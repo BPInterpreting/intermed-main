@@ -46,6 +46,9 @@ const app = new Hono()
                 notes: appointments.notes,
                 startTime: appointments.startTime,
                 endTime: appointments.endTime,
+                projectedEndTime: appointments.projectedEndTime,
+                duration: appointments.duration,
+                projectedDuration: appointments.projectedDuration,
                 appointmentType: appointments.appointmentType,
                 status: appointments.status,
                 facility: facilities.name,
@@ -77,7 +80,6 @@ const app = new Hono()
             console.log("Fetched Appointments Data:", data); // Log full data for debugging
             console.log("Number of Appointments Fetched:", data.length);
 
-
             return c.json({ data })
 })
     // get the facility by id
@@ -107,7 +109,6 @@ const app = new Hono()
                 return c.json({error: "Role not found"}, 403)
             }
 
-
             //data that is returned is the id and first name of the facility from the facility table
             const [data] = await db
                 .select({
@@ -115,6 +116,9 @@ const app = new Hono()
                     date: appointments.date,
                     startTime: appointments.startTime,
                     endTime: appointments.endTime,
+                    projectedEndTime: appointments.projectedEndTime,
+                    duration: appointments.duration,
+                    projectedDuration: appointments.projectedDuration,
                     appointmentType: appointments.appointmentType,
                     notes: appointments.notes,
                     status: appointments.status,
@@ -134,18 +138,11 @@ const app = new Hono()
                 .innerJoin(patient, eq(appointments.patientId, patient.id))
                 .innerJoin(interpreter, eq(appointments.interpreterId, interpreter.id))
                 .innerJoin(facilities, eq(appointments.facilityId, facilities.id))
-                .where(userRole === 'admin' ? and(eq(appointments.id, id)) : eq(interpreter.clerkUserId, userId))
-
-                // .where(
-                //     userRole === 'admin' ?
-                //         eq(appointments.id, id)
-                //         : and(
-                //             eq(appointments.id, id),
-                //             eq(appointments.interpreterId, userId)
-                //     // and(
-                //     //     eq(appointments.id, id)
-                //     // )
-                // ))
+                .where(userRole === 'admin' ? and(eq(appointments.id, id)) : and(eq(interpreter.clerkUserId, userId), eq(appointments.id, id)))
+                .orderBy(
+                    desc(appointments.date),
+                    asc(appointments.startTime)
+                )
 
             if (!data) {
                 return c.json({ error: "Facility not found" }, 404)
@@ -156,6 +153,7 @@ const app = new Hono()
         })
     .post(
         '/',
+        clerkMiddleware(),
         // validate with zod what type of data is being passed in the post request
         zValidator(
             'json',
@@ -166,6 +164,7 @@ const app = new Hono()
         ),
         async (c) => {
             const values = c.req.valid('json')
+            const auth = getAuth(c)
 
             // insert facility values using spread which only allows picked values
             const [data] = await db.insert(appointments).values({
@@ -179,6 +178,7 @@ const app = new Hono()
     //individual facility can be updated by id
     .patch(
         '/:id',
+        clerkMiddleware(),
         // validate the id that is being passed in the patch request
         zValidator('param', z.object({
             id: z.string()
@@ -190,6 +190,7 @@ const app = new Hono()
         async (c) => {
             const { id } = c.req.valid('param')
             const values = c.req.valid('json')
+            const auth = getAuth(c)
 
             if (!id) {
                 return c.json({ error: "Invalid id" }, 400)
