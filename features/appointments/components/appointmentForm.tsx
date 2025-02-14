@@ -4,7 +4,7 @@ import * as z from "zod"
 import {zodResolver} from "@hookform/resolvers/zod"
 import {useForm} from "react-hook-form"
 import {Button} from "@/components/ui/button"
-import {Form, FormControl, FormField, FormItem, FormLabel,} from "@/components/ui/form"
+import {Form, FormControl, FormDescription, FormField, FormItem, FormLabel,} from "@/components/ui/form"
 import {Input} from "@/components/ui/input"
 import {Trash} from "lucide-react";
 import {insertAppointmentSchema} from "@/db/schema";
@@ -32,9 +32,9 @@ const formSchema = z.object({
     interpreterId: z.string().nullable(),
     startTime: z.string(),
     projectedEndTime: z.string().nullable(),
-    duration: z.string().regex(intervalRegex, {message: 'Invalid duration format. Example: 1h30m'}).optional(),
-    projectedDuration: z.string().regex(intervalRegex, {message: 'Invalid duration format. Example: 1h30m'}),
-    endTime: z.string().nullable(),
+    // duration: z.string().regex(intervalRegex, {message: 'Invalid duration format. Example: 1h30m'}).nullable(),
+    projectedDuration: z.string().regex(intervalRegex, {message: 'Invalid duration format. Example: 1h30m'}).nullable(),
+    endTime: z.string().nullable().optional(),
     appointmentType: z.string().nullable(),
     notes: z.string().nullable().optional(),
     status: z.string().nullable()
@@ -89,7 +89,8 @@ export const AppointmentForm = ({
 
    return(
                <Form {...form}>
-                   <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 pt-4 ">
+                   <form onSubmit={form.handleSubmit(handleSubmit, (errors) => {
+                       console.error("Validation failed", JSON.stringify(errors, null, 2));})} className="space-y-4 pt-4 ">
                        <div className='grid grid-cols-2 gap-8 '>
                            <FormField
                                control={form.control}
@@ -139,27 +140,26 @@ export const AppointmentForm = ({
                                        </FormItem>
                                    )}
                                />
-
-                               <FormField
-                                   control={form.control}
-                                   name="endTime"
-                                   render={({field}) => (
-                                       <FormItem>
-                                           <FormLabel>End Time</FormLabel>
-                                           <FormControl>
-                                               <TimePick
-                                                   value={field.value ?? ""}
-                                                   onChange={field.onChange}
-                                                   disabled={disabled}
-                                               />
-                                           </FormControl>
-                                       </FormItem>
-                                   )}
-                               />
                            </div>
                            </div>
                           <div>
-                              <div className={'flex flex-row gap-x-4'}>
+                              <div className={'flex flex-row gap-x-2'}>
+                                  <FormField
+                                      control={form.control}
+                                      name="endTime"
+                                      render={({field}) => (
+                                          <FormItem>
+                                              <FormLabel>End Time</FormLabel>
+                                              <FormControl>
+                                                  <TimePick
+                                                      value={field.value ?? ""}
+                                                      onChange={field.onChange}
+                                                      disabled={disabled}
+                                                  />
+                                              </FormControl>
+                                          </FormItem>
+                                      )}
+                                  />
                                   <FormField
                                       control={form.control}
                                       name="projectedDuration"
@@ -171,24 +171,12 @@ export const AppointmentForm = ({
                                                       disabled={disabled}
                                                       placeholder={'1h30m'}
                                                       {...field}
+                                                      value={field.value ?? ""}
                                                   />
                                               </FormControl>
                                           </FormItem>
                                       )}
                                   />
-                              <FormField control={form.control} name="duration" render={({field}) => (
-                                  <FormItem>
-                                      <FormLabel>Duration</FormLabel>
-                                      <FormControl>
-                                          <Input
-                                              disabled={disabled}
-                                              placeholder={'1h30m'}
-                                              {...field}
-                                          />
-                                      </FormControl>
-                                  </FormItem>
-                              )}/>
-
                               </div>
                            <FormField
                                control={form.control}

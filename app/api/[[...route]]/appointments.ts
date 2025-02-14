@@ -11,6 +11,7 @@ import { clerkMiddleware, getAuth } from "@hono/clerk-auth";
 import interpreters from "@/app/api/[[...route]]/interpreters";
 
 
+
 //all the routes are chained to the main Hono app
 const app = new Hono()
 

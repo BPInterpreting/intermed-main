@@ -109,6 +109,17 @@ export const columns: ColumnDef<ResponseType>[] = [
             )
         }
     },
+    // {
+    //     accessorKey: 'duration',
+    //     header: "Duration",
+    //     cell: ({ row }) => {
+    //         return(
+    //             <div>
+    //                 {row.original.duration}
+    //             </div>
+    //         )
+    //     }
+    // },
     {
         accessorKey: "interpreter",
         header: "Interpreter",
