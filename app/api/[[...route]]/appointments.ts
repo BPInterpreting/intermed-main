@@ -9,6 +9,7 @@ import {and, asc, desc, eq, gte, inArray, lte, sql} from "drizzle-orm";
 import {subDays, parse} from "date-fns";
 import { clerkMiddleware, getAuth } from "@hono/clerk-auth";
 import interpreters from "@/app/api/[[...route]]/interpreters";
+import {text} from "drizzle-orm/pg-core";
 
 
 
@@ -186,7 +187,8 @@ const app = new Hono()
         })),
         // this route makes sure that the first name is the only value that can be updated
         zValidator("json", insertAppointmentSchema.omit({
-            id: true
+            id: true,
+            duration: true,
         })),
         async (c) => {
             const { id } = c.req.valid('param')

@@ -14,6 +14,15 @@ export type ResponseType = InferResponseType<typeof client.api.appointments.$get
 
 export const columns: ColumnDef<ResponseType>[] = [
     {
+        accessorKey: "actions",
+        header: "Actions",
+        cell: ({ row }) => {
+            return(
+                <Actions id={row.original.id} />
+            )
+        }
+    },
+    {
         accessorKey: 'status',
         header: 'Status',
         cell: ({ row }) => {
@@ -109,17 +118,22 @@ export const columns: ColumnDef<ResponseType>[] = [
             )
         }
     },
-    // {
-    //     accessorKey: 'duration',
-    //     header: "Duration",
-    //     cell: ({ row }) => {
-    //         return(
-    //             <div>
-    //                 {row.original.duration}
-    //             </div>
-    //         )
-    //     }
-    // },
+    {
+        accessorKey: 'projectedDuration',
+        header: "Projected Duration",
+    },
+    {
+        accessorKey: 'duration',
+        header: "Duration",
+        cell: ({ row }) => {
+            const duration = row.original.duration;
+            if (!duration) return "";
+            console.log("duration object:", row.original.duration);
+            return JSON.stringify(duration);
+        }
+
+    },
+
     {
         accessorKey: "interpreter",
         header: "Interpreter",
@@ -144,13 +158,6 @@ export const columns: ColumnDef<ResponseType>[] = [
         accessorKey: "notes",
         header: "Notes"
     },
-    {
-        accessorKey: "actions",
-        header: "Actions",
-        cell: ({ row }) => {
-            return(
-                <Actions id={row.original.id} />
-            )
-        }
-    }
+
 ]
+
