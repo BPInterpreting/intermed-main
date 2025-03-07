@@ -119,7 +119,6 @@ export const EditAppointmentDialog = () => {
 
     const onDelete = async () => {
         const ok = await confirm()
-
         if(ok) {
             deleteMutation.mutate(undefined, {
                 onSuccess: () => {
@@ -128,7 +127,6 @@ export const EditAppointmentDialog = () => {
             })
         }
     }
-
 
     const onSubmit = (values: FormValues) => {
         editMutation.mutate(values, {
