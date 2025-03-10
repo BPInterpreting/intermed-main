@@ -1,4 +1,4 @@
-import {boolean, interval, pgTable, serial, text, time, timestamp, varchar} from "drizzle-orm/pg-core";
+import {boolean, interval, numeric, pgTable, serial, text, time, timestamp, varchar} from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import {relations} from "drizzle-orm";
 import {z} from "zod";
@@ -22,11 +22,9 @@ export const insertPatientSchema = createInsertSchema(patient)
 export const facilities = pgTable("facilities", {
     id: text("id").primaryKey(),
     name: varchar("name").notNull(),
-    address: varchar("address").notNull(),
-    city: varchar("city").notNull(),
-    state: varchar("state").notNull(),
-    county: varchar("county").notNull(),
-    zipCode: varchar("zipCode").notNull(),
+    address: text("address").notNull(),
+    longitude: numeric("longitude").notNull(),
+    latitude: numeric("latitude").notNull(),
     email: varchar("email").notNull(),
     phoneNumber: varchar("phoneNumber").notNull(),
     facilityType: varchar("facilityType").notNull(),

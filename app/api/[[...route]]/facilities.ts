@@ -12,7 +12,7 @@ const schema = z.object({
     name: z.string(),
 })
 
-//all of the routes are chained to the main Hono app
+//all the routes are chained to the main Hono app
 const app = new Hono()
 
 // all the '/' routes are relative to the base path of this file which is /api/facility
@@ -25,10 +25,8 @@ const app = new Hono()
                 id: facilities.id,
                 name: facilities.name,
                 address: facilities.address,
-                city: facilities.city,
-                state: facilities.state,
-                county: facilities.county,
-                zipCode: facilities.zipCode,
+                longitude: facilities.longitude,
+                latitude: facilities.latitude,
                 email: facilities.email,
                 phoneNumber: facilities.phoneNumber,
                 facilityType: facilities.facilityType,
@@ -60,10 +58,8 @@ const app = new Hono()
                     id: facilities.id,
                     name: facilities.name,
                     address: facilities.address,
-                    city: facilities.city,
-                    state: facilities.state,
-                    county: facilities.county,
-                    zipCode: facilities.zipCode,
+                    longitude: facilities.longitude,
+                    latitude: facilities.latitude,
                     email: facilities.email,
                     phoneNumber: facilities.phoneNumber,
                     facilityType: facilities.facilityType,
@@ -93,10 +89,8 @@ const app = new Hono()
             insertFacilitySchema.pick({
                 name: true,
                 address: true,
-                city: true,
-                state: true,
-                county: true,
-                zipCode: true,
+                longitude: true,
+                latitude: true,
                 email: true,
                 phoneNumber: true,
                 facilityType: true,
@@ -125,10 +119,8 @@ const app = new Hono()
         zValidator("json", insertFacilitySchema.pick({
             name: true,
             address: true,
-            city: true,
-            state: true,
-            county: true,
-            zipCode: true,
+            longitude: true,
+            latitude: true,
             email: true,
             phoneNumber: true,
             facilityType: true,
