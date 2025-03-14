@@ -1,15 +1,20 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
 
+interface Suggestion {
+    display_name: string
+    lat: string
+    lon: string
+}
 
 interface LocationInputProps {
     initialAddress?: string
     onLocationSelected: (address: string, latitude: number, longitude: number) => void
 }
 
-async function geocodeAddress(address: string):Promise<{latitude: number, longitude: number} | null> {
-    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`
+async function geocodeAddress(address: string):Promise<Suggestion[]> {
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=5`
     try{
         const response = await fetch(url,
             {
@@ -18,17 +23,11 @@ async function geocodeAddress(address: string):Promise<{latitude: number, longit
                 }
             })
         const data = await response.json()
-        if (data.length > 0) {
-            return {
-                latitude: parseFloat(data[0].lat),
-                longitude: parseFloat(data[0].lon)
-            }
-        }
-        return null
-
+        console.log('fetched location suggestions', data)
+        return data
     } catch (e) {
         console.error(e)
-        return null
+        return []
     }
 
 }
@@ -37,28 +36,40 @@ const LocationInput: React.FC<LocationInputProps> = ({
 initialAddress = '',
 onLocationSelected
 }) => {
-    const [address, setAddress] = React.useState(initialAddress)
-    const [loading, setLoading] = React.useState(false)
-    const [error, setError] = React.useState<string | null>(null)
+    const [address, setAddress] = useState(initialAddress)
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState<string | null>(null)
+    const [suggestions, setSuggestions] = useState<Suggestion[]>([])
 
     const handleSearch = async () => {
-        if (!address) {
-            setError('Address is required')
-            return
+        if (!address.trim()) {
+            setError('Address is required');
+            return;
         }
-        setError(null)
-        setLoading(true)
-        const coords = await geocodeAddress(address)
-        setLoading(false)
-        if (coords) {
-            onLocationSelected(address!, coords.latitude, coords.longitude)
+        setError(null);
+        setLoading(true);
+        const results = await geocodeAddress(address);
+        setLoading(false);
+        if (results.length > 0) {
+            setSuggestions(results);
         } else {
-            setError('Address not found. Check the address and try again.')
+            setError('Address not found. Check the address and try again.');
         }
+    };
+
+    const handleSuggestionClick = (suggestion: Suggestion) => {
+        console.log('selected suggestion', suggestion)
+        setAddress(suggestion.display_name)
+        setSuggestions([])
+        onLocationSelected(
+            suggestion.display_name,
+            parseFloat(suggestion.lat),
+            parseFloat(suggestion.lon)
+        )
     }
 
     return (
-        <div className='flex flex-col items-center'>
+        <div className='flex flex-col items-center relative'>
             <Input
                 type='text'
                 value={address}
@@ -67,13 +78,38 @@ onLocationSelected
             />
             <Button
                 onClick={handleSearch}
-                className='bg-blue-500 text-white rounded p-2 mt-2'
+                className='bg-blue-500 text-white absolute right-0 top-1/2 transform -translate-y-1/2 rounded-s-sm'
                 disabled={loading}
             >
                 Search
             </Button>
-            {loading ? 'Finding location...' : 'Find Location'}
+            {loading && <p className='text-blue-500'>Loading...</p>}
             {error && <p className='text-red-500'>{error}</p>}
+            {suggestions.length > 0 && (
+                <ul
+                    style={{
+                        position: 'absolute',
+                        top: '100%',
+                        left: 0,
+                        right: 0,
+                        background: 'white',
+                        zIndex: 1000,
+                        border: '1px solid #ccc',
+                        maxHeight: '200px',
+                        overflowY: 'auto',
+                    }}
+                >
+                    {suggestions.map((s, index) => (
+                        <li
+                            key={index}
+                            onClick={() => handleSuggestionClick(s)}
+                            className='cursor-pointer hover:bg-gray-100'
+                        >
+                            {s.display_name}
+                        </li>
+                    ))}
+                </ul>
+            )}
         </div>
     )
 }

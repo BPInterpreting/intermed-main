@@ -24,14 +24,11 @@ import {useDeleteFacility} from "@/features/facilities/api/use-delete-facility";
 import {useConfirm} from "@/hooks/use-confirm";
 import {Loader2} from "lucide-react";
 
-const formSchema  = insertFacilitySchema.pick
-({
-   name: true,
+const formSchema  = insertFacilitySchema.pick({
+    name: true,
     address: true,
-    city: true,
-    state: true,
-    county: true,
-    zipCode: true,
+    longitude: true,
+    latitude: true,
     email: true,
     phoneNumber: true,
     facilityType: true,
@@ -43,9 +40,9 @@ type FormValues = z.input<typeof formSchema>
 
 export const EditFacilityDialog = () => {
     const {isOpen, onClose, id} = useUpdateFacility()
-    const editMutation = useEditFacility(id)
+    const editMutation = useEditFacility(id ?? '')
     const facilityQuery = useGetIndividualFacility(id)
-    const deleteMutation = useDeleteFacility(id)
+    const deleteMutation = useDeleteFacility(id ?? '')
 
 
     const isPending = editMutation.isPending || deleteMutation.isPending
@@ -60,10 +57,8 @@ export const EditFacilityDialog = () => {
     const defaultValues = facilityQuery.data ? {
         name: facilityQuery.data.name,
         address: facilityQuery.data.address,
-        city: facilityQuery.data.city,
-        state: facilityQuery.data.state,
-        county: facilityQuery.data.county,
-        zipCode: facilityQuery.data.zipCode,
+        longitude: facilityQuery.data.longitude,
+        latitude: facilityQuery.data.latitude,
         email: facilityQuery.data.email,
         phoneNumber: facilityQuery.data.phoneNumber,
         facilityType: facilityQuery.data.facilityType,
@@ -72,10 +67,8 @@ export const EditFacilityDialog = () => {
     } : {
         name: '',
         address: '',
-        city: '',
-        state: '',
-        county: '',
-        zipCode: '',
+        longitude: 0,
+        latitude: 0,
         email: '',
         phoneNumber: '',
         facilityType: '',
@@ -96,14 +89,18 @@ export const EditFacilityDialog = () => {
     }
 
     const onSubmit = (values: FormValues) => {
-        editMutation.mutate(values, {
+        editMutation.mutate({
+            ...values,
+            longitude: values.longitude.toString(),
+            latitude: values.latitude.toString(),
+        }, {
             onSuccess: () => {
                 onClose()
             }
         })
     }
 
-     return(
+     return (
          <>
              <ConfirmDialog />
              <Dialog open={isOpen} onOpenChange={onClose}>

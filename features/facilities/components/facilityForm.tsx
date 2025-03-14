@@ -9,15 +9,28 @@ import {Input} from "@/components/ui/input"
 import {Trash} from "lucide-react";
 import {insertFacilitySchema} from "@/db/schema";
 import {PhoneInput} from "@/components/customUi/phone-input";
+import LocationInput from "@/components/ui/location-input";
+import Map from "@/components/ui/map";
+import {useEffect} from "react";
+
+const formSchema = z.object({
+    name: z.string(),
+    address: z.string(),
+    longitude: z.coerce.number(),
+    latitude: z.coerce.number(),
+    email: z.string().email(),
+    phoneNumber: z.string(),
+    facilityType: z.string(),
+    operatingHours: z.string(),
+    averageWaitTime: z.string(),
+})
 
 // modified formSchema to only include firstName based on drizzle insertPatientSchema
-const formSchema = insertFacilitySchema.pick({
+const apiSchema = insertFacilitySchema.pick({
     name: true,
     address: true,
-    city: true,
-    state: true,
-    county: true,
-    zipCode: true,
+    longitude: true,
+    latitude: true,
     email: true,
     phoneNumber: true,
     facilityType: true,
@@ -26,11 +39,12 @@ const formSchema = insertFacilitySchema.pick({
 })
 
 type FormValues = z.input<typeof formSchema>
+type ApiValues = z.input<typeof apiSchema>
 
 type Props ={
     id?: string;
     defaultValues?: FormValues;
-    onSubmit: (values: FormValues) => void;
+    onSubmit: (values: ApiValues) => void;
     onDelete?: () => void;
     disabled?: boolean;
 }
@@ -49,17 +63,52 @@ export const FacilityForm = ({
     })
 
     function handleSubmit(values: FormValues) {
-        onSubmit(values)
+        console.log("Form values on submit:", values)
+        onSubmit({
+            ...values,
+            longitude: values.longitude.toString(),
+            latitude: values.latitude.toString(),
+        })
     }
 
     const handleDelete = () => {
         onDelete?.()
     }
 
-   return(
+    const handleLocationSelected = (address: string, latitude: number, longitude: number) => {
+        console.log("Location selected:", { address, latitude, longitude })
+        form.setValue("address", address);
+        form.setValue("latitude", latitude);
+        form.setValue("longitude", longitude);
+    }
+
+    useEffect(() => {
+        console.log("Form values:", form.getValues());
+    }, [form.watch()]);
+
+    return(
+        <div>
                <Form {...form}>
+                   {(form.getValues('latitude') !==0 && form.getValues('longitude') !==0) ? (
+                       <div className='mb-1'>
+                           <Map
+                               latitude={parseFloat(form.getValues('latitude').toString())}
+                               longitude={parseFloat(form.getValues('longitude').toString())}
+                               markerText={form.getValues('address') || 'Selected Location'}
+                               height='64'
+                           />
+                       </div>
+                     ): (
+                         <div className={'flex mb-4 items-center justify-center'}>
+                             <p className='text-muted-foreground'>
+                                 **Select location below to see it on the map**
+                             </p>
+                         </div>
+
+                   )}
                    <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8 w-full">
                        <div className='grid grid-cols-2 '>
+                           <div className='flex flex-row gap-x-4'>
                                <FormField
                                    control={form.control}
                                    name="name"
@@ -69,7 +118,7 @@ export const FacilityForm = ({
                                            <FormControl>
                                                <Input
                                                    className='capitalize'
-                                                   placeholder="Clinic Name"
+                                                   placeholder="Facility Name"
                                                    {...field}
                                                />
                                            </FormControl>
@@ -93,6 +142,7 @@ export const FacilityForm = ({
                                    </FormItem>
                                )}
                            />
+                           </div>
                            <FormField
                                control={form.control}
                                name="email"
@@ -117,7 +167,7 @@ export const FacilityForm = ({
                                        <FormLabel>Facility Type</FormLabel>
                                        <FormControl>
                                            <Input
-                                               placeholder="Facility Type"
+                                               placeholder="Enter specialty"
                                                {...field}
                                            />
                                        </FormControl>
@@ -131,74 +181,15 @@ export const FacilityForm = ({
                                       <FormItem>
                                         <FormLabel>Address</FormLabel>
                                         <FormControl>
-                                             <Input
-                                                  placeholder="Clinic Address"
-                                                  {...field}
+                                             <LocationInput
+                                                 initialAddress={field.value || ''}
+                                                 onLocationSelected={handleLocationSelected}
                                              />
                                         </FormControl>
                                       </FormItem>
                                  )}
                             />
-                            <FormField
-                                 control={form.control}
-                                 name="city"
-                                 render={({field}) => (
-                                      <FormItem>
-                                        <FormLabel>City</FormLabel>
-                                        <FormControl>
-                                             <Input
-                                                  placeholder="City"
-                                                  {...field}
-                                             />
-                                        </FormControl>
-                                      </FormItem>
-                                 )}
-                            />
-                            <FormField
-                                 control={form.control}
-                                 name="state"
-                                 render={({field}) => (
-                                      <FormItem>
-                                        <FormLabel>State</FormLabel>
-                                        <FormControl>
-                                             <Input
-                                                  placeholder="State"
-                                                  {...field}
-                                             />
-                                        </FormControl>
-                                      </FormItem>
-                                 )}
-                            />
-                            <FormField
-                                 control={form.control}
-                                 name="county"
-                                 render={({field}) => (
-                                      <FormItem>
-                                        <FormLabel>County</FormLabel>
-                                        <FormControl>
-                                             <Input
-                                                  placeholder="County"
-                                                  {...field}
-                                             />
-                                        </FormControl>
-                                      </FormItem>
-                                 )}
-                            />
-                            <FormField
-                                 control={form.control}
-                                 name="zipCode"
-                                 render={({field}) => (
-                                      <FormItem>
-                                        <FormLabel>Zip Code</FormLabel>
-                                        <FormControl>
-                                             <Input
-                                                  placeholder="Zip Code"
-                                                  {...field}
-                                             />
-                                        </FormControl>
-                                      </FormItem>
-                                 )}
-                            />
+                           <div className='flex flex-row gap-x-4'>
                             <FormField
                                  control={form.control}
                                  name="operatingHours"
@@ -207,7 +198,7 @@ export const FacilityForm = ({
                                         <FormLabel>Operating Hours</FormLabel>
                                         <FormControl>
                                              <Input
-                                                  placeholder="Operating Hours"
+                                                  placeholder="9:00am-5:00pm"
                                                   {...field}
                                              />
                                         </FormControl>
@@ -222,13 +213,14 @@ export const FacilityForm = ({
                                         <FormLabel>Average Wait Time</FormLabel>
                                         <FormControl>
                                              <Input
-                                                  placeholder="Average Wait Time"
+                                                  placeholder="1h30m"
                                                   {...field}
                                              />
                                         </FormControl>
                                       </FormItem>
                                  )}
                             />
+                           </div>
                        </div>
                        <Button className='w-full mt-4'>
                            {id ? "Update Facility" : "Add Facility"}
@@ -247,5 +239,6 @@ export const FacilityForm = ({
                        )}
                    </form>
                </Form>
+        </div>
    )
 }

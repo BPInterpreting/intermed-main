@@ -24,7 +24,8 @@ import {
 
 const intervalRegex = /^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$/i;
 
-//this shcema is needed since the types are more complicated and it is easier for the types to handle
+//this schema is used for the default values of the form mainly due to the use of coercion and regex
+//and also ensures that the data is in the correct format
 const formSchema = z.object({
     date: z.coerce.date(),
     patientId: z.string().nullable(),
@@ -40,7 +41,8 @@ const formSchema = z.object({
     status: z.string().nullable()
 })
 
-//regular api schema that is used in other forms
+//this api schema is used in the onSubmit function to send the data to the server
+//simple all true values to allow the data to pass in the onSubmit
 const apiSchema = insertAppointmentSchema.omit({
     id:true
 })
