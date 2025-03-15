@@ -21,18 +21,6 @@ export const columns: ColumnDef<ResponseType>[] = [
         header: "Address",
     },
     {
-        accessorKey: "city",
-        header: "City",
-    },
-    {
-        accessorKey: "state",
-        header: "State",
-    },
-    {
-        accessorKey: "county",
-        header: "County",
-    },
-    {
         accessorKey: "phoneNumber",
         header: "Phone Number",
         cell: ({ row }) => {
