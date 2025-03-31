@@ -301,10 +301,13 @@ export const AppointmentForm = ({
                                                    <SelectContent>
                                                        <SelectGroup>
                                                            <SelectLabel>Status</SelectLabel>
-                                                           <SelectItem value="Pending">Pending</SelectItem>
+                                                           <SelectItem value="Pending Confirmation">Pending Confirmation</SelectItem>
                                                            <SelectItem value="Confirmed">Confirmed</SelectItem>
-                                                           <SelectItem value="Cancelled">Cancelled</SelectItem>
                                                            <SelectItem value="Closed">Closed</SelectItem>
+                                                           <SelectItem value="Interpreter Requested">Interpreter Requested</SelectItem>
+                                                           <SelectItem value="Pending Authorization">Pending Authorization</SelectItem>
+                                                           <SelectItem value="Late CX">Late CX</SelectItem>
+                                                           <SelectItem value="No Show">No Show</SelectItem>
                                                        </SelectGroup>
                                                    </SelectContent>
                                                </Select>

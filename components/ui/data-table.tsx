@@ -10,7 +10,7 @@ import {
     getFilteredRowModel,
     getPaginationRowModel,
     getSortedRowModel,
-    useReactTable,
+    useReactTable, getFacetedRowModel, getFacetedUniqueValues,
 } from "@tanstack/react-table"
 
 import {
@@ -24,6 +24,7 @@ import {
 import {Button} from "@/components/ui/button";
 import { Input } from "@/components/ui/input"
 import {Trash} from "lucide-react";
+import {DataTableToolbar} from "@/components/ui/data-table-toolbar";
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[]
@@ -39,6 +40,7 @@ export function DataTable<TData, TValue>({
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
         []
     )
+    const [rowSelection, setRowSelection] = React.useState({})
 
     const table = useReactTable({
         data,
@@ -49,14 +51,18 @@ export function DataTable<TData, TValue>({
         getSortedRowModel: getSortedRowModel(),
         onColumnFiltersChange: setColumnFilters,
         getFilteredRowModel: getFilteredRowModel(),
+        onRowSelectionChange: setRowSelection,
+        getFacetedRowModel: getFacetedRowModel(),
+        getFacetedUniqueValues: getFacetedUniqueValues(),
         state: {
             sorting,
             columnFilters,
+            rowSelection,
         },
     })
 
     return (
-        <div>
+        <div className='space-y-4'>
             {/*this filter function is causing errors i will fix it later*/}
             {/*<div className="flex items-center py-2">*/}
             {/*    <Input*/}
@@ -68,6 +74,7 @@ export function DataTable<TData, TValue>({
             {/*        className="max-w-sm"*/}
             {/*    />*/}
             {/*</div>*/}
+            <DataTableToolbar table={table} />
             <div className="rounded-md border">
                 <Table>
                     <TableHeader>

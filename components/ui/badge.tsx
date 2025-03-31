@@ -4,7 +4,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const badgeVariants = cva(
-  "inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  "inline-flex whitespace-nowrap items-center justify-center rounded-full border px-2.5 py-1 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
   {
     variants: {
       variant: {
@@ -16,13 +16,19 @@ const badgeVariants = cva(
           "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
         outline: "text-foreground",
           confirmed:
-              "border-transparent bg-[#10b981] text-success-foreground hover:bg-success/80",
-          pending:
-              "border-transparent bg-[#fde047] text-success-foreground hover:bg-success/80",
+              "border-transparent bg-emerald-500/60 text-emerald-800 hover:bg-success/80",
+          pendingConfirmation:
+              "border-transparent bg-yellow-500/60 text-yellow-700 hover:bg-success/80",
+          pendingAuthorization:
+                "border-transparent bg-violet-500/60 text-violet-800 hover:bg-success/80",
           cancelled:
-              "border-transparent bg-[#ef4444] text-success-foreground hover:bg-success/80",
+              "border-transparent bg-red-700/70 text-red-950 hover:bg-success/80",
           closed:
-              "border-transparent bg-[#0ea5e9] text-success-foreground hover:bg-success/80",
+              "border-transparent bg-sky-500/60 text-blue-800 hover:bg-success/80",
+          interpreterRequested:
+              "border-transparent bg-rose-500/20 text-pink-700 hover:bg-success/80",
+
+
       },
     },
     defaultVariants: {

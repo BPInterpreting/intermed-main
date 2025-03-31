@@ -1,7 +1,7 @@
 'use client'
 
-import {Edit, Eye, MoreHorizontal, Trash} from "lucide-react";
-import {Button} from "@/components/ui/button"
+import {Edit, MoreHorizontal} from "lucide-react";
+import { Button } from "@/components/ui/button"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -10,20 +10,24 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {useUpdatePatient} from "@/features/patients/hooks/use-update-patient";
+import {useDeletePatient} from "@/features/patients/api/use-delete-patient";
 import {useConfirm} from "@/hooks/use-confirm";
-import {useUpdateAppointment} from "@/features/appointments/hooks/use-update-appointment";
-import {useDeleteAppointment} from "@/features/appointments/api/use-delete-appointment";
+
+import { Trash} from "lucide-react";
+import {useUpdateFollowUpRequest} from "@/features/followUpRequests/hooks/use-update-follow-up-request";
+import {useDeleteFollowUpRequest} from "@/features/followUpRequests/api/use-delete-follow-up-request";
 
 type Props = {
     id: string;
 }
 
 export const Actions = ({id}: Props) => {
-    const {onOpen} = useUpdateAppointment()
-    const deleteMutation = useDeleteAppointment(id)
+    const {onOpen} = useUpdateFollowUpRequest()
+    const deleteMutation = useDeleteFollowUpRequest(id)
     const [ConfirmDialog, confirm] = useConfirm(
-        'Are you sure you want to delete this appointment?',
-        "You are about to delete an appointment . This action cannot be undone."
+        'Are you sure you want to delete this patient?',
+        "You are about to delete a patient. This action cannot be undone."
     )
 
     const handleDelete = async () => {
@@ -37,8 +41,8 @@ export const Actions = ({id}: Props) => {
         return (
             <>
                 <ConfirmDialog/>
-                <DropdownMenu modal={false}>
-                    <DropdownMenuTrigger asChild >
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="h-8 w-8 p-0">
                             <MoreHorizontal className="h-4 w-4"/>
                         </Button>
@@ -60,10 +64,7 @@ export const Actions = ({id}: Props) => {
                             Delete
                         </DropdownMenuItem>
                         <DropdownMenuSeparator/>
-                        <DropdownMenuItem>
-                            <Eye className="size-4 mr-2" />
-                            Details
-                        </DropdownMenuItem>
+                        <DropdownMenuLabel>Delete</DropdownMenuLabel>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </>

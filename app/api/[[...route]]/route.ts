@@ -4,15 +4,13 @@
 import { Hono } from 'hono'
 import { cors } from "hono/cors";
 import { handle } from 'hono/vercel'
-
 import patients from "@/app/api/[[...route]]/patients";
 import facilities from "@/app/api/[[...route]]/facilities";
 import appointments from "@/app/api/[[...route]]/appointments";
 import interpreters from "@/app/api/[[...route]]/interpreters";
-import {clerkMiddleware} from "@hono/clerk-auth";
+import followUpRequests from "@/app/api/[[...route]]/followUpRequests";
 
 export const runtime = 'edge';
-
 //initialize the new hono api instance where base is out /api route
 const app = new Hono().basePath('/api')
 app.use('*', cors({
@@ -30,6 +28,7 @@ const route = app
     .route('/facilities', facilities)
     .route('/appointments', appointments)
     .route('/interpreters', interpreters)
+    .route('/followUpRequests', followUpRequests)
 
 export const GET = handle(app)
 export const POST = handle(app)

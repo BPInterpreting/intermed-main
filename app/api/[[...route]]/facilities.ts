@@ -12,6 +12,8 @@ const schema = z.object({
     name: z.string(),
 })
 
+
+
 //all the routes are chained to the main Hono app
 const app = new Hono()
 

@@ -4,7 +4,7 @@ import {ColumnDef} from "@tanstack/react-table"
 import {InferResponseType} from "hono";
 import {client} from "@/lib/hono";
 import {Actions} from "@/app/admin/(dashboard)/facilities/actions";
-import {formatPhoneNumber} from "@/lib/utils";
+import {formatPhoneNumber, trimAddress} from "@/lib/utils";
 
 
 // This is a type definition for the data that will be returned from the API part of the github v4.3 doc
@@ -19,6 +19,14 @@ export const columns: ColumnDef<ResponseType>[] = [
     {
         accessorKey: "address",
         header: "Address",
+        cell: ({ row }) => {
+            const trimmedAddress = trimAddress(row.original.address)
+            return (
+                <div>
+                    {trimmedAddress}
+                </div>
+            )
+        }
     },
     {
         accessorKey: "phoneNumber",

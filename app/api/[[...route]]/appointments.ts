@@ -20,14 +20,15 @@ const app = new Hono()
     .get(
         '/',
         clerkMiddleware(),
+        zValidator('query', z.object({
+            endTime: z.string().optional().nullable(),
+        })),
         async (c) => {
             const auth = getAuth(c)
             const userId = auth?.userId
             // const userRole =  await auth?.sessionClaims?.metadata.role
             const userRole = (auth?.sessionClaims?.metadata as {role: string})?.role
             // const {from, to, patientId } = c.req.valid('query')
-            console.log("User Role: ", userRole)
-            console.log("User Id: ", userId)
 
             if (!userId) {
                 return c.json({ error: "Unauthorized" }, 401)
@@ -88,7 +89,10 @@ const app = new Hono()
         '/:id',
         clerkMiddleware(),
         zValidator('param', z.object({
-            id: z.string().optional()
+            id: z.string().optional(),
+        })),
+        zValidator('query', z.object({
+            endTime: z.string().optional().nullable(),
         })),
         async (c) => {
             const auth = getAuth(c)

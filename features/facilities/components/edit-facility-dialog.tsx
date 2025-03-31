@@ -57,8 +57,8 @@ export const EditFacilityDialog = () => {
     const defaultValues = facilityQuery.data ? {
         name: facilityQuery.data.name,
         address: facilityQuery.data.address,
-        longitude: facilityQuery.data.longitude,
-        latitude: facilityQuery.data.latitude,
+        longitude: facilityQuery.data.longitude ? parseFloat(facilityQuery.data.longitude) : 0,
+        latitude: facilityQuery.data.latitude ? parseFloat(facilityQuery.data.latitude) : 0,
         email: facilityQuery.data.email,
         phoneNumber: facilityQuery.data.phoneNumber,
         facilityType: facilityQuery.data.facilityType,
@@ -132,6 +132,5 @@ export const EditFacilityDialog = () => {
                  </DialogContent>
              </Dialog>
          </>
-
      )
 }

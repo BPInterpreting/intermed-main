@@ -14,3 +14,16 @@ export function formatPhoneNumber(phoneNumberString: string) {
   return null;
 }
 
+//used to trim the address from the nominatim incoming data for the client
+export function trimAddress(fullAddress: string): string {
+  const parts = fullAddress.split(',').map(s => s.trim());
+  // Combine house number and street name with a space.
+  const streetAddress = [parts[0], parts[1]].filter(Boolean).join(' ');
+  const city = parts[2] || "";
+  const state = parts[4] || "";
+  const zip = parts[5] || "";
+  return [streetAddress, city, state, zip].filter(Boolean).join(', ');
+}
+
+
+

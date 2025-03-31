@@ -9,6 +9,7 @@ import {NewAppointmentDialog} from "@/features/appointments/components/new-appoi
 import {EditAppointmentDialog} from "@/features/appointments/components/edit-appointment-dialog";
 import {NewInterpreterDialog} from "@/features/interpreters/components/new-interpreter-dialog";
 import {EditInterpreterDialog} from "@/features/interpreters/components/edit-interpreter-dialog";
+import {EditFollowUpRequestDialog} from "@/features/followUpRequests/components/edit-follow-up-request-dialog";
 
 
 export const DialogProvider = ( ) => {
@@ -29,6 +30,9 @@ export const DialogProvider = ( ) => {
 
             <NewInterpreterDialog />
             <EditInterpreterDialog />
+
+            <EditFollowUpRequestDialog />
+
         </>
     )
 }

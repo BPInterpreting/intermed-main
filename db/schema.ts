@@ -77,6 +77,7 @@ export const appointments = pgTable("appointments", {
     interpreterId: text("interpreter_id").references(() => interpreter.id, {
         onDelete: "cascade",
     }),
+
 })
 
 // create a relation between appointments and patients which references the patient id
@@ -96,5 +97,29 @@ export const appointmentsRelations = relations(appointments, ({ one }) => ({
 }))
 
 export const insertAppointmentSchema = createInsertSchema(appointments, {
+    date: z.coerce.date(),
+})
+
+export const followUpRequest = pgTable("follow_up_request", {
+    id: text("id").primaryKey(),
+    date: timestamp("date", {mode: "date"}).notNull(),
+    startTime: time("start_time", {withTimezone: false}).notNull(),
+    projectedDuration: varchar("projected_duration"),
+    notes: text("notes"),
+    appointmentType : varchar("appointmentType"),
+    status: varchar("status").default('Pending'),
+    newFacilityAddress: text("new_facility_address"),
+    patientId: text("patient_id").references(() => patient.id, {
+        onDelete: "cascade",
+    }),
+    facilityId: text("facility_id").references(() => facilities.id, {
+        onDelete: "cascade",
+    }),
+    interpreterId: text("interpreter_id").references(() => interpreter.id, {
+        onDelete: "cascade",
+    }),
+
+})
+export const insertFollowUpRequestSchema = createInsertSchema(followUpRequest, {
     date: z.coerce.date(),
 })

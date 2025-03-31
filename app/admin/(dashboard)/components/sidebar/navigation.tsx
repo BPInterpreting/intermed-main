@@ -17,10 +17,10 @@ import {ModeToggle} from "@/components/theme/mode-toggle";
 import Image from 'next/image'
 import {FcBusinessman} from "react-icons/fc";
 import {BiBriefcase, BiSolidBriefcaseAlt} from "react-icons/bi";
+import {useState} from "react";
 
 export const Navigation = () => {
     // this is the hook that is used to read the pathname. if the pathname mathces the route it will be true
-
 
     // routes are the array of objects that are used to create the navigation links
      const routes = [
@@ -32,7 +32,13 @@ export const Navigation = () => {
         {
             label: "Appointments ",
             href: `/admin/appointments`,
-            icon: NotebookText
+            icon: NotebookText,
+            subItems : [
+                {
+                    label: "Follow Up requests",
+                    href: `/admin/followUpRequests`,
+                },
+            ]
         },
          {
              label: "Patients ",
