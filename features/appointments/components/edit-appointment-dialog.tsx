@@ -99,6 +99,7 @@ export const EditAppointmentDialog = () => {
         // duration: appointmentQuery.data.duration,
         projectedDuration: appointmentQuery.data.projectedDuration,
         appointmentType: appointmentQuery.data.appointmentType,
+        isCertified: appointmentQuery.data.isCertified ?? false,
         notes: appointmentQuery.data.notes,
         status: appointmentQuery.data.status,
 
@@ -112,6 +113,7 @@ export const EditAppointmentDialog = () => {
         // duration: '',
         projectedDuration: '' ,
         appointmentType: '',
+        isCertified: false,
         date: new Date(),
         notes: '',
         status: ''

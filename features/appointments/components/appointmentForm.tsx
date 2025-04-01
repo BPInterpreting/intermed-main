@@ -21,6 +21,7 @@ import {
     SelectTrigger,
     SelectValue
 } from "@/components/ui/select";
+import {Switch} from "@/components/ui/switch";
 
 const intervalRegex = /^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$/i;
 
@@ -37,6 +38,7 @@ const formSchema = z.object({
     projectedDuration: z.string().regex(intervalRegex, {message: 'Invalid duration format. Example: 1h30m'}).nullable(),
     endTime: z.string().nullable().optional(),
     appointmentType: z.string().nullable(),
+    isCertified: z.boolean(),
     notes: z.string().nullable().optional(),
     status: z.string().nullable()
 })
@@ -315,7 +317,26 @@ export const AppointmentForm = ({
                                        </FormItem>
                                    )}
                                />
+
                            </div>
+                              <FormField
+                                  control={form.control}
+                                  name="isCertified"
+                                  render={({field}) => (
+                                      <FormItem className="relative rounded-lg border p-3 shadow-sm h-24">
+                                          <FormLabel className='mb-4'>Switch If Certification Required</FormLabel>
+                                          <FormControl>
+                                              <div className='absolute right-4'>
+                                                  <Switch
+                                                      checked={field.value ?? undefined}
+                                                      onCheckedChange={field.onChange}
+                                                  />
+                                              </div>
+
+                                          </FormControl>
+                                      </FormItem>
+                                  )}
+                              />
                            <FormField
                                control={form.control}
                                name="notes"

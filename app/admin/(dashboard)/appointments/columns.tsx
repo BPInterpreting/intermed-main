@@ -27,6 +27,10 @@ export const columns: ColumnDef<ResponseType>[] = [
         }
     },
     {
+        accessorKey: 'bookingId',
+        header: 'Booking ID',
+    },
+    {
         accessorKey: 'status',
         header: 'Status',
         cell: ({ row }) => {
@@ -190,6 +194,10 @@ export const columns: ColumnDef<ResponseType>[] = [
     {
         accessorKey: "facility",
         header: "Facility",
+    },
+    {
+        accessorKey: 'isCertified',
+        header: 'isCertified',
     },
     {
         accessorKey: "appointmentType",

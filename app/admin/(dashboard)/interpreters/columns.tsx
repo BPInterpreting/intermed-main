@@ -44,11 +44,8 @@ export const columns: ColumnDef<ResponseType>[] = [
         }
     },
     {
-        accessorKey: "clerkUserId",
-        header: "Clerk User ID",
-        cell: ({ row }) => {
-            return <div>{row.original.clerkUserId}</div>
-        }
+        accessorKey: 'isCertified',
+        header: 'isCertified',
     },
     // {
     //     accessorKey: "targetLanguage",

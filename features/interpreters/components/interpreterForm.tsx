@@ -16,6 +16,15 @@ import { Switch } from "@/components/ui/switch";
 import {Trash} from "lucide-react";
 import {insertInterpreterSchema} from "@/db/schema";
 import {PhoneInput} from "@/components/customUi/phone-input";
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectLabel,
+    SelectTrigger,
+    SelectValue
+} from "@/components/ui/select";
 
 // modified formSchema to only include firstName based on drizzle insertPatientSchema
 const formSchema = insertInterpreterSchema.pick({
@@ -23,6 +32,7 @@ const formSchema = insertInterpreterSchema.pick({
     lastName: true,
     email: true,
     phoneNumber: true,
+    isCertified: true,
     // targetLanguages: true,
     // isCertified: true,
     // specialty: true,
@@ -126,6 +136,21 @@ export const InterpreterForm = ({
                                                format='(###) ###-####'
                                                allowEmptyFormatting={true}
                                                mask="_"
+                                           />
+                                       </FormControl>
+                                   </FormItem>
+                               )}
+                           />
+                           <FormField
+                               control={form.control}
+                               name="isCertified"
+                               render={({field}) => (
+                                   <FormItem>
+                                       <FormLabel>isCertified</FormLabel>
+                                       <FormControl>
+                                           <Switch
+                                               checked={field.value ?? undefined}
+                                               onCheckedChange={field.onChange}
                                            />
                                        </FormControl>
                                    </FormItem>

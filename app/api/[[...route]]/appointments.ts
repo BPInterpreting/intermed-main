@@ -45,6 +45,7 @@ const app = new Hono()
             let data = await db
             .select({
                 id: appointments.id,
+                bookingId: appointments.bookingId,
                 date: appointments.date,
                 notes: appointments.notes,
                 startTime: appointments.startTime,
@@ -54,6 +55,7 @@ const app = new Hono()
                 projectedDuration: appointments.projectedDuration,
                 appointmentType: appointments.appointmentType,
                 status: appointments.status,
+                isCertified: appointments.isCertified,
                 facility: facilities.name,
                 facilityAddress: facilities.address,
                 facilityLongitude: facilities.longitude,
@@ -118,6 +120,7 @@ const app = new Hono()
             const [data] = await db
                 .select({
                     id: appointments.id,
+                    bookingId: appointments.bookingId,
                     date: appointments.date,
                     startTime: appointments.startTime,
                     endTime: appointments.endTime,
@@ -127,6 +130,7 @@ const app = new Hono()
                     appointmentType: appointments.appointmentType,
                     notes: appointments.notes,
                     status: appointments.status,
+                    isCertified: appointments.isCertified,
                     facilityId: appointments.facilityId,
                     patientId: appointments.patientId,
                     patientFirstName: patient.firstName,
@@ -164,7 +168,8 @@ const app = new Hono()
             'json',
             // only allow the first name to be passed in the post request for client to see
             insertAppointmentSchema.omit({
-                id: true
+                id: true,
+                bookingId: true
             })
         ),
         async (c) => {
@@ -192,6 +197,7 @@ const app = new Hono()
         zValidator("json", insertAppointmentSchema.omit({
             id: true,
             duration: true,
+            bookingId: true
         })),
         async (c) => {
             const { id } = c.req.valid('param')
