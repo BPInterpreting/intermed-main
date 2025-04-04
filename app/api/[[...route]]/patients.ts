@@ -5,7 +5,7 @@ import {facilities, insertPatientSchema, patient} from "@/db/schema";
 import { z } from 'zod'
 import { zValidator } from '@hono/zod-validator'
 import {createId} from "@paralleldrive/cuid2";
-import {and, eq} from "drizzle-orm";
+import {and, eq, ilike, or, sql} from "drizzle-orm";
 import {parseTemplate} from "sucrase/dist/types/parser/traverser/expression";
 import {clerkMiddleware, getAuth} from "@hono/clerk-auth";
 
@@ -17,6 +17,38 @@ const schema = z.object({
 //all of the routes are chained to the main Hono app
 const app = new Hono()
 
+    .get(
+        '/search',
+        clerkMiddleware(),
+        zValidator('query', z.object({
+            q: z.string().min(1, "Search query cannot be empty")
+        })),
+        async(c) => {
+            const auth  = getAuth(c)
+            const { q } = c.req.valid('query')
+
+            if (!auth?.userId) {
+                return c.json({ error: "Unauthorized" }, 401)
+            }
+
+            const searchTerm = `%${ q }%`
+
+            const data = await db
+                .select({
+                    id: patient.id,
+                    firstName: patient.firstName,
+                    lastName: patient.lastName,
+                })
+                .from(patient)
+                .where(
+                    or(
+                        ilike(patient.firstName, searchTerm),
+                        ilike(patient.lastName, searchTerm)
+                    )
+                )
+            return c.json({ data })
+        }
+    )
 // all the '/' routes are relative to the base path of this file which is /api/patients
     .get(
         '/',

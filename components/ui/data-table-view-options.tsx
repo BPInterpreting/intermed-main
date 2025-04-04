@@ -28,7 +28,7 @@ export function DataTableViewOptions<TData>({
                     size="sm"
                     className="ml-auto hidden h-8 lg:flex"
                 >
-                    <Settings2 />
+                    <Settings2 size={20} className='mr-2' />
                     View
                 </Button>
             </DropdownMenuTrigger>
