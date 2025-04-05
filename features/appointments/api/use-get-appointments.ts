@@ -17,7 +17,12 @@ export const useGetAppointments = () => {
         queryKey: ['appointments'],
          //queryFn is function that query will use to request data as promise which resloves data or a throws error if it fails
         queryFn: async () => {
-            const response = await client.api.appointments.$get()
+            const response = await client.api.appointments.$get({
+                query: {
+                    patientId: undefined,
+                    endTime: undefined
+                }
+            })
 
             if (!response.ok) {
                 throw new Error('Failed to fetch appointments')

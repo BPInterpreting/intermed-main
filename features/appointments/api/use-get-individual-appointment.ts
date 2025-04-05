@@ -17,7 +17,8 @@ export const useGetIndividualAppointment = (id?: string) => {
          //queryFn is function that query will use to request data as promise which resloves data or a throws error if it fails
         queryFn: async () => {
             const response = await client.api.appointments[':id'].$get({
-                param: { id }
+                param: {id},
+                query: {}
             })
 
             if (!response.ok) {

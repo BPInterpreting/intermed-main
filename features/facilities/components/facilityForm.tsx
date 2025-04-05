@@ -10,8 +10,15 @@ import {Trash} from "lucide-react";
 import {insertFacilitySchema} from "@/db/schema";
 import {PhoneInput} from "@/components/customUi/phone-input";
 import LocationInput from "@/components/ui/location-input";
-import Map from "@/components/ui/map";
 import {useEffect} from "react";
+import dynamic from "next/dynamic";
+const MapWithNoSSR = dynamic(
+    () => import('@/components/ui/map'), // Path to your Map component
+    {
+        ssr: false, // Disable Server-Side Rendering for this component
+        loading: () => <div className='h-64 flex items-center justify-center'><p>Loading map...</p></div> // Optional loading state
+    }
+);
 
 const formSchema = z.object({
     name: z.string(),
@@ -91,7 +98,7 @@ export const FacilityForm = ({
                <Form {...form}>
                    {(form.getValues('latitude') !==0 && form.getValues('longitude') !==0) ? (
                        <div className='mb-1'>
-                           <Map
+                           <MapWithNoSSR
                                latitude={parseFloat(form.getValues('latitude').toString())}
                                longitude={parseFloat(form.getValues('longitude').toString())}
                                markerText={form.getValues('address') || 'Selected Location'}

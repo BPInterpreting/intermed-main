@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {useEffect} from 'react'
 import dynamic from 'next/dynamic'
 import L from 'leaflet'
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
@@ -18,12 +18,6 @@ interface MapProps {
     height?: string | number;
 }
 
-L.Icon.Default.mergeOptions({
-    iconRetinaUrl: markerIcon2x.src,
-    iconurl: markerIcon.src,
-    shadowUrl: markerShadow.src
-})
-
 const Map: React.FC<MapProps> = ({
 latitude,
 longitude,
@@ -31,6 +25,17 @@ markerText = 'Location',
 height
 }) => {
     const position: [number, number] = [latitude, longitude]
+
+    useEffect(() => {
+        // This code now runs only on the client-side after mount
+        // @ts-ignore - Leaflet types might not perfectly match dynamic import images
+        delete L.Icon.Default.prototype._getIconUrl; // Common fix for icon path issues with bundlers
+        L.Icon.Default.mergeOptions({
+            iconRetinaUrl: markerIcon2x.src,
+            iconUrl: markerIcon.src, // Use iconUrl
+            shadowUrl: markerShadow.src,
+        });
+    }, []);
 
     return (
         <div className={`w-full h-56`}>

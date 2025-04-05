@@ -1,17 +1,13 @@
-// authors.ts
 import { Hono } from 'hono'
 import { db } from '@/db/drizzle'
 import {facilities, appointments, patient, insertAppointmentSchema, interpreter} from "@/db/schema";
 import {undefined, z} from 'zod'
 import { zValidator } from '@hono/zod-validator'
 import {createId} from "@paralleldrive/cuid2";
-import {and, asc, desc, eq, gte, inArray, lte, sql} from "drizzle-orm";
-import {subDays, parse} from "date-fns";
+import {and, asc, desc, eq, gte, inArray, lte, SQL, sql} from "drizzle-orm";
 import { clerkMiddleware, getAuth } from "@hono/clerk-auth";
 import interpreters from "@/app/api/[[...route]]/interpreters";
 import {text} from "drizzle-orm/pg-core";
-
-
 
 //all the routes are chained to the main Hono app
 const app = new Hono()
@@ -22,13 +18,14 @@ const app = new Hono()
         clerkMiddleware(),
         zValidator('query', z.object({
             endTime: z.string().optional().nullable(),
+            patientId: z.string().optional(),
         })),
         async (c) => {
             const auth = getAuth(c)
             const userId = auth?.userId
-            // const userRole =  await auth?.sessionClaims?.metadata.role
             const userRole = (auth?.sessionClaims?.metadata as {role: string})?.role
-            // const {from, to, patientId } = c.req.valid('query')
+
+            const { patientId } = c.req.valid('query')
 
             if (!userId) {
                 return c.json({ error: "Unauthorized" }, 401)
@@ -41,6 +38,14 @@ const app = new Hono()
             if (!userRole) {
                 return c.json({ error: "No role found" }, 403);
             }
+
+            //the base condition is that the user is an admin or the interpreter id matches the user id. admin is given permission to see all appointments
+            const baseConditions = userRole === 'admin' ? and() : eq(interpreter.clerkUserId, userId);
+            // if the patientId is present, filter by it. this is used for querying appointments by patient
+            const patientCondition = patientId ? eq(appointments.patientId, patientId) : and();
+
+            // Combine conditions - this will always be a valid SQL object
+            const finalWhereClause = and(baseConditions, patientCondition);
 
             let data = await db
             .select({
@@ -67,7 +72,6 @@ const app = new Hono()
                 interpreterId: appointments.interpreterId,
                 interpreterFirstName: interpreter.firstName,
                 interpreterLastName: interpreter.lastName,
-                // interpreterIsCertified: interpreter.isCertified,
                 // interpreterSpecialty: interpreter.specialty,
                 // interpreterCoverageArea: interpreter.coverageArea,
                 // interpreterTargetLanguages: interpreter.targetLanguages
@@ -76,11 +80,12 @@ const app = new Hono()
             .innerJoin(patient, eq(appointments.patientId, patient.id))
             .innerJoin(facilities, eq(appointments.facilityId, facilities.id))
             .innerJoin(interpreter, eq(appointments.interpreterId, interpreter.id))
-            .where(userRole === 'admin' ? and() : eq(interpreter.clerkUserId, userId))
+            .where(finalWhereClause)
             .orderBy(
                 desc(appointments.date),
                 asc(appointments.startTime)
             )
+
             console.log("Fetched Appointments Data:", data); // Log full data for debugging
             console.log("Number of Appointments Fetched:", data.length);
 
@@ -138,7 +143,6 @@ const app = new Hono()
                     interpreterId: appointments.interpreterId,
                     interpreterFirstName: interpreter.firstName,
                     interpreterLastName: interpreter.lastName,
-                    // interpreterIsCertified: interpreter.isCertified,
                     // interpreterSpecialty: interpreter.specialty,
                     // interpreterCoverageArea: interpreter.coverageArea,
                     // interpreterTargetLanguages: interpreter.targetLanguages
