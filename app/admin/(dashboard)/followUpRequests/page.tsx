@@ -5,8 +5,6 @@ import {DataTable} from "@/components/ui/data-table";
 import {columns} from "./columns";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Loader2, Plus} from "lucide-react";
-import {useNewPatient} from "@/features/patients/hooks/use-new-patient";
-import {useGetPatients} from "@/features/patients/api/use-get-patients";
 import {Skeleton} from "@/components/ui/skeleton";
 import {useNewFollowUpRequest} from "@/features/followUpRequests/hooks/use-new-follow-up-request";
 import {useGetFollowUpRequests} from "@/features/followUpRequests/api/use-get-follow-up-requests";

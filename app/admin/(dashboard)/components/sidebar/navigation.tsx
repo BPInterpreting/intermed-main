@@ -33,12 +33,6 @@ export const Navigation = () => {
             label: "Appointments ",
             href: `/admin/appointments`,
             icon: NotebookText,
-            subItems : [
-                {
-                    label: "Follow Up requests",
-                    href: `/admin/followUpRequests`,
-                },
-            ]
         },
          {
              label: "Patients ",

@@ -8,7 +8,6 @@ import CreatableSelect from "react-select/creatable";
 
 type Props = {
     onChange: (value?: string) => void;
-    onCreate?: (value: string) => void;
     options?: {label: string, value: string}[]; //exactly what is formatted in the appointment form
     value?: string | null | undefined; //the extra options are to satisfy the types
     disabled?: boolean;
@@ -17,7 +16,6 @@ type Props = {
 
 export const CustomSelect = ({
     onChange,
-    onCreate,
     options = [],
     value,
     disabled,
@@ -51,7 +49,6 @@ export const CustomSelect = ({
             value={formattedValue}
             onChange={onSelect}
             options={options}
-            onCreateOption={onCreate}
             isDisabled={disabled}
         />
     )

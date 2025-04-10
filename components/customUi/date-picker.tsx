@@ -35,7 +35,7 @@ disabled
                         )}
                     disabled={disabled}
                 >
-                    <CalendarIcon className='size-4 mr-2' />
+                    <CalendarIcon className='size-4 mr-0.5' />
                     {value ? format(value, 'PPP') : <span>Pick a date</span>}
                 </Button>
             </PopoverTrigger>

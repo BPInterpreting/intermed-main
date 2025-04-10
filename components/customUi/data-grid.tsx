@@ -1,5 +1,5 @@
 'use client'
-import {CalendarCheck, CalendarClock, CalendarMinus} from "lucide-react";
+import {CalendarClock, TriangleIcon,} from "lucide-react";
 
 import {useSearchParams} from "next/navigation";
 import {DataCard} from "@/components/customUi/data-card";
@@ -22,7 +22,6 @@ interface Appointment {
 
 export const DataGrid = () => {
     const {data, isLoading} = useGetAppointments()
-    const params = useSearchParams()
     const [todaysAppointments, setTodaysAppointments] = useState<Appointment[]>([])
 
 
@@ -68,11 +67,13 @@ export const DataGrid = () => {
                 icon={CalendarClock}
                 value={todaysAppointments.length}
             />
-            <DataCard icon={CalendarMinus} title={'Appointments not Closed'} value={appointmentsNotClosed} />
             <DataCard
-                title={'Appointments Today'}
-                icon={CalendarClock}
+                icon={TriangleIcon}
+                title={'Appointments not Closed'}
+                value={appointmentsNotClosed}
+
             />
+
 
 
         {/*    TODO: Pie chart that shows distribution of facilities in percentage */}

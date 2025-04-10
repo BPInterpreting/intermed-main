@@ -95,7 +95,7 @@ export const AppointmentForm = ({
                <Form {...form}>
                    <form onSubmit={form.handleSubmit(handleSubmit, (errors) => {
                        console.error("Validation failed", JSON.stringify(errors, null, 2));})} className="space-y-4 pt-4 ">
-                       <div className='grid grid-cols-2 gap-8 '>
+                       <div className='grid grid-cols-2 gap-4 '>
                            <FormField
                                control={form.control}
                                name="date"
@@ -147,40 +147,45 @@ export const AppointmentForm = ({
                            </div>
                            </div>
                           <div>
-                              <div className={'flex flex-row gap-x-2'}>
-                                  <FormField
-                                      control={form.control}
-                                      name="endTime"
-                                      render={({field}) => (
-                                          <FormItem>
-                                              <FormLabel>End Time</FormLabel>
-                                              <FormControl>
-                                                  <TimePick
-                                                      value={field.value ?? ""}
-                                                      onChange={field.onChange}
-                                                      disabled={disabled}
-                                                  />
-                                              </FormControl>
-                                          </FormItem>
-                                      )}
-                                  />
-                                  <FormField
-                                      control={form.control}
-                                      name="projectedDuration"
-                                      render={({field}) => (
-                                          <FormItem>
-                                              <FormLabel>Projected Duration</FormLabel>
-                                              <FormControl>
-                                                  <Input
-                                                      disabled={disabled}
-                                                      placeholder={'1h30m'}
-                                                      {...field}
-                                                      value={field.value ?? ""}
-                                                  />
-                                              </FormControl>
-                                          </FormItem>
-                                      )}
-                                  />
+                              <div className={'flex flex-row'}>
+                                  <div className={'mr-5'}>
+                                      <FormField
+                                          control={form.control}
+                                          name="endTime"
+                                          render={({field}) => (
+                                              <FormItem>
+                                                  <FormLabel>End Time</FormLabel>
+                                                  <FormControl>
+                                                      <TimePick
+                                                          value={field.value ?? ""}
+                                                          onChange={field.onChange}
+                                                          disabled={disabled}
+                                                      />
+                                                  </FormControl>
+                                              </FormItem>
+                                          )}
+                                      />
+                                  </div>
+                                  <div >
+                                      <FormField
+                                          control={form.control}
+                                          name="projectedDuration"
+                                          render={({field}) => (
+                                              <FormItem>
+                                                  <FormLabel className={'ml-8'}>Projected Duration</FormLabel>
+                                                  <FormControl>
+                                                      <Input
+                                                          disabled={disabled}
+                                                          placeholder={'1h30m'}
+                                                          {...field}
+                                                          value={field.value ?? ""}
+                                                          className={'ml-8 w-28'}
+                                                      />
+                                                  </FormControl>
+                                              </FormItem>
+                                          )}
+                                      />
+                                  </div>
                               </div>
                            <FormField
                                control={form.control}
@@ -190,7 +195,7 @@ export const AppointmentForm = ({
                                        <FormLabel>Patient</FormLabel>
                                        <FormControl>
                                            <CustomSelect
-                                               placeholder="CustomSelect a patient..."
+                                               placeholder="Select a patient..."
                                                options={patientOptions}
                                                // onCreate={onCreatePatient}
                                                value={field.value}
@@ -213,7 +218,7 @@ export const AppointmentForm = ({
                                                value={field.value}
                                                onChange={field.onChange}
                                                // onCreate={onCreateFacility}
-                                               placeholder="CustomSelect a facility..."
+                                               placeholder="Select a facility..."
                                                disabled={disabled}
                                            />
                                        </FormControl>
@@ -317,26 +322,28 @@ export const AppointmentForm = ({
                                        </FormItem>
                                    )}
                                />
-
                            </div>
-                              <FormField
-                                  control={form.control}
-                                  name="isCertified"
-                                  render={({field}) => (
-                                      <FormItem className="relative rounded-lg border p-3 shadow-sm h-24">
-                                          <FormLabel className='mb-4'>Switch If Certification Required</FormLabel>
-                                          <FormControl>
-                                              <div className='absolute right-4'>
-                                                  <Switch
-                                                      checked={field.value ?? undefined}
-                                                      onCheckedChange={field.onChange}
-                                                  />
-                                              </div>
+                              <div className='mt-2'>
+                                  <FormField
+                                      control={form.control}
+                                      name="isCertified"
+                                      render={({field}) => (
+                                          <FormItem className="relative rounded-lg border p-3 shadow-sm h-24">
+                                              <FormLabel className='mb-4'>Switch If Certification Required</FormLabel>
+                                              <FormControl>
+                                                  <div className='absolute right-4'>
+                                                      <Switch
+                                                          checked={field.value ?? undefined}
+                                                          onCheckedChange={field.onChange}
+                                                      />
+                                                  </div>
 
-                                          </FormControl>
-                                      </FormItem>
-                                  )}
-                              />
+                                              </FormControl>
+                                          </FormItem>
+                                      )}
+                                  />
+                              </div>
+
                            <FormField
                                control={form.control}
                                name="notes"

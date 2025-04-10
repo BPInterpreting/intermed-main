@@ -46,7 +46,7 @@ const app = new Hono()
 
             return c.json({ data })
         })
-app.get(
+    .get(
     '/me', // No /:id here
     clerkMiddleware(),
     // REMOVED: zValidator for ':id' parameter
@@ -130,7 +130,6 @@ app.get(
                     // isCertified: interpreter.isCertified,
                     // specialty: interpreter.specialty,
                     // coverageArea: interpreter.coverageArea,
-
                 })
                 .from(interpreter)
                 .where(
