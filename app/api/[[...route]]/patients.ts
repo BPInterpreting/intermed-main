@@ -1,7 +1,7 @@
 // authors.ts
 import { Hono } from 'hono'
 import { db } from '@/db/drizzle'
-import {facilities, insertPatientSchema, patient} from "@/db/schema";
+import {appointments, interpreter, insertPatientSchema, patient} from "@/db/schema";
 import { z } from 'zod'
 import { zValidator } from '@hono/zod-validator'
 import {createId} from "@paralleldrive/cuid2";
@@ -25,28 +25,93 @@ const app = new Hono()
         })),
         async(c) => {
             const auth  = getAuth(c)
+            const userId = auth?.userId
+            const userRole = (auth?.sessionClaims?.metadata as {role: string})?.role
             const { q } = c.req.valid('query')
 
             if (!auth?.userId) {
                 return c.json({ error: "Unauthorized" }, 401)
             }
 
+            if (!userRole) {
+                return c.json({ error: "Unauthorized" }, 401)
+            }
+
             const searchTerm = `%${ q }%`
 
-            const data = await db
-                .select({
-                    id: patient.id,
-                    firstName: patient.firstName,
-                    lastName: patient.lastName,
-                })
-                .from(patient)
-                .where(
-                    or(
-                        ilike(patient.firstName, searchTerm),
-                        ilike(patient.lastName, searchTerm)
+            let query
+
+            // --- Conditional Query Construction based on Role ---
+            if (userRole === 'admin') {
+                // --- Admin Query ---
+                // Select specified fields directly from the patient table
+                // where the name matches the search term.
+                console.log(`[API /patients/search] Admin search for: ${q}`);
+                query = db
+                    .select({
+                        id: patient.id,
+                        firstName: patient.firstName,
+                        lastName: patient.lastName,
+                        email: patient.email,
+                        phoneNumber: patient.phoneNumber
+                    })
+                    .from(patient)
+                    .where(
+                        or(
+                            ilike(patient.firstName, searchTerm),
+                            ilike(patient.lastName, searchTerm)
+                        )
                     )
-                )
-            return c.json({ data })
+                    .limit(20); // Optional: limit results
+
+            } else {
+                // --- Interpreter Query ---
+                // Requires userId for filtering
+                if (!userId) {
+                    // This check is slightly redundant due to the top-level check,
+                    // but confirms intent if logic changes later.
+                    console.error("[API /patients/search] Interpreter role missing userId");
+                    return c.json({ error: "Interpreter user ID missing" }, 401);
+                }
+                // Select distinct patient fields by joining through appointments
+                // to the interpreter table, filtering by both interpreter's clerkUserId
+                // and the patient name search term.
+                console.log(`[API /patients/search] Interpreter (${userId}) search for: ${q}`);
+                query = db
+                    .selectDistinct({ // Use selectDistinct on patient fields
+                        id: patient.id,
+                        firstName: patient.firstName,
+                        lastName: patient.lastName,
+                        email: patient.email,
+                        phoneNumber: patient.phoneNumber
+                    })
+                    .from(patient)
+                    .innerJoin(appointments, eq(patient.id, appointments.patientId))
+                    .innerJoin(interpreter, eq(appointments.interpreterId, interpreter.id))
+                    .where(
+                        and(
+                            // Condition 1: Match the logged-in interpreter
+                            eq(interpreter.clerkUserId, userId),
+                            // Condition 2: Match the name search term
+                            or(
+                                ilike(patient.firstName, searchTerm),
+                                ilike(patient.lastName, searchTerm)
+                            )
+                        )
+                    )
+                    .limit(20); // Optional: limit results
+            }
+            // --- End Conditional Query Construction ---
+
+            // --- Execute Query and Return ---
+            try {
+                const data = await query;
+                console.log(`[API /patients/search] Found ${data.length} results for query "${q}" for role "${userRole}".`);
+                return c.json({ data });
+            } catch (error) {
+                console.error(`[API /patients/search] Database error for query "${q}" for role "${userRole}":`, error);
+                return c.json({ error: "Failed to search patients due to database error" }, 500);
+            }
         }
     )
 // all the '/' routes are relative to the base path of this file which is /api/patients

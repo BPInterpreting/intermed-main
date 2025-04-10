@@ -10,13 +10,18 @@ import { DataTableViewOptions } from "./data-table-view-options"
 import { DataTableFacetedFilter } from "./data-table-faceted-filter"
 import {useGetAppointments} from "@/features/appointments/api/use-get-appointments";
 
+export type SupportedFilters = 'patient' | 'name' | 'firstName' | 'status'
+
 interface DataTableToolbarProps<TData> {
     table: Table<TData>
+    enabledFilters?: SupportedFilters[]
 }
 
+
 export function DataTableToolbar<TData>({
-                                            table,
-                                        }: DataTableToolbarProps<TData>) {
+    table,
+    enabledFilters = []
+}: DataTableToolbarProps<TData>) {
     const isFiltered = table.getState().columnFilters.length > 0
 
     const {data: appointment} = useGetAppointments()
@@ -29,12 +34,10 @@ export function DataTableToolbar<TData>({
         value: status,
     }));
 
-
-
     return (
         <div className="flex items-center justify-between">
             <div className="flex flex-1 items-center space-x-2">
-                {table.getColumn("patient") && (
+                {enabledFilters?.includes('patient') && table.getColumn("patient") && (
                     <Input
                         placeholder="Filter Patient..."
                         value={(table.getColumn("patient")?.getFilterValue() as string) ?? ""}
@@ -44,8 +47,7 @@ export function DataTableToolbar<TData>({
                         className="h-8 w-[150px] lg:w-[250px]"
                     />
                 )}
-                {
-                    table.getColumn("name") && (
+                {enabledFilters?.includes('name') && table.getColumn("name") && (
                         <Input
                             placeholder="Filter Name..."
                             value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
@@ -56,8 +58,7 @@ export function DataTableToolbar<TData>({
                         />
                     )
                 }
-                {
-                    table.getColumn("firstName") && (
+                {enabledFilters?.includes('firstName') && table.getColumn("firstName") && (
                         <Input
                             placeholder="Filter First Name..."
                             value={(table.getColumn("firstName")?.getFilterValue() as string) ?? ""}
@@ -68,7 +69,7 @@ export function DataTableToolbar<TData>({
                         />
                     )
                 }
-                {table.getColumn("status") && (
+                {enabledFilters?.includes('status') && table.getColumn("status") && (
                     <DataTableFacetedFilter
                         column={table.getColumn("status")}
                         title="Status"

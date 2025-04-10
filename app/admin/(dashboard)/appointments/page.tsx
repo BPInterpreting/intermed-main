@@ -8,6 +8,7 @@ import {columns} from "@/app/admin/(dashboard)/appointments/columns";
 import {Skeleton} from "@/components/ui/skeleton";
 import {useNewAppointment} from "@/features/appointments/hooks/use-new-appointments";
 import {useGetAppointments} from "@/features/appointments/api/use-get-appointments";
+import {SupportedFilters} from "@/components/ui/data-table-toolbar";
 
 
 const AppointmentsClient = (
@@ -15,6 +16,8 @@ const AppointmentsClient = (
     const newAppointment = useNewAppointment()
     const appointmentsQuery = useGetAppointments()
     const appointments  = appointmentsQuery.data || []
+
+    const appointmentTableFilters: SupportedFilters[] = ['patient', "status"]
 
     if(appointmentsQuery.isLoading){
         return (
@@ -47,7 +50,7 @@ const AppointmentsClient = (
                         </Button>
                     </CardHeader>
                     <CardContent>
-                        <DataTable columns={columns} data={appointments} />
+                        <DataTable columns={columns} data={appointments} enabledFilters={appointmentTableFilters}  />
                     </CardContent>
                 </Card>
             </div>

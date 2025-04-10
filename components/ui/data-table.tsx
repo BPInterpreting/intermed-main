@@ -24,16 +24,18 @@ import {
 import {Button} from "@/components/ui/button";
 import { Input } from "@/components/ui/input"
 import {Trash} from "lucide-react";
-import {DataTableToolbar} from "@/components/ui/data-table-toolbar";
+import {DataTableToolbar, SupportedFilters} from "@/components/ui/data-table-toolbar";
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[]
     data: TData[]
+    enabledFilters?: SupportedFilters[];
 }
 
 export function DataTable<TData, TValue>({
     columns,
     data,
+    enabledFilters
 
 }: DataTableProps<TData, TValue>) {
     const [sorting, setSorting] = React.useState<SortingState>([])
@@ -74,7 +76,7 @@ export function DataTable<TData, TValue>({
             {/*        className="max-w-sm"*/}
             {/*    />*/}
             {/*</div>*/}
-            <DataTableToolbar table={table} />
+            <DataTableToolbar table={table} enabledFilters={enabledFilters} />
             <div className="rounded-md border">
                 <Table>
                     <TableHeader>

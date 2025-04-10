@@ -8,6 +8,7 @@ import {columns} from "@/app/admin/(dashboard)/facilities/columns";
 import {useGetFacilities} from "@/features/facilities/api/use-get-facilities";
 import {useNewFacility} from "@/features/facilities/hooks/use-new-facility";
 import {Skeleton} from "@/components/ui/skeleton";
+import {SupportedFilters} from "@/components/ui/data-table-toolbar";
 
 
 const FacilitiesClient = (
@@ -15,6 +16,8 @@ const FacilitiesClient = (
     const newFacility = useNewFacility()
     const facilitiesQuery = useGetFacilities()
     const facilities  = facilitiesQuery.data || []
+
+    const facilityTableFilters: SupportedFilters[] = ['name']
 
     if(facilitiesQuery.isLoading){
         return (
@@ -47,7 +50,7 @@ const FacilitiesClient = (
                         </Button>
                     </CardHeader>
                     <CardContent>
-                        <DataTable columns={columns} data={facilities}/>
+                        <DataTable columns={columns} data={facilities} enabledFilters={facilityTableFilters}/>
                     </CardContent>
                 </Card>
             </div>

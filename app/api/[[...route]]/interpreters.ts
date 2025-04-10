@@ -46,6 +46,55 @@ const app = new Hono()
 
             return c.json({ data })
         })
+app.get(
+    '/me', // No /:id here
+    clerkMiddleware(),
+    // REMOVED: zValidator for ':id' parameter
+    async (c) => {
+        const auth = getAuth(c);
+        const userId = auth?.userId; // Get userId from authentication
+
+        // REMOVED: Code extracting 'id' from params
+        // REMOVED: Check for '!id'
+
+        if (!userId) {
+            return c.json({ error: "Unauthorized - User ID missing" }, 401);
+        }
+
+        console.log(`[API /me] Attempting fetch for userId: ${userId}`);
+        const [data] = await db
+            .select({
+                id: interpreter.id,
+                firstName: interpreter.firstName,
+                lastName: interpreter.lastName,
+                email: interpreter.email,
+                phoneNumber: interpreter.phoneNumber,
+                isCertified: interpreter.isCertified,
+                clerkUserId: interpreter.clerkUserId,
+            })
+            .from(interpreter)
+            // --- CORRECTED where clause ---
+            .where(
+                // Only filter based on the authenticated user's Clerk ID
+                eq(interpreter.clerkUserId, userId)
+            )
+            // ----------------------------
+            .limit(1);
+
+        console.log(`[API /me] Data found in DB for ${userId}:`, JSON.stringify(data));
+
+        if (!data) {
+            console.log(`[API /me] No interpreter found for ${userId}, returning 404`);
+            // Return the specific error the frontend hook was expecting on failure
+            // return c.json({ error: 'Interpreter profile not found' }, 404);
+            // OR return empty data with 200? Let's stick to 404 for now.
+            return c.json({ error: "Interpreter profile not found" }, 404);
+        }
+
+        console.log(`[API /me] Interpreter found for ${userId}, returning 200 with data:`, JSON.stringify(data));
+        // Keep the return structure your /:id uses, as requested
+        return c.json({ data });
+    })
     // get the patient by id
     .get(
         '/:id',

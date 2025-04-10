@@ -8,12 +8,15 @@ import {Loader2, Plus} from "lucide-react";
 import {useNewPatient} from "@/features/patients/hooks/use-new-patient";
 import {useGetPatients} from "@/features/patients/api/use-get-patients";
 import {Skeleton} from "@/components/ui/skeleton";
+import {SupportedFilters} from "@/components/ui/data-table-toolbar";
 
 const PatientsClient = (
 ) => {
     const newPatient = useNewPatient()
     const patientsQuery = useGetPatients()
     const patients = patientsQuery.data || []
+
+    const patientTableFilters: SupportedFilters[] = ['firstName']
 
     if(patientsQuery.isLoading){
         return (
@@ -46,7 +49,7 @@ const PatientsClient = (
                         </Button>
                     </CardHeader>
                     <CardContent>
-                        <DataTable columns={columns} data={patients}/>
+                        <DataTable columns={columns} data={patients} enabledFilters={patientTableFilters}/>
                     </CardContent>
                 </Card>
             </div>

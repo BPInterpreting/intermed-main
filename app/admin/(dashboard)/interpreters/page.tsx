@@ -8,6 +8,7 @@ import {columns} from "@/app/admin/(dashboard)/interpreters/columns";
 import {useGetInterpreters} from "@/features/interpreters/api/use-get-interpreters";
 import {useNewInterpreter} from "@/features/interpreters/hooks/use-new-interpreter";
 import {Skeleton} from "@/components/ui/skeleton";
+import {SupportedFilters} from "@/components/ui/data-table-toolbar";
 
 
 const InterpretersClient = (
@@ -15,6 +16,8 @@ const InterpretersClient = (
     const newInterpreter = useNewInterpreter()
     const interpretersQuery = useGetInterpreters()
     const interpreters  = interpretersQuery.data || []
+
+    const interpreterTableFilters: SupportedFilters[] = ['firstName']
 
     if(interpretersQuery.isLoading){
         return (
@@ -47,7 +50,7 @@ const InterpretersClient = (
                         </Button>
                     </CardHeader>
                     <CardContent>
-                        <DataTable columns={columns} data={interpreters}/>
+                        <DataTable columns={columns} data={interpreters} enabledFilters={interpreterTableFilters}/>
                     </CardContent>
                 </Card>
             </div>
