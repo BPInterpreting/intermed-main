@@ -26,27 +26,27 @@ export const Navigation = () => {
      const routes = [
          {
              label: "Home",
-             href: `/admin/home`,
+             href: `/admin/dashboard/home`,
              icon: LayoutGridIcon
          },
         {
             label: "Appointments ",
-            href: `/admin/appointments`,
+            href: `/admin/dashboard/appointments`,
             icon: NotebookText,
         },
          {
              label: "Patients ",
-             href: `/admin/patients`,
+             href: `/admin/dashboard/patients`,
              icon: UsersIcon
          },
          {
              label: "Facilities ",
-             href: `/admin/facilities`,
+             href: `/admin/dashboard/facilities`,
              icon: ClipboardPlusIcon
          },
          {
              label: "Interpreters ",
-             href: `/admin/interpreters`,
+             href: `/admin/dashboard/interpreters`,
              icon: LucideBriefcase
          },
 
