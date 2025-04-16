@@ -1,24 +1,25 @@
 'use client'
 
+import {Button} from "@/components/ui/button";
 import {DataTable} from "@/components/ui/data-table";
 import {Card, CardContent, CardHeader, CardTitle,} from "@/components/ui/card"
-import {Loader2} from "lucide-react";
-import {columns} from "@/app/admin/(dashboard)/interpreters/columns";
-import {useGetInterpreters} from "@/features/interpreters/api/use-get-interpreters";
-import {useNewInterpreter} from "@/features/interpreters/hooks/use-new-interpreter";
+import {Loader2, Plus} from "lucide-react";
+import {columns} from "@/app/admin/dashboard/appointments/columns";
 import {Skeleton} from "@/components/ui/skeleton";
+import {useNewAppointment} from "@/features/appointments/hooks/use-new-appointments";
+import {useGetAppointments} from "@/features/appointments/api/use-get-appointments";
 import {SupportedFilters} from "@/components/ui/data-table-toolbar";
 
 
-const InterpretersClient = (
+const AppointmentsClient = (
 ) => {
-    const newInterpreter = useNewInterpreter()
-    const interpretersQuery = useGetInterpreters()
-    const interpreters  = interpretersQuery.data || []
+    const newAppointment = useNewAppointment()
+    const appointmentsQuery = useGetAppointments()
+    const appointments  = appointmentsQuery.data || []
 
-    const interpreterTableFilters: SupportedFilters[] = ['firstName']
+    const appointmentTableFilters: SupportedFilters[] = ['patient', "status"]
 
-    if(interpretersQuery.isLoading){
+    if(appointmentsQuery.isLoading){
         return (
             <div>
                 <Card className='w-full pb-10'>
@@ -40,10 +41,16 @@ const InterpretersClient = (
             <div className='flex-1 px-4 w-full pb-10'>
                 <Card className='border-none shadow-none'>
                     <CardHeader className='gap-y-2 lg:flex-row lg:justify-between'>
-                        <CardTitle className='text-3xl line-clamp-1'>Interpreters</CardTitle>
+                        <CardTitle className='text-3xl line-clamp-1'>Appointment History</CardTitle>
+                        <Button
+                            onClick={newAppointment.onOpen}
+                        >
+                            <Plus className='size-4 mr-2'/>
+                            Add Appointment
+                        </Button>
                     </CardHeader>
                     <CardContent>
-                        <DataTable columns={columns} data={interpreters} enabledFilters={interpreterTableFilters}/>
+                        <DataTable columns={columns} data={appointments} enabledFilters={appointmentTableFilters}  />
                     </CardContent>
                 </Card>
             </div>
@@ -52,5 +59,5 @@ const InterpretersClient = (
     )
 }
 
-export default InterpretersClient;
+export default AppointmentsClient;
 

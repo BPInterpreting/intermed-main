@@ -10,7 +10,7 @@ import {
     UsersIcon
 } from "lucide-react";
 import { FaRegHospital } from "react-icons/fa6"
-import {NavItems} from "@/app/admin/(dashboard)/components/sidebar/nav-items";
+import {NavItems} from "@/app/admin/dashboard/components/sidebar/nav-items";
 import {map} from "zod";
 import {Separator} from "@/components/ui/separator";
 import {ModeToggle} from "@/components/theme/mode-toggle";

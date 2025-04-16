@@ -3,7 +3,7 @@
 import {ColumnDef} from "@tanstack/react-table"
 import {InferResponseType} from "hono";
 import {client} from "@/lib/hono";
-import {Actions} from "@/app/admin/(dashboard)/facilities/actions";
+import {Actions} from "@/app/admin/dashboard/facilities/actions";
 import {formatPhoneNumber, trimAddress} from "@/lib/utils";
 
 
