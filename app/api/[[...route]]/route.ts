@@ -14,7 +14,7 @@ export const runtime = 'edge';
 //initialize the new hono api instance where base is out /api route
 const app = new Hono().basePath('/api')
 app.use('*', cors({
-    origin: 'http://localhost:8081',
+    origin: ['http://localhost:8081', 'https://www.pena-med.com'],
     allowHeaders: ['X-Custom-Header', 'Upgrade-Insecure-Requests'],
     allowMethods: ['POST', 'GET', 'OPTIONS'],
     exposeHeaders: ['Content-Length', 'X-Kuma-Revision'],
