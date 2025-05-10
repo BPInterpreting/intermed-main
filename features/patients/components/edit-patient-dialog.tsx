@@ -38,7 +38,7 @@ export const EditPatientDialog = () => {
     const {isOpen, onClose, id} = useUpdatePatient()
     const editMutation = useEditPatient(id ?? '')
     const deleteMutation = useDeletePatient(id ?? '')
-    const patientQuery = useGetIndividualPatient(id)
+    const patientQuery = useGetIndividualPatient(id ?? '')
 
     const [ConfirmDialog, confirm] = useConfirm(
         'Are you sure you want to delete this patient?',
@@ -60,7 +60,6 @@ export const EditPatientDialog = () => {
 
     const onDelete = async () => {
         const ok = await confirm()
-
         if(ok) {
             deleteMutation.mutate(undefined, {
                 onSuccess: () => {

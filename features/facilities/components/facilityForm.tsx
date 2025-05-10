@@ -25,8 +25,8 @@ const formSchema = z.object({
     address: z.string(),
     longitude: z.coerce.number(),
     latitude: z.coerce.number(),
-    email: z.string().email(),
-    phoneNumber: z.string(),
+    email: z.string().email().optional(),
+    phoneNumber: z.string().optional(),
     facilityType: z.string(),
     operatingHours: z.string(),
     averageWaitTime: z.string(),
@@ -99,6 +99,7 @@ export const FacilityForm = ({
                    {(form.getValues('latitude') !==0 && form.getValues('longitude') !==0) ? (
                        <div className='mb-1'>
                            <MapWithNoSSR
+                               key={`<span class="math-inline">\{form\.getValues\('latitude'\)\}\-</span>{form.getValues('longitude')}`}
                                latitude={parseFloat(form.getValues('latitude').toString())}
                                longitude={parseFloat(form.getValues('longitude').toString())}
                                markerText={form.getValues('address') || 'Selected Location'}
@@ -144,6 +145,7 @@ export const FacilityForm = ({
                                                format='(###) ###-####'
                                                allowEmptyFormatting={true}
                                                mask="_"
+                                               value={field.value || ''}
                                            />
                                        </FormControl>
                                    </FormItem>

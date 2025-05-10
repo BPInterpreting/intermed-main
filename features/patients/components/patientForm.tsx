@@ -29,6 +29,8 @@ const formSchema = insertPatientSchema.pick({
     preferredLanguage: true
 })
 
+
+
 type FormValues = z.input<typeof formSchema>
 
 type Props ={
@@ -106,6 +108,7 @@ export const PatientForm = ({
                                                placeholder="example@email.com"
                                                type={"email"}
                                                {...field}
+                                               value={field.value || ""}
                                            />
                                        </FormControl>
                                    </FormItem>

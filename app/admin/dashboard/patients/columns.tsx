@@ -14,6 +14,15 @@ export type ResponseType = InferResponseType<typeof client.api.patients.$get, 20
 
 export const columns: ColumnDef<ResponseType>[] = [
     {
+        accessorKey: "actions",
+        header: "Actions",
+        cell: ({ row }) =>{
+            return(
+                <Actions id={row.original.id} />
+            )
+        }
+    },
+    {
         accessorKey: "firstName",
         header: "Name",
         cell: ({ row }) => {
@@ -57,9 +66,6 @@ export const columns: ColumnDef<ResponseType>[] = [
             return <div>{row.original.preferredLanguage}</div>
         }
     },
-    {
-        id: "actions",
-        cell: ({ row }) => <Actions id={row.original.id} />
-    }
+
 
 ]

@@ -13,6 +13,15 @@ export type ResponseType = InferResponseType<typeof client.api.facilities.$get, 
 
 export const columns: ColumnDef<ResponseType>[] = [
     {
+        accessorKey: "actions",
+        header: "Actions",
+        cell: ({ row }) => {
+            return(
+                <Actions id={row.original.id} />
+            )
+        }
+    },
+    {
         accessorKey: "name",
         header: "Name",
     },
@@ -35,7 +44,7 @@ export const columns: ColumnDef<ResponseType>[] = [
 
             return (
                 <div>
-                    {formatPhoneNumber(row.original.phoneNumber)}
+                    {formatPhoneNumber(row.original.phoneNumber ?? "")}
                 </div>
             )
         }
@@ -52,9 +61,6 @@ export const columns: ColumnDef<ResponseType>[] = [
         accessorKey: "averageWaitTime",
         header: "Average Wait Time",
     },
-    {
-        id: "actions",
-        cell: ({ row }) => <Actions id={row.original.id} />
-    }
+
 
 ]

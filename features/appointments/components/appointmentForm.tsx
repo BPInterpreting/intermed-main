@@ -38,7 +38,7 @@ const formSchema = z.object({
     projectedDuration: z.string().regex(intervalRegex, {message: 'Invalid duration format. Example: 1h30m'}).nullable(),
     endTime: z.string().nullable().optional(),
     appointmentType: z.string().nullable(),
-    isCertified: z.boolean(),
+    isCertified: z.boolean().optional(),
     notes: z.string().nullable().optional(),
     status: z.string().nullable()
 })
