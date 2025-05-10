@@ -56,7 +56,7 @@ export const Navigation = () => {
       <>
           <div>
               <div className='flex items-center justify-center pt-8 pl-4 pb-7'>
-                  <Image src='/logo.svg' alt='logo' height={100} width={100} />
+
               </div>
               <Separator/>
               <ul className='flex flex-col gap-y-2 flex-1 pt-10 m-2'>
