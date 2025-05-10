@@ -176,6 +176,7 @@ export const FacilityForm = ({
                                        <FormLabel>Facility Type</FormLabel>
                                        <FormControl>
                                            <Input
+                                               className='capitalize'
                                                placeholder="Enter specialty"
                                                {...field}
                                            />

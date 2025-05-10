@@ -83,6 +83,7 @@ export const InterpreterForm = ({
                                        <FormLabel htmlFor='firstName'>First Name</FormLabel>
                                        <FormControl>
                                            <Input
+                                               className='capitalize'
                                                id='firstName'
                                                placeholder="first name..."
                                                {...field}
@@ -99,6 +100,7 @@ export const InterpreterForm = ({
                                        <FormLabel htmlFor='lastName'>Last Name</FormLabel>
                                        <FormControl>
                                            <Input
+                                               className='capitalize'
                                                id='lastName'
                                                placeholder="last name..."
                                                {...field}
