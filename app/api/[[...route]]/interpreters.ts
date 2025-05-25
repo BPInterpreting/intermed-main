@@ -262,7 +262,6 @@ const app = new Hono()
                 .delete(interpreter)
                 .where(
                     and(
-                        eq(interpreter.clerkUserId, auth.userId),
                         eq(interpreter.id, id)
                     )
                 ).returning()
