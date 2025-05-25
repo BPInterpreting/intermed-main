@@ -24,8 +24,8 @@ export const useEditInterpreter = (id: string) => {
         },
         onSuccess: () => {
             toast.success('Interpreter updated successfully')
-            queryClient.invalidateQueries({ queryKey: ["interpreters"] })
-            queryClient.invalidateQueries({ queryKey: ["interpreters", { id }] });
+            queryClient.invalidateQueries({ queryKey: ["interpreter"] })
+            queryClient.invalidateQueries({ queryKey: ["interpreter", { id }] });
         },
         onError: () => {
             toast.error('Failed to update interpreter')

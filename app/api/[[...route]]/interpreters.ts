@@ -185,8 +185,6 @@ const app = new Hono()
                 return c.json({ error: "Interpreter not found" }, 404)
             }
             return c.json({ data })
-
-
         })
     //individual patient can be updated by id
     .patch(
@@ -264,6 +262,7 @@ const app = new Hono()
                 .delete(interpreter)
                 .where(
                     and(
+                        eq(interpreter.clerkUserId, auth.userId),
                         eq(interpreter.id, id)
                     )
                 ).returning()

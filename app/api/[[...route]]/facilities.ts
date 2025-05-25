@@ -6,13 +6,12 @@ import { z } from 'zod'
 import { zValidator } from '@hono/zod-validator'
 import {createId} from "@paralleldrive/cuid2";
 import {and, eq} from "drizzle-orm";
+import {clerkClient} from "@clerk/nextjs/server";
 
 //part of RPC is to create a schema for the validation that is used in the post request
 const schema = z.object({
     name: z.string(),
 })
-
-
 
 //all the routes are chained to the main Hono app
 const app = new Hono()

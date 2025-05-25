@@ -89,7 +89,7 @@ export const appointments = pgTable("appointments", {
         onDelete: "cascade",
     }),
     interpreterId: text("interpreter_id").references(() => interpreter.id, {
-        onDelete: "cascade",
+        onDelete: "set null",
     }),
 
 })

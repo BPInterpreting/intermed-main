@@ -22,7 +22,7 @@ export const useDeleteInterpreter = (id: string) => {
         onSuccess: () => {
             toast.success('Interpreter deleted successfully')
             queryClient.invalidateQueries({ queryKey: ["interpreters"] })
-            queryClient.invalidateQueries({ queryKey: ["interpreters", { id }] });
+            queryClient.invalidateQueries({ queryKey: ["interpreter", { id }] });
         },
         onError: () => {
             toast.error('Failed to delete interpreter')
