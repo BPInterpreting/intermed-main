@@ -7,6 +7,8 @@ import { zValidator } from '@hono/zod-validator'
 import {createId} from "@paralleldrive/cuid2";
 import {and, eq} from "drizzle-orm";
 import {clerkMiddleware, getAuth} from "@hono/clerk-auth";
+import {clerkClient} from '@clerk/nextjs/server'
+
 
 //part of RPC is to create a schema for the validation that is used in the post request
 const schema = z.object({
@@ -211,7 +213,6 @@ const app = new Hono()
             const values = c.req.valid('json')
             const auth = getAuth(c)
 
-
             if (!auth?.userId) {
                 return c.json({ error: "Unauthorized" }, 401)
             }
@@ -248,6 +249,8 @@ const app = new Hono()
         async (c) => {
             const { id } = c.req.valid('param')
             const auth = getAuth(c)
+            const userId = auth?.userId
+            const client = await clerkClient()
 
             if (!auth?.userId) {
                 return c.json({ error: "Unauthorized" }, 401)
@@ -256,6 +259,17 @@ const app = new Hono()
             if (!id) {
                 return c.json({ error: "Invalid id" }, 400)
             }
+
+            if (!userId) {
+                return c.json({ error: "Unauthorized - User ID missing" }, 401);
+            }
+
+            try {
+                await client.users.deleteUser(id)
+            } catch (error) {
+                console.log(error)
+            }
+
 
             //delete the facility values according to drizzle update method.check if the facility id matches the id in the database
             const [data] = await db
@@ -266,9 +280,7 @@ const app = new Hono()
                     )
                 ).returning()
 
-            if (!data) {
-                return c.json({ error: "Patient not found" }, 404)
-            }
+
             return c.json({ data })
         }
     )

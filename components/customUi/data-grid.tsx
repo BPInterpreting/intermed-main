@@ -73,11 +73,6 @@ export const DataGrid = () => {
                 value={appointmentsNotClosed}
 
             />
-
-
-
-        {/*    TODO: Pie chart that shows distribution of facilities in percentage */}
-
         </div>
     )
 }
