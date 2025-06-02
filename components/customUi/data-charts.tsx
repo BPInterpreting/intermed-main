@@ -6,14 +6,22 @@ import type {DailyAppointmentDataPoint} from "@/components/customUi/line-chart-g
 import {eachDayOfInterval, endOfWeek, format, getDay, parseISO, startOfWeek, subWeeks} from "date-fns";
 import {useGetAppointments} from "@/features/appointments/api/use-get-appointments";
 import {useMemo} from "react";
+import {FacilityDistributionPieChart} from "@/components/customUi/facility-distribution-pie-chart";
 
 interface RawApiAppointment {
     id:string
     date: string
+    facility?: string
+    facilityId?: string | null
+}
+
+export interface FacilityPieDataInput {
+    name: string;   // Facility Name
+    value: number;  // Count of appointments
 }
 
 const LineChartGraphWithNoSSR = dynamic(
-    () => import("./line-chart-graph").then(mod => mod.LineChartGraph), // Adjust path
+    () => import("./line-chart-graph").then(mod => mod.LineChartGraph),
     {
         ssr: false,
         loading: () => (
@@ -23,6 +31,46 @@ const LineChartGraphWithNoSSR = dynamic(
         )
     }
 );
+const FacilityDistributionPieChartWithNoSSR = dynamic(
+    () => import('./facility-distribution-pie-chart').then(mod => mod.FacilityDistributionPieChart),
+    {
+        ssr: false,
+        loading: () => (
+            <div style={{ height: 400, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px dashed #ccc', borderRadius: '8px' }}>
+                <p>Loading chart...</p> {/* You can use a Skeleton here too */}
+            </div>
+        )
+    }
+);
+
+const processPieChartData = (
+    rawAppointments: RawApiAppointment[] | undefined
+): FacilityPieDataInput[] => {
+    if (!rawAppointments || rawAppointments.length === 0) return [];
+    const facilityCounts: { [facilityName: string]: number } = {};
+
+    rawAppointments.forEach(appointment => {
+        const facilityName = appointment.facility || (appointment.facilityId ? `Facility ID ${appointment.facilityId}` : "Unknown Facility");
+        facilityCounts[facilityName] = (facilityCounts[facilityName] || 0) + 1;
+    });
+
+    let chartData = Object.entries(facilityCounts).map(([name, value]) => ({
+        name,
+        value,
+    }));
+
+    chartData.sort((a, b) => b.value - a.value); // Sort by count descending
+    const MAX_SLICES = 7; // Example: Show top 6 facilities + "Others"
+    if (chartData.length > MAX_SLICES) {
+        const topFacilities = chartData.slice(0, MAX_SLICES - 1);
+        const otherFacilitiesCount = chartData.slice(MAX_SLICES - 1).reduce((acc, curr) => acc + curr.value, 0);
+        if (otherFacilitiesCount > 0) {
+            topFacilities.push({ name: "Others", value: otherFacilitiesCount });
+        }
+        chartData = topFacilities;
+    }
+    return chartData;
+};
 
 const processAppointmentsForChart = (
     rawAppointments: RawApiAppointment[] | undefined,
@@ -92,6 +140,13 @@ export const DataCharts = () => {
         return processAppointmentsForChart(rawAppointments, 4); // Show last 4 weeks (Mon-Fri)
     }, [rawAppointments]);
 
+    const pieChartData = useMemo(() => {
+        console.log("Raw appointments for pie chart:", rawAppointments);
+        const processed = processPieChartData(rawAppointments);
+        console.log("Processed pie chart data:", processed);
+        return processed;
+    }, [rawAppointments]);
+
     if (isLoadingAppointments) {
         return (
             <div style={{ height: 400, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px dashed #ccc', borderRadius: '8px' }}>
@@ -100,13 +155,18 @@ export const DataCharts = () => {
         );
     }
 
-
-
     return(
-        <div className='grid grid-cols-1 lg:grid-cols-6 gap-8'>
-            <div className='col-span-1 lg:col-span-3 xl:col-span-4'>
-                <LineChartGraphWithNoSSR data={appointmentChartData} />
-            </div>
+        <div className='grid grid-cols-2 gap-4 mt-4'>
+                <div>
+                    <LineChartGraphWithNoSSR data={appointmentChartData} />
+                </div>
+                <div>
+                    <FacilityDistributionPieChart
+                        data={pieChartData}
+                        title={"Facility Distribution"}
+                        description={'Breakdown of appointments by facility'}
+                    />
+                </div>
         </div>
     )
 }
