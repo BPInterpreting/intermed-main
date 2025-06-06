@@ -10,7 +10,6 @@ import {formatPhoneNumber, trimAddress} from "@/lib/utils";
 // This is a type definition for the data that will be returned from the API part of the github v4.3 doc
 export type ResponseType = InferResponseType<typeof client.api.facilities.$get, 200>['data'][0]
 
-
 export const columns: ColumnDef<ResponseType>[] = [
     {
         accessorKey: "actions",
@@ -24,6 +23,13 @@ export const columns: ColumnDef<ResponseType>[] = [
     {
         accessorKey: "name",
         header: "Name",
+        cell: ({ row }) => {
+            return (
+                <div className="capitalize">
+                    {row.original.name}
+                </div>
+            )
+        }
     },
     {
         accessorKey: "address",

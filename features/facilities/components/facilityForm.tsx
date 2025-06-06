@@ -95,160 +95,155 @@ export const FacilityForm = ({
 
     return(
         <div>
-               <Form {...form}>
-                   {(form.getValues('latitude') !==0 && form.getValues('longitude') !==0) ? (
-                       <div className='mb-1'>
-                           <MapWithNoSSR
-                               key={`<span class="math-inline">\{form\.getValues\('latitude'\)\}\-</span>{form.getValues('longitude')}`}
-                               latitude={parseFloat(form.getValues('latitude').toString())}
-                               longitude={parseFloat(form.getValues('longitude').toString())}
-                               markerText={form.getValues('address') || 'Selected Location'}
-                               height='64'
-                           />
-                       </div>
-                     ): (
-                         <div className={'flex mb-4 items-center justify-center'}>
-                             <p className='text-muted-foreground'>
-                                 **Select location below to see it on the map**
-                             </p>
-                         </div>
-
-                   )}
-                   <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8 w-full">
-                       <div className='grid grid-cols-2 '>
-                           <div className='flex flex-row gap-x-4'>
-                               <FormField
-                                   control={form.control}
-                                   name="name"
-                                   render={({field}) => (
-                                       <FormItem>
-                                           <FormLabel>Name</FormLabel>
-                                           <FormControl>
-                                               <Input
-                                                   className='capitalize'
-                                                   placeholder="Facility Name"
-                                                   {...field}
-                                               />
-                                           </FormControl>
-                                       </FormItem>
-                                   )}
-                               />
-                           <FormField
-                               control={form.control}
-                               name="phoneNumber"
-                               render={({field}) => (
-                                   <FormItem>
-                                       <FormLabel>Phone Number</FormLabel>
-                                       <FormControl>
-                                           <PhoneInput
-                                               {...field}
-                                               format='(###) ###-####'
-                                               allowEmptyFormatting={true}
-                                               mask="_"
-                                               value={field.value || ''}
-                                           />
-                                       </FormControl>
-                                   </FormItem>
-                               )}
-                           />
-                           </div>
-                           <FormField
-                               control={form.control}
-                               name="email"
-                               render={({field}) => (
-                                   <FormItem>
-                                       <FormLabel>Email</FormLabel>
-                                       <FormControl>
-                                           <Input
-                                               type={"email"}
-                                               placeholder="example@email.com"
-                                               {...field}
-                                           />
-                                       </FormControl>
-                                   </FormItem>
-                               )}
-                           />
-                           <FormField
-                               control={form.control}
-                               name="facilityType"
-                               render={({field}) => (
-                                   <FormItem>
-                                       <FormLabel>Facility Type</FormLabel>
-                                       <FormControl>
-                                           <Input
-                                               className='capitalize'
-                                               placeholder="Enter specialty"
-                                               {...field}
-                                           />
-                                       </FormControl>
-                                   </FormItem>
-                               )}
-                           />
-                            <FormField
-                                 control={form.control}
-                                 name="address"
-                                 render={({field}) => (
-                                      <FormItem>
-                                        <FormLabel>Address</FormLabel>
-                                        <FormControl>
-                                             <LocationInput
-                                                 initialAddress={field.value || ''}
-                                                 onLocationSelected={handleLocationSelected}
-                                             />
-                                        </FormControl>
-                                      </FormItem>
-                                 )}
-                            />
-                           <div className='flex flex-row gap-x-4'>
-                            <FormField
-                                 control={form.control}
-                                 name="operatingHours"
-                                 render={({field}) => (
-                                      <FormItem>
-                                        <FormLabel>Operating Hours</FormLabel>
-                                        <FormControl>
-                                             <Input
-                                                  placeholder="9:00am-5:00pm"
-                                                  {...field}
-                                             />
-                                        </FormControl>
-                                      </FormItem>
-                                 )}
-                            />
-                            <FormField
-                                 control={form.control}
-                                 name="averageWaitTime"
-                                 render={({field}) => (
-                                      <FormItem>
-                                        <FormLabel>Average Wait Time</FormLabel>
-                                        <FormControl>
-                                             <Input
-                                                  placeholder="1h30m"
-                                                  {...field}
-                                             />
-                                        </FormControl>
-                                      </FormItem>
-                                 )}
-                            />
-                           </div>
-                       </div>
-                       <Button className='w-full mt-4'>
-                           {id ? "Update Facility" : "Add Facility"}
-                       </Button>
-                       {!!id && (
-                            <Button
-                                type='button'
-                                disabled={disabled}
-                                variant="destructive"
-                                className='w-full'
-                                onClick={handleDelete}
-                            >
-                                 <Trash className='size-4 mr-2'/>
-                                 Delete Facility
-                            </Button>
+           <Form {...form}>
+               {(form.getValues('latitude') !==0 && form.getValues('longitude') !==0) ? (
+                   <div className='mb-1'>
+                       <MapWithNoSSR
+                           key={`<span class="math-inline">\{form\.getValues\('latitude'\)\}\-</span>{form.getValues('longitude')}`}
+                           latitude={parseFloat(form.getValues('latitude').toString())}
+                           longitude={parseFloat(form.getValues('longitude').toString())}
+                           markerText={form.getValues('address') || 'Selected Location'}
+                           height='64'
+                       />
+                   </div>
+                 ): (
+                     <div className={'flex mb-4 items-center justify-center'}>
+                         <p className='text-muted-foreground'>
+                             **Select location below to see it on the map**
+                         </p>
+                     </div>
+               )}
+               <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-2 pt-4 ">
+                   <div className='grid grid-cols-2 gap-x-4 gap-y-6 '>
+                       <FormField
+                           control={form.control}
+                           name="name"
+                           render={({field}) => (
+                               <FormItem>
+                                   <FormLabel>Name</FormLabel>
+                                   <FormControl>
+                                       <Input
+                                           className='capitalize'
+                                           placeholder="Facility Name"
+                                           {...field}
+                                       />
+                                   </FormControl>
+                               </FormItem>
+                           )}
+                       />
+                       <FormField
+                           control={form.control}
+                           name="phoneNumber"
+                           render={({field}) => (
+                               <FormItem>
+                                   <FormLabel>Phone Number</FormLabel>
+                                   <FormControl>
+                                       <PhoneInput
+                                           {...field}
+                                           format='(###) ###-####'
+                                           allowEmptyFormatting={true}
+                                           mask="_"
+                                           value={field.value || ''}
+                                       />
+                                   </FormControl>
+                               </FormItem>
+                           )}
+                       />
+                       <FormField
+                           control={form.control}
+                           name="email"
+                           render={({field}) => (
+                               <FormItem>
+                                   <FormLabel>Email</FormLabel>
+                                   <FormControl>
+                                       <Input
+                                           type={"email"}
+                                           placeholder="example@email.com"
+                                           {...field}
+                                       />
+                                   </FormControl>
+                               </FormItem>
+                           )}
+                       />
+                       <FormField
+                           control={form.control}
+                           name="facilityType"
+                           render={({field}) => (
+                               <FormItem>
+                                   <FormLabel>Facility Type</FormLabel>
+                                   <FormControl>
+                                       <Input
+                                           className='capitalize'
+                                           placeholder="Enter specialty"
+                                           {...field}
+                                       />
+                                   </FormControl>
+                               </FormItem>
+                           )}
+                       />
+                       <FormField
+                           control={form.control}
+                           name="operatingHours"
+                           render={({field}) => (
+                               <FormItem>
+                                   <FormLabel>Operating Hours</FormLabel>
+                                   <FormControl>
+                                       <Input
+                                           placeholder="9:00am-5:00pm"
+                                           {...field}
+                                       />
+                                   </FormControl>
+                               </FormItem>
+                           )}
+                       />
+                       <FormField
+                           control={form.control}
+                           name="averageWaitTime"
+                           render={({field}) => (
+                               <FormItem>
+                                   <FormLabel>Average Wait Time</FormLabel>
+                                   <FormControl>
+                                       <Input
+                                           placeholder="1h30m"
+                                           {...field}
+                                       />
+                                   </FormControl>
+                               </FormItem>
+                           )}
+                       />
+                   </div>
+                   <FormField
+                       control={form.control}
+                       name="address"
+                       render={({field}) => (
+                           <FormItem>
+                               <FormLabel>Address</FormLabel>
+                               <FormControl>
+                                   <LocationInput
+                                       initialAddress={field.value || ''}
+                                       onLocationSelected={handleLocationSelected}
+                                   />
+                               </FormControl>
+                           </FormItem>
                        )}
-                   </form>
-               </Form>
+                   />
+                   <Button className='w-full mt-4 mb-2'>
+                       {id ? "Update Facility" : "Add Facility"}
+                   </Button>
+                   {!!id && (
+                        <Button
+                            type='button'
+                            disabled={disabled}
+                            variant="destructive"
+                            className='w-full'
+                            onClick={handleDelete}
+                        >
+                             <Trash className='size-4 mr-2'/>
+                             Delete Facility
+                        </Button>
+                   )}
+               </form>
+           </Form>
         </div>
    )
 }

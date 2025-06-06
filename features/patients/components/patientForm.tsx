@@ -66,17 +66,18 @@ export const PatientForm = ({
            <div>
                <Form {...form}>
                    <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 pt-4">
-                       <div className='grid grid-cols-2 space-x-4'>
+                       <div className='grid grid-cols-2 gap-2'>
                            <FormField
                                control={form.control}
                                name="firstName"
                                render={({field}) => (
-                                   <FormItem>
+                                   <FormItem >
                                        <FormLabel>First Name</FormLabel>
                                        <FormControl>
                                            <Input
                                                placeholder="first name..."
                                                {...field}
+                                               className='capitalize'
                                            />
                                        </FormControl>
                                    </FormItem>
@@ -92,6 +93,7 @@ export const PatientForm = ({
                                            <Input
                                                placeholder="last name..."
                                                {...field}
+                                               className='capitalize'
                                            />
                                        </FormControl>
                                    </FormItem>
@@ -142,6 +144,7 @@ export const PatientForm = ({
                                                placeholder="Insurance Inc"
                                                {...field}
                                                value={field.value || ""}
+                                               className='capitalize'
                                            />
                                        </FormControl>
                                    </FormItem>
@@ -158,6 +161,7 @@ export const PatientForm = ({
                                                   placeholder="English"
                                                   {...field}
                                                  value={field.value || ""}
+                                                  className='capitalize'
                                              />
                                         </FormControl>
                                       </FormItem>

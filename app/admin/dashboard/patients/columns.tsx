@@ -27,7 +27,7 @@ export const columns: ColumnDef<ResponseType>[] = [
         header: "Name",
         cell: ({ row }) => {
             return (
-                <div>
+                <div className='capitalize'>
                     {row.original.firstName} {row.original.lastName}
                 </div>
             )
@@ -56,7 +56,7 @@ export const columns: ColumnDef<ResponseType>[] = [
         accessorKey: "insuranceCarrier",
         header: "Insurance Carrier",
         cell: ({ row }) => {
-            return <div>{row.original.insuranceCarrier}</div>
+            return <div className='capitalize'>{row.original.insuranceCarrier}</div>
         }
     },
     {

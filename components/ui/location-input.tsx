@@ -75,6 +75,7 @@ onLocationSelected
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 placeholder='123 Main St, City, State, ZIP'
+                className='w-full'
             />
             <Button
                 onClick={handleSearch}

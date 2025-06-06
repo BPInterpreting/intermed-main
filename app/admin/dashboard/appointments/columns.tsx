@@ -13,10 +13,7 @@ import {DataTableColumnHeader} from "@/components/ui/data-table-column-header";
 // This is a type definition for the data that will be returned from the API part of the GitHub v4.3 doc
 export type ResponseType = InferResponseType<typeof client.api.appointments.$get, 200>["data"][0]
 
-
 export const columns: ColumnDef<ResponseType>[] = [
-
-
     {
         accessorKey: "actions",
         header: "Actions",

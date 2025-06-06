@@ -94,8 +94,8 @@ export const AppointmentForm = ({
    return(
                <Form {...form}>
                    <form onSubmit={form.handleSubmit(handleSubmit, (errors) => {
-                       console.error("Validation failed", JSON.stringify(errors, null, 2));})} className="space-y-4 pt-4 ">
-                       <div className='grid grid-cols-2 gap-4 '>
+                       console.error("Validation failed", JSON.stringify(errors, null, 2));})} className="space-y-2 pt-4 ">
+                       <div className='grid grid-cols-1 gap-1 '>
                            <FormField
                                control={form.control}
                                name="date"
@@ -111,7 +111,7 @@ export const AppointmentForm = ({
                                    </FormItem>
                                )}
                            />
-                           <div className='flex flex-row items-center gap-x-4'>
+                           <div className='flex flex-row  gap-x-4'>
                                <FormField
                                    control={form.control}
                                    name="startTime"
@@ -230,7 +230,7 @@ export const AppointmentForm = ({
                                name="interpreterId"
                                render={({ field }) => (
                                    <FormItem>
-                                       <FormLabel>Facility</FormLabel>
+                                       <FormLabel>Interpreter</FormLabel>
                                        <FormControl>
                                            <CustomSelect
                                                options={interpreterOptions}
@@ -244,9 +244,6 @@ export const AppointmentForm = ({
                                    </FormItem>
                                )}
                            />
-
-
-
                            {/*<FormItem>*/}
                            {/*    <FormLabel>Appointment Type</FormLabel>*/}
                            {/*    <FormControl>*/}

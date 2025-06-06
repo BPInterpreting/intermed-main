@@ -24,16 +24,17 @@ import {useDeleteFacility} from "@/features/facilities/api/use-delete-facility";
 import {useConfirm} from "@/hooks/use-confirm";
 import {Loader2} from "lucide-react";
 
-const formSchema  = insertFacilitySchema.pick({
-    name: true,
-    address: true,
-    longitude: true,
-    latitude: true,
-    email: true,
-    phoneNumber: true,
-    facilityType: true,
-    operatingHours: true,
-    averageWaitTime: true,
+const formSchema  = insertFacilitySchema.omit({
+    id: true,
+    // name: true,
+    // address: true,
+    // longitude: true,
+    // latitude: true,
+    // email: true,
+    // phoneNumber: true,
+    // facilityType: true,
+    // operatingHours: true,
+    // averageWaitTime: true,
 })
 
 type FormValues = z.input<typeof formSchema>
