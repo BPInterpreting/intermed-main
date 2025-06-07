@@ -1,11 +1,21 @@
 'use client'
 
-import {LineChartGraph} from "@/components/customUi/line-chart-graph";
+import {AppointmentAreaChart} from "@/components/customUi/appointment-area-chart";
 import dynamic from "next/dynamic";
-import type {DailyAppointmentDataPoint} from "@/components/customUi/line-chart-graph";
-import {eachDayOfInterval, endOfWeek, format, getDay, parseISO, startOfWeek, subWeeks} from "date-fns";
+import type {DailyAppointmentDataPoint} from "@/components/customUi/appointment-area-chart";
+import {
+    eachDayOfInterval,
+    endOfWeek,
+    format,
+    getDay,
+    parseISO,
+    startOfDay,
+    startOfWeek,
+    subDays,
+    subWeeks
+} from "date-fns";
 import {useGetAppointments} from "@/features/appointments/api/use-get-appointments";
-import {useMemo} from "react";
+import {useMemo, useState} from "react";
 import {FacilityDistributionPieChart} from "@/components/customUi/facility-distribution-pie-chart";
 
 interface RawApiAppointment {
@@ -21,7 +31,7 @@ export interface FacilityPieDataInput {
 }
 
 const LineChartGraphWithNoSSR = dynamic(
-    () => import("./line-chart-graph").then(mod => mod.LineChartGraph),
+    () => import("./appointment-area-chart").then(mod => mod.AppointmentAreaChart),
     {
         ssr: false,
         loading: () => (
@@ -133,12 +143,30 @@ const processAppointmentsForChart = (
 
 
 export const DataCharts = () => {
+    const [timeRange, setTimeRange] = useState('7d'); // Default to last 4 weeks
 
     const {data: rawAppointments, isLoading: isLoadingAppointments} = useGetAppointments();
 
     const appointmentChartData = useMemo(() => {
-        return processAppointmentsForChart(rawAppointments, 4); // Show last 4 weeks (Mon-Fri)
+        return processAppointmentsForChart(rawAppointments as RawApiAppointment[] | undefined, 12);
     }, [rawAppointments]);
+
+    // Memoized filter to get data for the selected time range
+    const filteredData = useMemo(() => {
+        const today = startOfDay(new Date());
+        let daysToSubtract = 90;
+        if (timeRange === "30d") {
+            daysToSubtract = 30;
+        } else if (timeRange === "7d") {
+            daysToSubtract = 7;
+        }
+        const startDate = subDays(today, daysToSubtract - 1);
+        return appointmentChartData.filter((item) => {
+            // new Date() handles 'YYYY-MM-DD' format reliably across timezones
+            const itemDate = new Date(item.fullDate);
+            return itemDate >= startDate;
+        });
+    }, [appointmentChartData, timeRange]);
 
     const pieChartData = useMemo(() => {
         console.log("Raw appointments for pie chart:", rawAppointments);
@@ -158,7 +186,11 @@ export const DataCharts = () => {
     return(
         <div className='grid grid-cols-2 gap-4 mt-4'>
                 <div>
-                    <LineChartGraphWithNoSSR data={appointmentChartData} />
+                    <LineChartGraphWithNoSSR
+                        data={filteredData}
+                        timeRange={timeRange}
+                        onTimeRangeChange={setTimeRange}
+                    />
                 </div>
                 <div>
                     <FacilityDistributionPieChart
