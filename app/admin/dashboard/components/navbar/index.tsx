@@ -8,7 +8,7 @@ import {Search} from "./search";
 
 export const Navbar = () => {
     return (
-        <nav className='fixed top-0 h-[87px] pl-60  w-full px-4 z-10 bg-secondary rounded-b-md '>
+        <nav className='fixed top-0 h-[87px] pl-60  w-full px-4 z-10 bg-white rounded-b-md '>
             <div className='flex  items-center justify-between p-4'>
                 <div>
                     <UserButton
@@ -41,6 +41,7 @@ export const Navbar = () => {
                 </div>
                     {/*<Search />*/}
                     {/*<ModeToggle/>*/}
+
             </div>
         </nav>
 

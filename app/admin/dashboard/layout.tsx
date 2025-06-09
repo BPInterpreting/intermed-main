@@ -14,11 +14,10 @@ children, // will be a page or nested layout
             <div>
                 <Sidebar className='hidden md:flex '/>
             </div>
-            <main className='md:pl-60 h-full pt-[80px]  mt-5'>
+            <main className='md:pl-60 h-full pt-[80px]  mt-5 '>
                 <div className='h-full'>
                     {children}
                 </div>
-
             </main>
         </>
     )

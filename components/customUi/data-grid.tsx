@@ -1,78 +1,107 @@
 'use client'
-import {CalendarClock, TriangleIcon,} from "lucide-react";
 
-import {useSearchParams} from "next/navigation";
-import {DataCard} from "@/components/customUi/data-card";
-import {useEffect, useMemo, useState} from "react";
-import {useGetAppointments} from "@/features/appointments/api/use-get-appointments";
-import {isBefore, parseISO, startOfDay} from "date-fns";
+import { CalendarClock, TriangleIcon, User } from "lucide-react";
+import { DataCard } from "@/components/customUi/data-card";
+import { useMemo } from "react";
+import { useGetAppointments } from "@/features/appointments/api/use-get-appointments";
+import { isBefore, isToday, parseISO, startOfDay } from "date-fns";
 
+// Define the shape of your appointment data, ensuring it has interpreterId
 interface Appointment {
     id: string;
     date: string;
-    notes: string | null;
-    startTime: string;
-    endTime: string | null;
-    appointmentType: string | null;
-    facility: string;
-    facilityId: string | null;
-    patient: string;
-    patientId: string | null;
+    status: string | null;
+    interpreterId?: string | null; // This field is needed to count unique interpreters
+    // Add other fields that might be returned by your API
+    notes?: string | null;
+    startTime?: string;
+    endTime?: string | null;
+    appointmentType?: string | null;
+    facility?: string;
+    facilityId?: string | null;
+    patient?: string;
+    patientId?: string | null;
 }
 
 export const DataGrid = () => {
-    const {data, isLoading} = useGetAppointments()
-    const [todaysAppointments, setTodaysAppointments] = useState<Appointment[]>([])
+    // Fetch appointments once
+    const { data: allAppointments, isLoading } = useGetAppointments();
 
+    // Calculate all derived values using useMemo for efficiency.
+    // This avoids re-calculating on every render, only when `allAppointments` changes.
+    const {
+        todaysAppointmentsCount,
+        appointmentsNotClosedCount,
+        todaysBookedInterpretersCount,
+    } = useMemo(() => {
+        if (!allAppointments) {
+            return {
+                todaysAppointmentsCount: 0,
+                appointmentsNotClosedCount: 0,
+                todaysBookedInterpretersCount: 0,
+            };
+        }
 
-    const {data: appointments} = useGetAppointments()
+        const today = new Date();
+        const startOfToday = startOfDay(today);
 
-    const appointmentsNotClosed = useMemo(() => {
-        if (!appointments) return 0
-
-        const today = startOfDay(new Date())
-        
-        return appointments.filter(appointment => {
-            if (!appointment.status) return false
-            
+        // Filter for today's appointments
+        const todaysAppointments = allAppointments.filter((appointment: Appointment) => {
             try {
-                const appointmentDate = parseISO(appointment.date)
-                
-                return isBefore(appointmentDate, today) && appointment.status === 'Confirmed'
-            } catch (e) {
-                console.error("Error processing date for past due check:", appointment.date, e);
+                return isToday(parseISO(appointment.date));
+            } catch {
+                return false; // Handle invalid date strings gracefully
+            }
+        });
+
+        // Calculate appointments not closed from past dates
+        const notClosedCount = allAppointments.filter(appointment => {
+            if (!appointment.status || !appointment.date) return false;
+            try {
+                const appointmentDate = parseISO(appointment.date);
+                // An appointment from before today that is still 'Confirmed'
+                return isBefore(appointmentDate, startOfToday) && appointment.status === 'Confirmed';
+            } catch {
                 return false;
             }
-        }).length
-    }, [appointments])
+        }).length;
 
-    useEffect(() => {
-        if (data) {
-            const today = new Date().toISOString().split('T')[0]
-            const filteredAppointments = data.filter((appointment: Appointment) => {
-               return appointment.date.startsWith(today)
-            })
-            setTodaysAppointments(filteredAppointments)
-        }
-    }, [data])
+        // Calculate unique interpreters for today's appointments
+        const uniqueInterpreterIds = new Set(
+            todaysAppointments
+                .map(appt => appt.interpreterId)
+                .filter(id => id != null) // Filter out any null or undefined IDs
+        );
+
+        return {
+            todaysAppointmentsCount: todaysAppointments.length,
+            appointmentsNotClosedCount: notClosedCount,
+            todaysBookedInterpretersCount: uniqueInterpreterIds.size,
+        };
+    }, [allAppointments]);
 
     if (isLoading) {
-        return <div>Loading...</div>
+        // You can return a skeleton loader here for a better UX
+        return <div>Loading data cards...</div>;
     }
 
-    return(
-        <div className='grid grid-cols-1 lg:grid-cols-3 gap-8 pb-2 mb-8'>
+    return (
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-2 mb-8'>
             <DataCard
                 title={'Appointments Today'}
                 icon={CalendarClock}
-                value={todaysAppointments.length}
+                value={todaysAppointmentsCount}
             />
             <DataCard
                 icon={TriangleIcon}
-                title={'Appointments not Closed'}
-                value={appointmentsNotClosed}
-
+                title={'Past Due Appointments'}
+                value={appointmentsNotClosedCount}
+            />
+            <DataCard
+                title={'Interpreters Booked Today'}
+                icon={User}
+                value={todaysBookedInterpretersCount}
             />
         </div>
-    )
+    );
 }
