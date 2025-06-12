@@ -83,10 +83,10 @@ export const appointments = pgTable("appointments", {
     appointmentType : varchar("appointmentType"),
     status: varchar("status").default('Pending'),
     patientId: text("patient_id").references(() => patient.id, {
-        onDelete: "cascade",
+        onDelete: "set null",
     }),
     facilityId: text("facility_id").references(() => facilities.id, {
-        onDelete: "cascade",
+        onDelete: "set null",
     }),
     interpreterId: text("interpreter_id").references(() => interpreter.id, {
         onDelete: "set null",

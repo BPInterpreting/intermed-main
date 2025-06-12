@@ -25,7 +25,11 @@ const formSchema = z.object({
     address: z.string(),
     longitude: z.coerce.number(),
     latitude: z.coerce.number(),
-    email: z.string().email().optional(),
+    email: z.string()
+        .email("Invalid email format. Please leave blank if not applicable.")
+        .or(z.literal("")) // Allow an empty string as valid input
+        .optional()
+        .transform(e => e === "" ? undefined : e),
     phoneNumber: z.string().optional(),
     facilityType: z.string(),
     operatingHours: z.string(),
@@ -157,9 +161,10 @@ export const FacilityForm = ({
                                    <FormLabel>Email</FormLabel>
                                    <FormControl>
                                        <Input
+                                           {...field}
                                            type={"email"}
                                            placeholder="example@email.com"
-                                           {...field}
+                                           value={field.value || ''}
                                        />
                                    </FormControl>
                                </FormItem>
