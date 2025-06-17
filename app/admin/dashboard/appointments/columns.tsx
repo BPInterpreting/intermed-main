@@ -160,33 +160,14 @@ export const columns: ColumnDef<ResponseType>[] = [
             )
         }
     },
-    // {
-    //     accessorKey: 'projectedDuration',
-    //     header: "Projected Duration",
-    // },
-    // {
-    //     accessorKey: 'duration',
-    //     header: "Duration",
-    //     cell: ({ row }) => {
-    //         const duration = row.original.duration;
-    //         if (!duration) return "";
-    //         console.log("duration object:", row.original.duration);
-    //         return JSON.stringify(duration);
-    //     }
-    //
-    // },
-
     {
-        accessorKey: "interpreter",
+        // This combines first and last name for display and allows filtering on the full name
+        accessorFn: (row) => `${row.interpreterFirstName || ''} ${row.interpreterLastName || ''}`.trim(),
+        id: "interpreter", // This ID MUST match the filter key in the toolbar
         header: "Interpreter",
-        cell: ({ row }) => {
-            return (
-                <div>
-                    {row.original.interpreterFirstName} {row.original.interpreterLastName}
-                </div>
-            )
-        }
-
+        filterFn: (row, id, value) => { // This filter function allows selecting multiple interpreters
+            return value.includes(row.getValue(id))
+        },
     },
     {
         accessorKey: "facility",

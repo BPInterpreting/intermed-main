@@ -17,7 +17,7 @@ const AppointmentsClient = (
     const appointmentsQuery = useGetAppointments()
     const appointments  = appointmentsQuery.data || []
 
-    const appointmentTableFilters: SupportedFilters[] = ['patient', "status"]
+    const appointmentTableFilters: SupportedFilters[] = ['patient', "status", "interpreter"]
 
     if(appointmentsQuery.isLoading){
         return (

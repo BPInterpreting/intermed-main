@@ -9,14 +9,20 @@ import { DataTableViewOptions } from "./data-table-view-options"
 
 import { DataTableFacetedFilter } from "./data-table-faceted-filter"
 import {useGetAppointments} from "@/features/appointments/api/use-get-appointments";
+import {useMemo} from "react";
 
-export type SupportedFilters = 'patient' | 'name' | 'firstName' | 'status'
+export type SupportedFilters = 'patient' | 'name' | 'firstName' | 'status' | 'interpreter'
+
+interface AppointmentData {
+    interpreterFirstName?: string;
+    interpreterLastName?: string;
+    // Add any other fields from your appointment data if needed
+}
 
 interface DataTableToolbarProps<TData> {
     table: Table<TData>
     enabledFilters?: SupportedFilters[]
 }
-
 
 export function DataTableToolbar<TData>({
     table,
@@ -33,6 +39,27 @@ export function DataTableToolbar<TData>({
         label: status,
         value: status,
     }));
+
+    const interpreterOptions = useMemo(() => {
+        if (!appointment) return [];
+
+        const interpreterNames = new Set<string>();
+        // We cast to AppointmentData[] to safely access the name properties
+        (appointment as AppointmentData[]).forEach(appt => {
+            const firstName = appt.interpreterFirstName || '';
+            const lastName = appt.interpreterLastName || '';
+            const fullName = `${firstName} ${lastName}`.trim();
+            if (fullName) {
+                interpreterNames.add(fullName);
+            }
+        });
+
+        return Array.from(interpreterNames).sort().map(name => ({
+            label: name,
+            value: name
+        }));
+    }, [appointment]);
+
 
     return (
         <div className="flex items-center justify-between">
@@ -69,6 +96,14 @@ export function DataTableToolbar<TData>({
                         />
                     )
                 }
+                {/* --- THIS IS THE NEW INTERPRETER FILTER --- */}
+                {enabledFilters?.includes('interpreter') && table.getColumn("interpreter") && (
+                    <DataTableFacetedFilter
+                        column={table.getColumn("interpreter")}
+                        title="Interpreter"
+                        options={interpreterOptions}
+                    />
+                )}
                 {enabledFilters?.includes('status') && table.getColumn("status") && (
                     <DataTableFacetedFilter
                         column={table.getColumn("status")}
