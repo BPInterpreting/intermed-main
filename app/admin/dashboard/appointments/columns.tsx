@@ -181,6 +181,19 @@ export const columns: ColumnDef<ResponseType>[] = [
         accessorKey: "appointmentType",
         header: "Appointment Type",
     },
+    {
+        accessorKey: 'createdAt',
+        header: 'Created At',
+        cell: ({ row }) => {
+            const date = row.getValue("createdAt") as Date
+
+            return(
+                <span>
+                    {format(date, "cccccc, PPP")}
+                </span>
+            )
+        }
+    }
     // {
     //     accessorKey: "notes",
     //     header: "Notes"

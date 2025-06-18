@@ -22,6 +22,8 @@ export const patient = pgTable("patients", {
     phoneNumber: varchar("phoneNumber").notNull(),
     insuranceCarrier: varchar("insuranceCarrier"),
     preferredLanguage: varchar("preferredLanguage"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow().$onUpdate(() => new Date()),
 })
 
 export const patientsRelations = relations(patient, ({ many }) => ({
@@ -41,6 +43,8 @@ export const facilities = pgTable("facilities", {
     facilityType: varchar("facilityType").notNull(),
     averageWaitTime: varchar("averageWaitTime").notNull(),
     operatingHours: varchar("operatingHours").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow().$onUpdate(() => new Date()),
 })
 
 export const facilitiesRelations = relations(facilities, ({ many }) => ({
@@ -57,6 +61,8 @@ export const interpreter =pgTable("interpreter", {
     phoneNumber: varchar("phoneNumber").notNull(),
     isCertified: boolean('is_certified').default(false),
     clerkUserId: text("clerkUserId").notNull().unique(), //stores the clerk id of the user
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow().$onUpdate(() => new Date()),
     // targetLanguages: varchar("targetLanguages").notNull(),
     // isCertified: boolean("isCertified").notNull(),
     // specialty: varchar("specialty").notNull(),
@@ -91,6 +97,8 @@ export const appointments = pgTable("appointments", {
     interpreterId: text("interpreter_id").references(() => interpreter.id, {
         onDelete: "set null",
     }),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow().$onUpdate(() => new Date()),
 
 })
 
@@ -132,6 +140,8 @@ export const followUpRequest = pgTable("follow_up_request", {
     interpreterId: text("interpreter_id").references(() => interpreter.id, {
         onDelete: "cascade",
     }),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow().$onUpdate(() => new Date()),
 
 })
 export const insertFollowUpRequestSchema = createInsertSchema(followUpRequest, {

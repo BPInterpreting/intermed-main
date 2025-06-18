@@ -72,6 +72,8 @@ const app = new Hono()
                 interpreterId: appointments.interpreterId,
                 interpreterFirstName: interpreter.firstName,
                 interpreterLastName: interpreter.lastName,
+                createdAt: appointments.createdAt,
+                updatedAt: appointments.updatedAt,
                 // interpreterSpecialty: interpreter.specialty,
                 // interpreterCoverageArea: interpreter.coverageArea,
                 // interpreterTargetLanguages: interpreter.targetLanguages
@@ -143,6 +145,8 @@ const app = new Hono()
                     interpreterId: appointments.interpreterId,
                     interpreterFirstName: interpreter.firstName,
                     interpreterLastName: interpreter.lastName,
+                    createdAt: appointments.createdAt,
+                    updatedAt: appointments.updatedAt,
                     // interpreterSpecialty: interpreter.specialty,
                     // interpreterCoverageArea: interpreter.coverageArea,
                     // interpreterTargetLanguages: interpreter.targetLanguages
@@ -173,7 +177,9 @@ const app = new Hono()
             // only allow the first name to be passed in the post request for client to see
             insertAppointmentSchema.omit({
                 id: true,
-                bookingId: true
+                bookingId: true,
+                createdAt: true,
+                updatedAt: true,
             })
         ),
         async (c) => {
