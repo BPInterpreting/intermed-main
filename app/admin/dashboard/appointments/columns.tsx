@@ -8,6 +8,8 @@ import {format, parse} from "date-fns"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import {DataTableColumnHeader} from "@/components/ui/data-table-column-header";
+import {Button} from "@/components/ui/button";
+import {ArrowUpDown} from "lucide-react";
 
 
 // This is a type definition for the data that will be returned from the API part of the GitHub v4.3 doc
@@ -114,7 +116,17 @@ export const columns: ColumnDef<ResponseType>[] = [
     },
     {
         accessorKey: "date",
-        header: "Appointment Date",
+        header: ({ column }) => {
+            return (
+                <Button
+                    variant="ghost"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                >
+                    Appointment Date
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                </Button>
+            )
+        },
         cell: ({ row }) => {
             const date = row.getValue("date") as Date
 
