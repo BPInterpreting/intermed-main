@@ -207,7 +207,9 @@ const app = new Hono()
         zValidator("json", insertAppointmentSchema.omit({
             id: true,
             duration: true,
-            bookingId: true
+            bookingId: true,
+            createdAt: true,
+            updatedAt: true,
         })),
         async (c) => {
             const { id } = c.req.valid('param')
