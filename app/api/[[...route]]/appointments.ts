@@ -84,7 +84,7 @@ const app = new Hono()
             .innerJoin(interpreter, eq(appointments.interpreterId, interpreter.id))
             .where(finalWhereClause)
             .orderBy(
-                desc(appointments.date),
+                asc(appointments.date),
                 asc(appointments.startTime)
             )
 
@@ -157,7 +157,7 @@ const app = new Hono()
                 .innerJoin(facilities, eq(appointments.facilityId, facilities.id))
                 .where(userRole === 'admin' ? and(eq(appointments.id, id)) : and(eq(interpreter.clerkUserId, userId), eq(appointments.id, id)))
                 .orderBy(
-                    desc(appointments.date),
+                    asc(appointments.date),
                     asc(appointments.startTime)
                 )
 

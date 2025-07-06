@@ -19,6 +19,7 @@ export const columns: ColumnDef<ResponseType>[] = [
     {
         accessorKey: "actions",
         header: "Actions",
+        size:80,
         cell: ({ row }) => {
             return(
                 <Actions id={row.original.id} />
@@ -28,10 +29,12 @@ export const columns: ColumnDef<ResponseType>[] = [
     {
         accessorKey: 'bookingId',
         header: 'Booking ID',
+        size: 120,
     },
     {
         accessorKey: 'status',
         header: 'Status',
+        size: 200,
         cell: ({ row }) => {
             switch (row.original.status) {
                 case "Interpreter Requested":
@@ -127,6 +130,7 @@ export const columns: ColumnDef<ResponseType>[] = [
                 </Button>
             )
         },
+        size: 200,
         cell: ({ row }) => {
             const date = row.getValue("date") as Date
 
@@ -184,6 +188,7 @@ export const columns: ColumnDef<ResponseType>[] = [
     {
         accessorKey: "facility",
         header: "Facility",
+        size: 300
     },
     {
         accessorKey: 'isCertified',
@@ -205,11 +210,47 @@ export const columns: ColumnDef<ResponseType>[] = [
                 </span>
             )
         }
-    }
-    // {
-    //     accessorKey: "notes",
-    //     header: "Notes"
-    // },
+    },
+    {
+        accessorKey: "notes",
+        header: "Notes",
+        size: 350,
+        cell: ({ row }) => {
+            const notes = row.getValue("notes") as string;
+
+            if (!notes) return <span>-</span>;
+
+            // Your new facility address handling
+            if (notes.includes('New Facility Address:')) {
+                const parts = notes.split('New Facility Address:');
+                const regularNotes = parts[0].trim();
+                const newAddress = parts[1].trim();
+
+                return (
+                    <div className="space-y-2 whitespace-normal break-words">
+                        {regularNotes && <p>{regularNotes}</p>}
+                        <div className="p-2 bg-yellow-50 border border-yellow-200 rounded-md">
+                            <div className="flex items-center gap-1">
+                                <span className="text-yellow-600">⚠️</span>
+                                <span className="font-semibold text-yellow-800 text-sm">
+                                New Facility Address:
+                            </span>
+                            </div>
+                            <p className="text-yellow-700 text-sm mt-1 break-all">
+                                {newAddress}
+                            </p>
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="whitespace-normal break-words">
+                    {notes}
+                </div>
+            );
+        }
+    },
 
 ]
 

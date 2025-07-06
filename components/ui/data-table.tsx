@@ -65,17 +65,6 @@ export function DataTable<TData, TValue>({
 
     return (
         <div className='space-y-4'>
-            {/*this filter function is causing errors i will fix it later*/}
-            {/*<div className="flex items-center py-2">*/}
-            {/*    <Input*/}
-            {/*        placeholder="Filter first name..."*/}
-            {/*        value={(table.getColumn("firstName")?.getFilterValue() as string) ?? ""}*/}
-            {/*        onChange={(event) =>*/}
-            {/*            table.getColumn("firstName")?.setFilterValue(event.target.value)*/}
-            {/*        }*/}
-            {/*        className="max-w-sm"*/}
-            {/*    />*/}
-            {/*</div>*/}
             <DataTableToolbar table={table} enabledFilters={enabledFilters} />
             <div className="rounded-md border">
                 <Table>
@@ -84,7 +73,13 @@ export function DataTable<TData, TValue>({
                             <TableRow key={headerGroup.id}>
                                 {headerGroup.headers.map((header) => {
                                     return (
-                                        <TableHead key={header.id}>
+                                        <TableHead
+                                            key={header.id}
+                                            style={{
+                                                minWidth: header.column.columnDef.size,
+                                                maxWidth: header.column.columnDef.size,
+                                            }}
+                                        >
                                             {header.isPlaceholder
                                                 ? null
                                                 : flexRender(
@@ -105,7 +100,13 @@ export function DataTable<TData, TValue>({
                                     data-state={row.getIsSelected() && "selected"}
                                 >
                                     {row.getVisibleCells().map((cell) => (
-                                        <TableCell key={cell.id}>
+                                        <TableCell
+                                            key={cell.id}
+                                            style={{
+                                                minWidth: cell.column.columnDef.size,
+                                                maxWidth: cell.column.columnDef.size,
+                                            }}
+                                        >
                                             {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                         </TableCell>
                                     ))}
