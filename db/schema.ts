@@ -61,6 +61,7 @@ export const interpreter =pgTable("interpreter", {
     phoneNumber: varchar("phoneNumber").notNull(),
     isCertified: boolean('is_certified').default(false),
     clerkUserId: text("clerkUserId").notNull().unique(), //stores the clerk id of the user
+    expoPushToken: text("expo_push_token"), // stores the expo push token for notifications
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow().$onUpdate(() => new Date()),
     // targetLanguages: varchar("targetLanguages").notNull(),

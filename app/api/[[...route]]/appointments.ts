@@ -1,13 +1,11 @@
-import { Hono } from 'hono'
-import { db } from '@/db/drizzle'
-import {facilities, appointments, patient, insertAppointmentSchema, interpreter} from "@/db/schema";
-import {undefined, z} from 'zod'
-import { zValidator } from '@hono/zod-validator'
+import {Hono} from 'hono'
+import {db} from '@/db/drizzle'
+import {appointments, facilities, insertAppointmentSchema, interpreter, patient} from "@/db/schema";
+import {z} from 'zod'
+import {zValidator} from '@hono/zod-validator'
 import {createId} from "@paralleldrive/cuid2";
-import {and, asc, desc, eq, gte, inArray, lte, SQL, sql} from "drizzle-orm";
-import { clerkMiddleware, getAuth } from "@hono/clerk-auth";
-import interpreters from "@/app/api/[[...route]]/interpreters";
-import {text} from "drizzle-orm/pg-core";
+import {and, asc, eq, inArray, sql} from "drizzle-orm";
+import {clerkMiddleware, getAuth} from "@hono/clerk-auth";
 
 //all the routes are chained to the main Hono app
 const app = new Hono()

@@ -1,4 +1,4 @@
-// authors.ts
+
 import { Hono } from 'hono'
 import { db } from '@/db/drizzle'
 import {insertInterpreterSchema, interpreter, patient} from "@/db/schema";
@@ -49,54 +49,101 @@ const app = new Hono()
             return c.json({ data })
         })
     .get(
-    '/me', // No /:id here
-    clerkMiddleware(),
-    // REMOVED: zValidator for ':id' parameter
-    async (c) => {
-        const auth = getAuth(c);
-        const userId = auth?.userId; // Get userId from authentication
+        '/me', // No /:id here
+        clerkMiddleware(),
+        // REMOVED: zValidator for ':id' parameter
+        async (c) => {
+            const auth = getAuth(c);
+            const userId = auth?.userId; // Get userId from authentication
 
-        // REMOVED: Code extracting 'id' from params
-        // REMOVED: Check for '!id'
+            // REMOVED: Code extracting 'id' from params
+            // REMOVED: Check for '!id'
 
-        if (!userId) {
-            return c.json({ error: "Unauthorized - User ID missing" }, 401);
-        }
+            if (!userId) {
+                return c.json({ error: "Unauthorized - User ID missing" }, 401);
+            }
 
-        console.log(`[API /me] Attempting fetch for userId: ${userId}`);
-        const [data] = await db
-            .select({
-                id: interpreter.id,
-                firstName: interpreter.firstName,
-                lastName: interpreter.lastName,
-                email: interpreter.email,
-                phoneNumber: interpreter.phoneNumber,
-                isCertified: interpreter.isCertified,
-                clerkUserId: interpreter.clerkUserId,
-            })
-            .from(interpreter)
-            // --- CORRECTED where clause ---
-            .where(
-                // Only filter based on the authenticated user's Clerk ID
-                eq(interpreter.clerkUserId, userId)
-            )
-            // ----------------------------
-            .limit(1);
+            console.log(`[API /me] Attempting fetch for userId: ${userId}`);
+            const [data] = await db
+                .select({
+                    id: interpreter.id,
+                    firstName: interpreter.firstName,
+                    lastName: interpreter.lastName,
+                    email: interpreter.email,
+                    phoneNumber: interpreter.phoneNumber,
+                    isCertified: interpreter.isCertified,
+                    clerkUserId: interpreter.clerkUserId,
+                })
+                .from(interpreter)
+                // --- CORRECTED where clause ---
+                .where(
+                    // Only filter based on the authenticated user's Clerk ID
+                    eq(interpreter.clerkUserId, userId)
+                )
+                // ----------------------------
+                .limit(1);
 
-        console.log(`[API /me] Data found in DB for ${userId}:`, JSON.stringify(data));
+            console.log(`[API /me] Data found in DB for ${userId}:`, JSON.stringify(data));
 
-        if (!data) {
-            console.log(`[API /me] No interpreter found for ${userId}, returning 404`);
-            // Return the specific error the frontend hook was expecting on failure
-            // return c.json({ error: 'Interpreter profile not found' }, 404);
-            // OR return empty data with 200? Let's stick to 404 for now.
-            return c.json({ error: "Interpreter profile not found" }, 404);
-        }
+            if (!data) {
+                console.log(`[API /me] No interpreter found for ${userId}, returning 404`);
+                // Return the specific error the frontend hook was expecting on failure
+                // return c.json({ error: 'Interpreter profile not found' }, 404);
+                // OR return empty data with 200? Let's stick to 404 for now.
+                return c.json({ error: "Interpreter profile not found" }, 404);
+            }
 
-        console.log(`[API /me] Interpreter found for ${userId}, returning 200 with data:`, JSON.stringify(data));
-        // Keep the return structure your /:id uses, as requested
-        return c.json({ data });
+            console.log(`[API /me] Interpreter found for ${userId}, returning 200 with data:`, JSON.stringify(data));
+            // Keep the return structure your /:id uses, as requested
+            return c.json({ data });
     })
+    // Add this route to your existing interpreter file (after the /me route)
+
+    .patch(
+        '/me/push-token',
+        clerkMiddleware(),
+        zValidator('json', z.object({
+            token: z.string(),
+        })),
+        async (c) => {
+            const auth = getAuth(c);
+            const values = c.req.valid('json');
+
+            if (!auth?.userId) {
+                return c.json({ error: 'Unauthorized' }, 401);
+            }
+
+            console.log(`[API /me/push-token] Updating push token for userId: ${auth.userId}`);
+
+            try {
+                const [updatedInterpreter] = await db
+                    .update(interpreter)
+                    .set({
+                        expoPushToken: values.token,
+                    })
+                    .where(eq(interpreter.clerkUserId, auth.userId))
+                    .returning({
+                        id: interpreter.id,
+                        expoPushToken: interpreter.expoPushToken
+                    });
+
+                if (!updatedInterpreter) {
+                    console.log(`[API /me/push-token] No interpreter found for userId: ${auth.userId}`);
+                    return c.json({ error: 'Interpreter profile not found.' }, 404);
+                }
+
+                console.log(`[API /me/push-token] Successfully updated push token for user: ${auth.userId}`);
+                return c.json({
+                    success: true,
+                    data: updatedInterpreter
+                });
+
+            } catch (error) {
+                console.error('[API /me/push-token] Error updating push token:', error);
+                return c.json({ error: 'Failed to update push token' }, 500);
+            }
+        }
+    )
     // get the patient by id
     .get(
         '/:id',

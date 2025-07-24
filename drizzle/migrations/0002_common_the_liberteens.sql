@@ -1,0 +1,1 @@
+ALTER TABLE "interpreter" ADD COLUMN "expo_push_token" text;

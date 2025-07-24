@@ -5,12 +5,9 @@ import {InferResponseType} from "hono";
 import {client} from "@/lib/hono";
 import {Actions} from "./actions";
 import {format, parse} from "date-fns"
-import { Badge } from "@/components/ui/badge"
-import { Checkbox } from "@/components/ui/checkbox"
-import {DataTableColumnHeader} from "@/components/ui/data-table-column-header";
+import {Badge} from "@/components/ui/badge"
 import {Button} from "@/components/ui/button";
 import {ArrowUpDown} from "lucide-react";
-
 
 // This is a type definition for the data that will be returned from the API part of the GitHub v4.3 doc
 export type ResponseType = InferResponseType<typeof client.api.appointments.$get, 200>["data"][0]
