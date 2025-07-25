@@ -268,6 +268,7 @@ const app = new Hono()
     )
 
     //individual facility can be updated by id
+    //individual facility can be updated by id
     .patch(
         '/:id',
         clerkMiddleware(),
@@ -292,29 +293,135 @@ const app = new Hono()
                 return c.json({ error: "Invalid id" }, 400)
             }
 
-            //helper function that selects the id from the appointments table and joins it with the patient table
-            //simplifies complex queries since appointment does not belong to the patient
-            const appointmentsToUpdate = db.$with("appointments_to_update").as(
-                db.select({ id: appointments.id }).from(appointments)
+            try {
+                // Get the BEFORE state of appointment for comparison
+                const [beforeUpdate] = await db
+                    .select({
+                        id: appointments.id,
+                        date: appointments.date,
+                        startTime: appointments.startTime,
+                        interpreterId: appointments.interpreterId,
+                        appointmentType: appointments.appointmentType,
+                        facilityName: facilities.name,
+                        facilityAddress: facilities.address,
+                        patientFirstName: patient.firstName,
+                        patientLastName: patient.lastName,
+                    })
+                    .from(appointments)
+                    .innerJoin(facilities, eq(appointments.facilityId, facilities.id))
                     .innerJoin(patient, eq(appointments.patientId, patient.id))
-                    .where(and(eq(appointments.id, id)))
-            )
+                    .where(eq(appointments.id, id))
+                    .limit(1);
 
-            //
-            const [data] = await db
-                .with(appointmentsToUpdate)
-                .update(appointments)
-                .set(values)
-                .where(
-                    //finds individual appointment id and matches it with the id in the database
-                    inArray(appointments.id, sql`(select id from ${appointmentsToUpdate})`)
+                if (!beforeUpdate) {
+                    return c.json({ error: "Appointment not found" }, 404)
+                }
+
+                //helper function that selects the id from the appointments table and joins it with the patient table
+                //simplifies complex queries since appointment does not belong to the patient
+                const appointmentsToUpdate = db.$with("appointments_to_update").as(
+                    db.select({ id: appointments.id }).from(appointments)
+                        .innerJoin(patient, eq(appointments.patientId, patient.id))
+                        .where(and(eq(appointments.id, id)))
                 )
-                .returning()
 
-            if (!data) {
-                return c.json({ error: "Appointment not found" }, 404)
+                // Update the appointment
+                const [data] = await db
+                    .with(appointmentsToUpdate)
+                    .update(appointments)
+                    .set(values)
+                    .where(
+                        //finds individual appointment id and matches it with the id in the database
+                        inArray(appointments.id, sql`(select id from ${appointmentsToUpdate})`)
+                    )
+                    .returning()
+
+                if (!data) {
+                    return c.json({ error: "Appointment not found" }, 404)
+                }
+
+                console.log(`[Appointments] Updated appointment ${data.id}`);
+
+                //Send notification if interpreter is assigned AND something important changed
+                if (data.interpreterId) {
+                    // Check if important fields changed that warrant notification
+                    const importantFieldsChanged = (
+                        (values.date && values.date !== beforeUpdate.date) ||
+                        (values.startTime && values.startTime !== beforeUpdate.startTime) ||
+                        (values.interpreterId && values.interpreterId !== beforeUpdate.interpreterId)
+                    );
+
+                    if (importantFieldsChanged) {
+                        console.log(`[Appointments] Important fields changed, sending update notification to interpreter: ${data.interpreterId}`);
+
+                        // Get UPDATED appointment details with related data for notification
+                        const [updatedAppointmentDetails] = await db
+                            .select({
+                                id: appointments.id,
+                                date: appointments.date,
+                                startTime: appointments.startTime,
+                                appointmentType: appointments.appointmentType,
+                                facilityName: facilities.name,
+                                facilityAddress: facilities.address,
+                                patientFirstName: patient.firstName,
+                                patientLastName: patient.lastName,
+                            })
+                            .from(appointments)
+                            .innerJoin(facilities, eq(appointments.facilityId, facilities.id))
+                            .innerJoin(patient, eq(appointments.patientId, patient.id))
+                            .where(eq(appointments.id, data.id))
+                            .limit(1);
+
+                        if (updatedAppointmentDetails) {
+                            // Import and use notification service
+                            const { sendNotificationtoInterpreter, createAppointmentNotification } = await import('@/lib/notification-service')
+
+                            const notificationContent = createAppointmentNotification('updated', {
+                                id: updatedAppointmentDetails.id,
+                                date: updatedAppointmentDetails.date,
+                                startTime: updatedAppointmentDetails.startTime,
+                                appointmentType: updatedAppointmentDetails.appointmentType,
+                                facility: {
+                                    name: updatedAppointmentDetails.facilityName,
+                                    address: updatedAppointmentDetails.facilityAddress
+                                },
+                                patient: {
+                                    firstName: updatedAppointmentDetails.patientFirstName,
+                                    lastName: updatedAppointmentDetails.patientLastName
+                                }
+                            });
+
+                            const notificationResult = await sendNotificationtoInterpreter(
+                                data.interpreterId,
+                                {
+                                    appointmentId: data.id,
+                                    type: 'appointment_updated',
+                                    ...notificationContent
+                                }
+                            );
+
+                            if (notificationResult.success) {
+                                console.log(`[Appointments] Update notification sent successfully to interpreter ${data.interpreterId}`);
+                            } else {
+                                console.error(`[Appointments] Failed to send update notification:`, notificationResult.error);
+                                // Don't fail the appointment update if notification fails
+                            }
+                        } else {
+                            console.error(`[Appointments] Could not fetch updated appointment details for notification`);
+                        }
+                    } else {
+                        console.log(`[Appointments] No important fields changed, skipping update notification`);
+                    }
+                } else {
+                    console.log(`[Appointments] No interpreter assigned, skipping update notification`);
+                }
+
+                return c.json({ data })
+
+            } catch (error) {
+                console.error(`[Appointments] Error updating appointment:`, error);
+                return c.json({ error: "Failed to update appointment" }, 500);
             }
-            return c.json({ data })
         }
     )
     .delete(
