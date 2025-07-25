@@ -169,10 +169,8 @@ const app = new Hono()
     .post(
         '/',
         clerkMiddleware(),
-        // validate with zod what type of data is being passed in the post request
         zValidator(
             'json',
-            // only allow the first name to be passed in the post request for client to see
             insertAppointmentSchema.omit({
                 id: true,
                 bookingId: true,
@@ -184,14 +182,90 @@ const app = new Hono()
             const values = c.req.valid('json')
             const auth = getAuth(c)
 
-            // insert facility values using spread which only allows picked values
-            const [data] = await db.insert(appointments).values({
-                id: createId(),
-                ...values
-            }).returning()
-            return c.json({ data })
+            if (!auth?.userId) {
+                return c.json({ error: "Unauthorized" }, 401)
+            }
 
-    })
+            try {
+                // Create the appointment
+                const [data] = await db.insert(appointments).values({
+                    id: createId(),
+                    ...values
+                }).returning()
+
+                console.log(`[Appointments] Created appointment ${data.id}`);
+
+                // ✨ Send notification if interpreter is assigned
+                if (data.interpreterId) {
+                    console.log(`[Appointments] Sending notification to interpreter: ${data.interpreterId}`);
+
+                    // Get appointment details with related data for notification
+                    const [appointmentDetails] = await db
+                        .select({
+                            id: appointments.id,
+                            date: appointments.date,
+                            startTime: appointments.startTime,
+                            appointmentType: appointments.appointmentType,
+                            facilityName: facilities.name,
+                            facilityAddress: facilities.address,
+                            patientFirstName: patient.firstName,
+                            patientLastName: patient.lastName,
+                        })
+                        .from(appointments)
+                        .innerJoin(facilities, eq(appointments.facilityId, facilities.id))
+                        .innerJoin(patient, eq(appointments.patientId, patient.id))
+                        .where(eq(appointments.id, data.id))
+                        .limit(1);
+
+                    if (appointmentDetails) {
+                        // Import and use notification service
+                        const { sendNotificationtoInterpreter, createAppointmentNotification } = await import('@/lib/notification-service')
+
+                        const notificationContent = createAppointmentNotification('assigned', {
+                            id: appointmentDetails.id,
+                            date: appointmentDetails.date,
+                            startTime: appointmentDetails.startTime,
+                            appointmentType: appointmentDetails.appointmentType,
+                            facility: {
+                                name: appointmentDetails.facilityName,
+                                address: appointmentDetails.facilityAddress
+                            },
+                            patient: {
+                                firstName: appointmentDetails.patientFirstName,
+                                lastName: appointmentDetails.patientLastName
+                            }
+                        });
+
+                        const notificationResult = await sendNotificationtoInterpreter(
+                            data.interpreterId,
+                            {
+                                appointmentId: data.id,
+                                type: 'appointment_assigned',
+                                ...notificationContent
+                            }
+                        );
+
+                        if (notificationResult.success) {
+                            console.log(`[Appointments] Notification sent successfully to interpreter ${data.interpreterId}`);
+                        } else {
+                            console.error(`[Appointments] Failed to send notification:`, notificationResult.error);
+                            // Don't fail the appointment creation if notification fails
+                        }
+                    } else {
+                        console.error(`[Appointments] Could not fetch appointment details for notification`);
+                    }
+                } else {
+                    console.log(`[Appointments] No interpreter assigned, skipping notification`);
+                }
+
+                return c.json({ data })
+
+            } catch (error) {
+                console.error(`[Appointments] Error creating appointment:`, error);
+                return c.json({ error: "Failed to create appointment" }, 500);
+            }
+        }
+    )
 
     //individual facility can be updated by id
     .patch(

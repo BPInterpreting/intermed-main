@@ -97,8 +97,7 @@ const app = new Hono()
             // Keep the return structure your /:id uses, as requested
             return c.json({ data });
     })
-    // Add this route to your existing interpreter file (after the /me route)
-
+    // this is specificially save the push token in the backend when the user signs in.
     .patch(
         '/me/push-token',
         clerkMiddleware(),
@@ -116,6 +115,7 @@ const app = new Hono()
             console.log(`[API /me/push-token] Updating push token for userId: ${auth.userId}`);
 
             try {
+                //sets the push token to the interpreter makes sure the clerk and auth match up
                 const [updatedInterpreter] = await db
                     .update(interpreter)
                     .set({
@@ -331,5 +331,7 @@ const app = new Hono()
             return c.json({ data })
         }
     )
+
+
 
 export default app
