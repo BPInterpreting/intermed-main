@@ -269,14 +269,13 @@ const app = new Hono()
 
     //individual facility can be updated by id
     //individual facility can be updated by id
+    // UPDATED PATCH ROUTE - handles interpreter reassignment
     .patch(
         '/:id',
         clerkMiddleware(),
-        // validate the id that is being passed in the patch request
         zValidator('param', z.object({
             id: z.string()
         })),
-        // this route makes sure that the first name is the only value that can be updated
         zValidator("json", insertAppointmentSchema.omit({
             id: true,
             duration: true,
@@ -317,8 +316,6 @@ const app = new Hono()
                     return c.json({ error: "Appointment not found" }, 404)
                 }
 
-                //helper function that selects the id from the appointments table and joins it with the patient table
-                //simplifies complex queries since appointment does not belong to the patient
                 const appointmentsToUpdate = db.$with("appointments_to_update").as(
                     db.select({ id: appointments.id }).from(appointments)
                         .innerJoin(patient, eq(appointments.patientId, patient.id))
@@ -331,7 +328,6 @@ const app = new Hono()
                     .update(appointments)
                     .set(values)
                     .where(
-                        //finds individual appointment id and matches it with the id in the database
                         inArray(appointments.id, sql`(select id from ${appointmentsToUpdate})`)
                     )
                     .returning()
@@ -342,19 +338,52 @@ const app = new Hono()
 
                 console.log(`[Appointments] Updated appointment ${data.id}`);
 
-                //Send notification if interpreter is assigned AND something important changed
-                if (data.interpreterId) {
-                    // Check if important fields changed that warrant notification
-                    const importantFieldsChanged = (
-                        (values.date && values.date !== beforeUpdate.date) ||
-                        (values.startTime && values.startTime !== beforeUpdate.startTime) ||
-                        (values.interpreterId && values.interpreterId !== beforeUpdate.interpreterId)
+                // Interpreter was REMOVED (reassigned to someone else or unassigned)
+                if (beforeUpdate.interpreterId &&
+                    values.interpreterId !== undefined &&
+                    values.interpreterId !== beforeUpdate.interpreterId) {
+
+                    console.log(`[Appointments] Interpreter changed from ${beforeUpdate.interpreterId} to ${values.interpreterId}`);
+                    console.log(`[Appointments] Sending removal notification to previous interpreter: ${beforeUpdate.interpreterId}`);
+
+                    // Send "removed" notification to the OLD interpreter
+                    const { sendNotificationtoInterpreter, createAppointmentNotification } = await import('@/lib/notification-service')
+
+                    const removalNotificationContent = createAppointmentNotification('removed', {
+                        id: beforeUpdate.id,
+                        date: beforeUpdate.date,
+                        startTime: beforeUpdate.startTime,
+                        appointmentType: beforeUpdate.appointmentType,
+                        facility: {
+                            name: beforeUpdate.facilityName,
+                            address: beforeUpdate.facilityAddress
+                        },
+                        patient: {
+                            firstName: beforeUpdate.patientFirstName,
+                            lastName: beforeUpdate.patientLastName
+                        }
+                    });
+
+                    const removalResult = await sendNotificationtoInterpreter(
+                        beforeUpdate.interpreterId,
+                        {
+                            appointmentId: data.id,
+                            type: 'appointment_removed',
+                            ...removalNotificationContent
+                        }
                     );
 
-                    if (importantFieldsChanged) {
-                        console.log(`[Appointments] Important fields changed, sending update notification to interpreter: ${data.interpreterId}`);
+                    if (removalResult.success) {
+                        console.log(`[Appointments] Removal notification sent to previous interpreter ${beforeUpdate.interpreterId}`);
+                    } else {
+                        console.error(`[Appointments] Failed to send removal notification:`, removalResult.error);
+                    }
 
-                        // Get UPDATED appointment details with related data for notification
+                    // If there's a NEW interpreter, send them an assignment notification
+                    if (values.interpreterId) {
+                        console.log(`[Appointments] Sending assignment notification to new interpreter: ${values.interpreterId}`);
+
+                        // Get updated appointment details for new interpreter
                         const [updatedAppointmentDetails] = await db
                             .select({
                                 id: appointments.id,
@@ -373,7 +402,66 @@ const app = new Hono()
                             .limit(1);
 
                         if (updatedAppointmentDetails) {
-                            // Import and use notification service
+                            const assignmentNotificationContent = createAppointmentNotification('assigned', {
+                                id: updatedAppointmentDetails.id,
+                                date: updatedAppointmentDetails.date,
+                                startTime: updatedAppointmentDetails.startTime,
+                                appointmentType: updatedAppointmentDetails.appointmentType,
+                                facility: {
+                                    name: updatedAppointmentDetails.facilityName,
+                                    address: updatedAppointmentDetails.facilityAddress
+                                },
+                                patient: {
+                                    firstName: updatedAppointmentDetails.patientFirstName,
+                                    lastName: updatedAppointmentDetails.patientLastName
+                                }
+                            });
+
+                            const assignmentResult = await sendNotificationtoInterpreter(
+                                values.interpreterId,
+                                {
+                                    appointmentId: data.id,
+                                    type: 'appointment_assigned',
+                                    ...assignmentNotificationContent
+                                }
+                            );
+
+                            if (assignmentResult.success) {
+                                console.log(`[Appointments] Assignment notification sent to new interpreter ${values.interpreterId}`);
+                            } else {
+                                console.error(`[Appointments] Failed to send assignment notification:`, assignmentResult.error);
+                            }
+                        }
+                    }
+                }
+                // Regular update notifications (time/date changes for same interpreter)
+                else if (data.interpreterId && data.interpreterId === beforeUpdate.interpreterId) {
+                    const importantFieldsChanged = (
+                        (values.date && values.date !== beforeUpdate.date) ||
+                        (values.startTime && values.startTime !== beforeUpdate.startTime)
+                    );
+
+                    if (importantFieldsChanged) {
+                        console.log(`[Appointments] Important fields changed, sending update notification to interpreter: ${data.interpreterId}`);
+
+                        const [updatedAppointmentDetails] = await db
+                            .select({
+                                id: appointments.id,
+                                date: appointments.date,
+                                startTime: appointments.startTime,
+                                appointmentType: appointments.appointmentType,
+                                facilityName: facilities.name,
+                                facilityAddress: facilities.address,
+                                patientFirstName: patient.firstName,
+                                patientLastName: patient.lastName,
+                            })
+                            .from(appointments)
+                            .innerJoin(facilities, eq(appointments.facilityId, facilities.id))
+                            .innerJoin(patient, eq(appointments.patientId, patient.id))
+                            .where(eq(appointments.id, data.id))
+                            .limit(1);
+
+                        if (updatedAppointmentDetails) {
                             const { sendNotificationtoInterpreter, createAppointmentNotification } = await import('@/lib/notification-service')
 
                             const notificationContent = createAppointmentNotification('updated', {
@@ -404,16 +492,9 @@ const app = new Hono()
                                 console.log(`[Appointments] Update notification sent successfully to interpreter ${data.interpreterId}`);
                             } else {
                                 console.error(`[Appointments] Failed to send update notification:`, notificationResult.error);
-                                // Don't fail the appointment update if notification fails
                             }
-                        } else {
-                            console.error(`[Appointments] Could not fetch updated appointment details for notification`);
                         }
-                    } else {
-                        console.log(`[Appointments] No important fields changed, skipping update notification`);
                     }
-                } else {
-                    console.log(`[Appointments] No interpreter assigned, skipping update notification`);
                 }
 
                 return c.json({ data })
@@ -426,7 +507,7 @@ const app = new Hono()
     )
     .delete(
         '/:id',
-        // validate the id that is being passed in the delete request
+        clerkMiddleware(),
         zValidator('param', z.object({
             id: z.string()
         })),
@@ -437,29 +518,96 @@ const app = new Hono()
                 return c.json({ error: "Invalid id" }, 400)
             }
 
-
-            const appointmentsToDelete = db.$with("appointments_to_delete").as(
-                db.select({ id: appointments.id }).from(appointments)
+            try {
+                // Get appointment details BEFORE deletion for notification
+                const [appointmentToDelete] = await db
+                    .select({
+                        id: appointments.id,
+                        date: appointments.date,
+                        startTime: appointments.startTime,
+                        interpreterId: appointments.interpreterId,
+                        appointmentType: appointments.appointmentType,
+                        facilityName: facilities.name,
+                        facilityAddress: facilities.address,
+                        patientFirstName: patient.firstName,
+                        patientLastName: patient.lastName,
+                    })
+                    .from(appointments)
+                    .innerJoin(facilities, eq(appointments.facilityId, facilities.id))
                     .innerJoin(patient, eq(appointments.patientId, patient.id))
-                    .where(and(
-                        eq(appointments.id, id), //matching transaction id passed from id param above
-                    ))
-            )
+                    .where(eq(appointments.id, id))
+                    .limit(1);
 
-            //delete the facility values according to drizzle update method.check if the facility id matches the id in the database
-            const [data] = await db
-                .with(appointmentsToDelete)
-                .delete(appointments)
-                .where(
-                    //finds individual appointment id and matches it with the id in the database
-                    inArray(appointments.id, sql`(select id from ${appointmentsToDelete})`)
+                if (!appointmentToDelete) {
+                    return c.json({ error: "Appointment not found" }, 404)
+                }
+
+                const appointmentsToDelete = db.$with("appointments_to_delete").as(
+                    db.select({ id: appointments.id }).from(appointments)
+                        .innerJoin(patient, eq(appointments.patientId, patient.id))
+                        .where(and(eq(appointments.id, id)))
                 )
-                .returning()
 
-            if (!data) {
-                return c.json({ error: "Appointment not found" }, 404)
+                // Delete the appointment
+                const [data] = await db
+                    .with(appointmentsToDelete)
+                    .delete(appointments)
+                    .where(
+                        inArray(appointments.id, sql`(select id from ${appointmentsToDelete})`)
+                    )
+                    .returning()
+
+                if (!data) {
+                    return c.json({ error: "Appointment not found" }, 404)
+                }
+
+                console.log(`[Appointments] Deleted appointment ${data.id}`);
+
+                //Send "removed" notification to interpreter if one was assigned
+                if (appointmentToDelete.interpreterId) {
+                    console.log(`[Appointments] Sending deletion notification to interpreter: ${appointmentToDelete.interpreterId}`);
+
+                    const { sendNotificationtoInterpreter, createAppointmentNotification } = await import('@/lib/notification-service')
+
+                    const deletionNotificationContent = createAppointmentNotification('removed', {
+                        id: appointmentToDelete.id,
+                        date: appointmentToDelete.date,
+                        startTime: appointmentToDelete.startTime,
+                        appointmentType: appointmentToDelete.appointmentType,
+                        facility: {
+                            name: appointmentToDelete.facilityName,
+                            address: appointmentToDelete.facilityAddress
+                        },
+                        patient: {
+                            firstName: appointmentToDelete.patientFirstName,
+                            lastName: appointmentToDelete.patientLastName
+                        }
+                    });
+
+                    const deletionResult = await sendNotificationtoInterpreter(
+                        appointmentToDelete.interpreterId,
+                        {
+                            appointmentId: appointmentToDelete.id,
+                            type: 'appointment_removed',
+                            ...deletionNotificationContent
+                        }
+                    );
+
+                    if (deletionResult.success) {
+                        console.log(`[Appointments] Deletion notification sent successfully to interpreter ${appointmentToDelete.interpreterId}`);
+                    } else {
+                        console.error(`[Appointments] Failed to send deletion notification:`, deletionResult.error);
+                    }
+                } else {
+                    console.log(`[Appointments] No interpreter assigned, skipping deletion notification`);
+                }
+
+                return c.json({ data })
+
+            } catch (error) {
+                console.error(`[Appointments] Error deleting appointment:`, error);
+                return c.json({ error: "Failed to delete appointment" }, 500);
             }
-            return c.json({ data })
         }
     )
 
