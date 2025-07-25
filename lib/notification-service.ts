@@ -66,7 +66,7 @@ export async function sendNotificationtoInterpreter(
         //prepares the notification message
         const message = {
             to:interpreterData.expoPushToken,
-            sound: 'defualt',
+            sound: 'default',
             title: notificationData.title,
             body: notificationData.body,
             data: {
