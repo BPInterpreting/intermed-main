@@ -1,12 +1,12 @@
 /*
 * reusable notification service to get push token from database, send notification to expo push service
 * handle errors and provide debugging logs
+* FIXED: Replaced axios with fetch for Cloudflare Workers compatibility
 * */
 
 import { db } from '@/db/drizzle'
 import { interpreter } from "@/db/schema";
 import { eq } from 'drizzle-orm'
-import axios from 'axios'
 
 //interface for the actual notification
 interface NotificationData {
@@ -65,7 +65,7 @@ export async function sendNotificationtoInterpreter(
 
         //prepares the notification message
         const message = {
-            to:interpreterData.expoPushToken,
+            to: interpreterData.expoPushToken,
             sound: 'default',
             title: notificationData.title,
             body: notificationData.body,
@@ -92,32 +92,30 @@ export async function sendNotificationtoInterpreter(
             body: message.body
         });
 
-        //send message to expo push service
-        const response = await axios.post('https://exp.host/--/api/v2/push/send', message, {
+        // FIXED: Replace axios with fetch - COMPLETE IMPLEMENTATION
+        const response = await fetch('https://exp.host/--/api/v2/push/send', {
+            method: 'POST',
             headers: {
                 'Accept': 'application/json',
                 'Accept-encoding': 'gzip, deflate',
                 'Content-Type': 'application/json',
             },
-            timeout: 10000, // 10 second timeout
+            body: JSON.stringify(message),
         });
-        console.log(`[Notifications] Expo response:`, response.data);
 
-        if (response.status === 200) {
+        const responseData = await response.json();
+        console.log(`[Notifications] Expo response:`, responseData);
+
+        if (response.ok) {
             console.log(`[Notifications] Successfully sent to ${interpreterData.firstName} ${interpreterData.lastName}`);
-            return { success: true, data: response.data };
+            return { success: true, data: responseData };
         } else {
-            console.error(`[Notifications] Expo API error:`, response.data);
-            return { success: false, error: 'Failed to send notification', details: response.data };
+            console.error(`[Notifications] Expo API error:`, responseData);
+            return { success: false, error: 'Failed to send notification', details: responseData };
         }
+
     } catch (e) {
         console.error(`[Notifications] Failed to send notification: ${e}`);
-
-        if (axios.isAxiosError(e)) {
-            const axiosError = e.response?.data || e.message;
-            return { success: false, error: 'Axios error', details: axiosError };
-        }
-
         return { success: false, error: 'Network or server error', details: e };
     }
 }
@@ -127,10 +125,6 @@ export function createAppointmentNotification(
     type: 'assigned' | 'updated' | 'removed',
     appointmentDetails: AppointmentDetails
 ): Pick<NotificationData, 'title' | 'body' | 'data'> {
-
-    const appointmentDate = appointmentDetails.date instanceof Date
-        ? appointmentDetails.date
-        : new Date(appointmentDetails.date);
 
     const date = new Date(appointmentDetails.date).toLocaleDateString('en-US', {
         weekday: 'long',
