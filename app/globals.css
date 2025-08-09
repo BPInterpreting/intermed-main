@@ -12,6 +12,11 @@ root {
 
 @import "leaflet/dist/leaflet.css";
 
+.pac-container {
+  z-index: 999999 !important;
+  pointer-events: auto !important;
+}
+
 
 .react-time-picker__wrapper {
   border-radius: 15px;

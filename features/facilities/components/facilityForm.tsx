@@ -9,14 +9,15 @@ import {Input} from "@/components/ui/input"
 import {Trash} from "lucide-react";
 import {insertFacilitySchema} from "@/db/schema";
 import {PhoneInput} from "@/components/customUi/phone-input";
-import LocationInput from "@/components/ui/location-input";
 import {useEffect} from "react";
 import dynamic from "next/dynamic";
-const MapWithNoSSR = dynamic(
-    () => import('@/components/ui/map'), // Path to your Map component
+
+// Import your working GoogleMapComponent
+const GoogleMapComponent = dynamic(
+    () => import('@/components/customUi/google-map'),
     {
-        ssr: false, // Disable Server-Side Rendering for this component
-        loading: () => <div className='h-64 flex items-center justify-center'><p>Loading map...</p></div> // Optional loading state
+        ssr: false,
+        loading: () => <div className='h-96 flex items-center justify-center bg-gray-100 rounded-md'><p>Loading map...</p></div>
     }
 );
 
@@ -61,12 +62,12 @@ type Props ={
 }
 
 export const FacilityForm = ({
-    id,
-    defaultValues,
-    onSubmit,
-    onDelete,
-    disabled,
-}: Props) => {
+                                 id,
+                                 defaultValues,
+                                 onSubmit,
+                                 onDelete,
+                                 disabled,
+                             }: Props) => {
 
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
@@ -97,145 +98,178 @@ export const FacilityForm = ({
         console.log("Form values:", form.getValues());
     }, [form.watch()]);
 
+    // Check if we have coordinates to show initial location
+    const hasCoordinates = form.getValues('latitude') !== 0 && form.getValues('longitude') !== 0;
+
     return(
         <div>
-           <Form {...form}>
-               {(form.getValues('latitude') !==0 && form.getValues('longitude') !==0) ? (
-                   <div className='mb-1'>
-                       <MapWithNoSSR
-                           key={`<span class="math-inline">\{form\.getValues\('latitude'\)\}\-</span>{form.getValues('longitude')}`}
-                           latitude={parseFloat(form.getValues('latitude').toString())}
-                           longitude={parseFloat(form.getValues('longitude').toString())}
-                           markerText={form.getValues('address') || 'Selected Location'}
-                           height='64'
-                       />
-                   </div>
-                 ): (
-                     <div className={'flex mb-4 items-center justify-center'}>
-                         <p className='text-muted-foreground'>
-                             **Select location below to see it on the map**
-                         </p>
-                     </div>
-               )}
-               <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-2 pt-4 ">
-                   <div className='grid grid-cols-2 gap-x-4 gap-y-6 '>
-                       <FormField
-                           control={form.control}
-                           name="name"
-                           render={({field}) => (
-                               <FormItem>
-                                   <FormLabel>Name</FormLabel>
-                                   <FormControl>
-                                       <Input
-                                           className='capitalize'
-                                           placeholder="Facility Name"
-                                           {...field}
-                                       />
-                                   </FormControl>
-                               </FormItem>
-                           )}
-                       />
-                       <FormField
-                           control={form.control}
-                           name="phoneNumber"
-                           render={({field}) => (
-                               <FormItem>
-                                   <FormLabel>Phone Number</FormLabel>
-                                   <FormControl>
-                                       <PhoneInput
-                                           {...field}
-                                           format='(###) ###-####'
-                                           allowEmptyFormatting={true}
-                                           mask="_"
-                                           value={field.value || ''}
-                                       />
-                                   </FormControl>
-                               </FormItem>
-                           )}
-                       />
-                       <FormField
-                           control={form.control}
-                           name="email"
-                           render={({field}) => (
-                               <FormItem>
-                                   <FormLabel>Email</FormLabel>
-                                   <FormControl>
-                                       <Input
-                                           {...field}
-                                           type={"email"}
-                                           placeholder="example@email.com"
-                                           value={field.value || ''}
-                                       />
-                                   </FormControl>
-                               </FormItem>
-                           )}
-                       />
-                       <FormField
-                           control={form.control}
-                           name="facilityType"
-                           render={({field}) => (
-                               <FormItem>
-                                   <FormLabel>Facility Type</FormLabel>
-                                   <FormControl>
-                                       <Input
-                                           className='capitalize'
-                                           placeholder="Enter specialty"
-                                           {...field}
-                                       />
-                                   </FormControl>
-                               </FormItem>
-                           )}
-                       />
-                       <FormField
-                           control={form.control}
-                           name="operatingHours"
-                           render={({field}) => (
-                               <FormItem>
-                                   <FormLabel>Operating Hours</FormLabel>
-                                   <FormControl>
-                                       <Input
-                                           placeholder="9:00am-5:00pm"
-                                           {...field}
-                                       />
-                                   </FormControl>
-                               </FormItem>
-                           )}
-                       />
-                       <FormField
-                           control={form.control}
-                           name="averageWaitTime"
-                           render={({field}) => (
-                               <FormItem>
-                                   <FormLabel>Average Wait Time</FormLabel>
-                                   <FormControl>
-                                       <Input
-                                           placeholder="1h30m"
-                                           {...field}
-                                       />
-                                   </FormControl>
-                               </FormItem>
-                           )}
-                       />
-                   </div>
-                   <FormField
-                       control={form.control}
-                       name="address"
-                       render={({field}) => (
-                           <FormItem>
-                               <FormLabel>Address</FormLabel>
-                               <FormControl>
-                                   <LocationInput
-                                       initialAddress={field.value || ''}
-                                       onLocationSelected={handleLocationSelected}
-                                   />
-                               </FormControl>
-                           </FormItem>
-                       )}
-                   />
-                   <Button className='w-full mt-4 mb-2'>
-                       {id ? "Update Facility" : "Add Facility"}
-                   </Button>
-                   {!!id && (
+            <Form {...form}>
+                <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+                    {/* Google Maps Component */}
+                    <div className='mb-6'>
+                        <FormLabel className="text-base font-semibold">Location</FormLabel>
+                        <p className="text-sm text-gray-600 mb-3">
+                            Search for the facility address or click on the map to set the location.
+                        </p>
+                        <GoogleMapComponent
+                            onLocationSelected={handleLocationSelected}
+                            initialLatitude={hasCoordinates ? form.getValues('latitude') : undefined}
+                            initialLongitude={hasCoordinates ? form.getValues('longitude') : undefined}
+                            initialAddress={form.getValues('address') || ''}
+                            height={400}
+                            className="rounded-lg shadow-sm"
+                        />
+                    </div>
+
+                    {/* Other Form Fields */}
+                    <div className='grid grid-cols-2 gap-x-4 gap-y-6'>
+                        <FormField
+                            control={form.control}
+                            name="name"
+                            render={({field}) => (
+                                <FormItem>
+                                    <FormLabel>Name</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            className='capitalize'
+                                            placeholder="Facility Name"
+                                            disabled={disabled}
+                                            {...field}
+                                        />
+                                    </FormControl>
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="phoneNumber"
+                            render={({field}) => (
+                                <FormItem>
+                                    <FormLabel>Phone Number</FormLabel>
+                                    <FormControl>
+                                        <PhoneInput
+                                            {...field}
+                                            format='(###) ###-####'
+                                            allowEmptyFormatting={true}
+                                            mask="_"
+                                            value={field.value || ''}
+                                        />
+                                    </FormControl>
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="email"
+                            render={({field}) => (
+                                <FormItem>
+                                    <FormLabel>Email</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            {...field}
+                                            type={"email"}
+                                            placeholder="example@email.com"
+                                            value={field.value || ''}
+                                            disabled={disabled}
+                                        />
+                                    </FormControl>
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="facilityType"
+                            render={({field}) => (
+                                <FormItem>
+                                    <FormLabel>Facility Type</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            className='capitalize'
+                                            placeholder="Enter specialty"
+                                            disabled={disabled}
+                                            {...field}
+                                        />
+                                    </FormControl>
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="operatingHours"
+                            render={({field}) => (
+                                <FormItem>
+                                    <FormLabel>Operating Hours</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            placeholder="9:00am-5:00pm"
+                                            disabled={disabled}
+                                            {...field}
+                                        />
+                                    </FormControl>
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="averageWaitTime"
+                            render={({field}) => (
+                                <FormItem>
+                                    <FormLabel>Average Wait Time</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            placeholder="1h30m"
+                                            disabled={disabled}
+                                            {...field}
+                                        />
+                                    </FormControl>
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+
+                    {/* Hidden fields for form data */}
+                    <FormField
+                        control={form.control}
+                        name="address"
+                        render={({field}) => (
+                            <FormItem className="hidden">
+                                <FormControl>
+                                    <Input {...field} />
+                                </FormControl>
+                            </FormItem>
+                        )}
+                    />
+
+                    <FormField
+                        control={form.control}
+                        name="latitude"
+                        render={({field}) => (
+                            <FormItem className="hidden">
+                                <FormControl>
+                                    <Input {...field} />
+                                </FormControl>
+                            </FormItem>
+                        )}
+                    />
+
+                    <FormField
+                        control={form.control}
+                        name="longitude"
+                        render={({field}) => (
+                            <FormItem className="hidden">
+                                <FormControl>
+                                    <Input {...field} />
+                                </FormControl>
+                            </FormItem>
+                        )}
+                    />
+
+                    {/* Submit and Delete Buttons */}
+                    <Button className='w-full mt-8' disabled={disabled}>
+                        {id ? "Update Facility" : "Add Facility"}
+                    </Button>
+
+                    {!!id && (
                         <Button
                             type='button'
                             disabled={disabled}
@@ -243,12 +277,12 @@ export const FacilityForm = ({
                             className='w-full'
                             onClick={handleDelete}
                         >
-                             <Trash className='size-4 mr-2'/>
-                             Delete Facility
+                            <Trash className='size-4 mr-2'/>
+                            Delete Facility
                         </Button>
-                   )}
-               </form>
-           </Form>
+                    )}
+                </form>
+            </Form>
         </div>
-   )
+    )
 }
