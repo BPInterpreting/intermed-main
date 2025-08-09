@@ -248,7 +248,7 @@ const GoogleMapComponent = ({
 
     return (
         // APIProvider wraps everything and provides Google Maps API access
-        <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!} libraries={['places', 'marker']}>
+        <APIProvider version={'beta'} apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!} libraries={['places', 'marker']}>
             <div className={`relative ${className}`}>
                 {/* CRITICAL: Map component with only DEFAULT props, not controlled props */}
                 {/* Using defaultCenter/defaultZoom instead of center/zoom prevents re-render loops */}
@@ -256,7 +256,7 @@ const GoogleMapComponent = ({
                     style={{ width: '100%', height: typeof height === 'string' ? height : `${height}px` }}
                     defaultCenter={center}  // Sets initial position only
                     defaultZoom={13}        // Sets initial zoom only
-                    mapId={process.env.NEXT_PUBLIC_GOOGLE_MAP_ID || 'DEMO_MAP_ID'}
+                    mapId={process.env.NEXT_PUBLIC_GOOGLE_MAP_ID!}
                     mapTypeControl={false}
                     fullscreenControl={true}
                     streetViewControl={true}  // Disabled to prevent crashes with AdvancedMarker
