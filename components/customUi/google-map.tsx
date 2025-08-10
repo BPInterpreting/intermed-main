@@ -39,6 +39,8 @@ const MapContent = ({
                         initialAddress,
                         height,
                     }: Omit<GoogleMapComponentProps, 'className'>) => {
+
+
     // CRITICAL: useMap() hook gives us direct access to the Google Maps instance
     // This can ONLY be used inside a component that's a child of <Map>
     const map = useMap();
@@ -156,7 +158,7 @@ const MapContent = ({
     return (
         <>
             {/* Search input - positioned absolutely over the map */}
-            <div className="absolute top-2 left-2 z-10 w-80">
+            <div className="absolute top-2 left-2 z-50 w-80">
                 <gmp-place-autocomplete ref={autocompleteRef} />
             </div>
 
@@ -204,6 +206,10 @@ const GoogleMapComponent = ({
                                 height = '400px',
                                 className = '',
                             }: GoogleMapComponentProps) => {
+
+    console.log('API Key exists:', !!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY);
+    console.log('API Key length:', process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY?.length);
+
     const center = {
         lat: initialLatitude || 37.7749,
         lng: initialLongitude || -122.4194,
@@ -246,7 +252,9 @@ const GoogleMapComponent = ({
         };
     }, []);
 
+
     return (
+
         // APIProvider wraps everything and provides Google Maps API access
         <APIProvider version={'beta'} apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!} libraries={['places', 'marker']}>
             <div className={`relative ${className}`}>
@@ -275,6 +283,7 @@ const GoogleMapComponent = ({
                     />
                 </Map>
             </div>
+
         </APIProvider>
     );
 };
