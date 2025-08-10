@@ -158,7 +158,14 @@ const MapContent = ({
     return (
         <>
             {/* Search input - positioned absolutely over the map */}
-            <div className="absolute top-2 left-2 z-50 w-80">
+            <div
+                className="absolute top-2 left-2 z-50 w-80"
+                style={{
+                    WebkitTransform: 'translateZ(0)',
+                    transform: 'translateZ(0)',
+                    position: 'absolute'
+                }}
+            >
                 <gmp-place-autocomplete ref={autocompleteRef} />
             </div>
 
@@ -207,9 +214,6 @@ const GoogleMapComponent = ({
                                 className = '',
                             }: GoogleMapComponentProps) => {
 
-    console.log('API Key exists:', !!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY);
-    console.log('API Key length:', process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY?.length);
-
     const center = {
         lat: initialLatitude || 37.7749,
         lng: initialLongitude || -122.4194,
@@ -226,6 +230,12 @@ const GoogleMapComponent = ({
                 border-radius: 0.5rem;
                 font-size: 14px;
                 display: block;
+                background: white !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+                -webkit-appearance: none;
+                position: relative;
+                z-index: 10;
             }
             gmp-place-autocomplete:focus-within {
                 border-color: #3b82f6;
@@ -238,7 +248,32 @@ const GoogleMapComponent = ({
                 outline: none;
                 background: transparent;
                 font-size: 14px;
+                -webkit-appearance: none;
             }
+            // /* Safari-specific fixes for Google Maps controls */
+            // .gm-control-container,
+            // .gm-control-container > div {
+            //     opacity: 1 !important;
+            //     visibility: visible !important;
+            //     -webkit-transform: translateZ(0);
+            //     transform: translateZ(0);
+            // }
+            // .gm-svpc,
+            // .gm-svpc > div {
+            //     opacity: 1 !important;
+            //     visibility: visible !important;
+            //     -webkit-transform: translateZ(0);
+            //     transform: translateZ(0);
+            // }
+            // /* Force hardware acceleration for Safari */
+            // .gm-style {
+            //     -webkit-transform: translateZ(0);
+            //     transform: translateZ(0);
+            // }
+            // /* Fix for Safari z-index stacking */
+            // .gm-style > div:first-child {
+            //     z-index: auto !important;
+            // }
         `;
         document.head.appendChild(style);
 
@@ -256,7 +291,7 @@ const GoogleMapComponent = ({
     return (
 
         // APIProvider wraps everything and provides Google Maps API access
-        <APIProvider version={'beta'} apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!} libraries={['places', 'marker']}>
+        <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!} libraries={['places', 'marker']}>
             <div className={`relative ${className}`}>
                 {/* CRITICAL: Map component with only DEFAULT props, not controlled props */}
                 {/* Using defaultCenter/defaultZoom instead of center/zoom prevents re-render loops */}
