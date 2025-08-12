@@ -166,7 +166,17 @@ const MapContent = ({
                     position: 'absolute'
                 }}
             >
-                <gmp-place-autocomplete ref={autocompleteRef} />
+                <gmp-place-autocomplete
+                    ref={autocompleteRef}
+                    style={{
+                        backgroundColor: 'white',
+                        color: 'black',
+                        borderRadius: '8px',
+                        width: '100%',
+                        height: '50px',
+                        fontSize: '14px'
+                    }}
+                />
             </div>
 
             {/* Marker with InfoWindow */}
