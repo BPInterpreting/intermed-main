@@ -81,7 +81,7 @@ export const appointments = pgTable("appointments", {
 	projectedEndTime: time("projected_end_time"),
 	projectedDuration: varchar("projected_duration"),
 	duration: interval(),
-	bookingId: integer().generatedAlwaysAsIdentity({ name: ""appointments_bookingId_seq"", startWith: 100000, increment: 1, minValue: 1, maxValue: 2147483647 }),
+	bookingId: integer().generatedAlwaysAsIdentity({ name: "appointments_bookingId_seq", startWith: 100000, increment: 1, minValue: 1, maxValue: 2147483647 }),
 	isCertified: boolean("is_certified").default(false),
 	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
