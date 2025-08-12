@@ -8,7 +8,8 @@ import {
     text,
     time,
     timestamp,
-    varchar
+    varchar,
+    date
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import {relations} from "drizzle-orm";
@@ -16,10 +17,13 @@ import {z} from "zod";
 
 export const patient = pgTable("patients", {
     id: text("id").primaryKey(),
+    patientId: varchar("patient_id").unique(),
     firstName: varchar("firstName").notNull(),
     lastName: varchar("lastName").notNull(),
     email: varchar("email").notNull(),
     phoneNumber: varchar("phoneNumber").notNull(),
+    claimNumber: varchar("claimNumber"),
+    dateOfBirth: timestamp("date_of_birth", {mode: "date"}),
     insuranceCarrier: varchar("insuranceCarrier"),
     preferredLanguage: varchar("preferredLanguage"),
     createdAt: timestamp("created_at").notNull().defaultNow(),

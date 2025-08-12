@@ -11,7 +11,7 @@ import { DataTableFacetedFilter } from "./data-table-faceted-filter"
 import {useGetAppointments} from "@/features/appointments/api/use-get-appointments";
 import {useMemo} from "react";
 
-export type SupportedFilters = 'patient' | 'name' | 'firstName' | 'status' | 'interpreter'
+export type SupportedFilters = 'patient' | 'name' | 'firstName' | 'status' | 'interpreter' | 'lastName' | 'fullName'
 
 interface AppointmentData {
     interpreterFirstName?: string;
@@ -85,6 +85,16 @@ export function DataTableToolbar<TData>({
                         />
                     )
                 }
+                {enabledFilters?.includes('fullName') && table.getColumn("fullName") && (
+                    <Input
+                        placeholder="Filter Full name..."
+                        value={(table.getColumn("fullName")?.getFilterValue() as string) ?? ""}
+                        onChange={(event) =>
+                            table.getColumn("fullName")?.setFilterValue(event.target.value)
+                        }
+                        className="h-8 w-[150px] lg:w-[250px]"
+                    />
+                )}
                 {enabledFilters?.includes('firstName') && table.getColumn("firstName") && (
                         <Input
                             placeholder="Filter First Name..."
@@ -96,6 +106,16 @@ export function DataTableToolbar<TData>({
                         />
                     )
                 }
+                {enabledFilters?.includes('lastName') && table.getColumn("lastName") && (
+                    <Input
+                        placeholder="Filter Last Name..."
+                        value={(table.getColumn("lastName")?.getFilterValue() as string) ?? ""}
+                        onChange={(event) =>
+                            table.getColumn("lastName")?.setFilterValue(event.target.value)
+                        }
+                        className="h-8 w-[150px] lg:w-[250px]"
+                    />
+                )}
                 {/* --- THIS IS THE NEW INTERPRETER FILTER --- */}
                 {enabledFilters?.includes('interpreter') && table.getColumn("interpreter") && (
                     <DataTableFacetedFilter

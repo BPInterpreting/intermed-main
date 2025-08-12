@@ -14,7 +14,9 @@ const formSchema  = insertPatientSchema.pick({
     email: true,
     phoneNumber: true,
     insuranceCarrier: true,
-    preferredLanguage: true
+    preferredLanguage: true,
+    dateOfBirth: true,
+    claimNumber: true
 })
 
 type FormValues = z.input<typeof formSchema>
@@ -24,7 +26,13 @@ export const NewPatientDialog = () => {
     const mutation = useCreatePatient()
 
     const onSubmit = (values: FormValues) => {
-        mutation.mutate(values, {
+        // Convert null to undefined for dateOfBirth
+        const mutationValues = {
+            ...values,
+            dateOfBirth: values.dateOfBirth ?? undefined  // ✅ Convert null to undefined
+        }
+
+        mutation.mutate(mutationValues, {
             onSuccess: () => {
                 onClose()
             }
@@ -49,7 +57,9 @@ export const NewPatientDialog = () => {
                             email: '',
                             phoneNumber: '',
                             insuranceCarrier: '',
-                            preferredLanguage: ''
+                            preferredLanguage: '',
+                            dateOfBirth: undefined,
+                            claimNumber: undefined,
                     }}
                  />
              </DialogContent>

@@ -1,13 +1,13 @@
-// authors.ts
 import { Hono } from 'hono'
 import { db } from '@/db/drizzle'
 import {appointments, interpreter, insertPatientSchema, patient} from "@/db/schema";
 import { z } from 'zod'
 import { zValidator } from '@hono/zod-validator'
 import {createId} from "@paralleldrive/cuid2";
-import {and, eq, ilike, or, sql} from "drizzle-orm";
+import {and, desc, eq, ilike, like, or, sql} from "drizzle-orm";
 import {parseTemplate} from "sucrase/dist/types/parser/traverser/expression";
 import {clerkMiddleware, getAuth} from "@hono/clerk-auth";
+
 
 //part of RPC is to create a schema for the validation that is used in the post request
 const schema = z.object({
@@ -16,7 +16,6 @@ const schema = z.object({
 
 //all of the routes are chained to the main Hono app
 const app = new Hono()
-
     .get(
         '/search',
         clerkMiddleware(),
@@ -128,12 +127,15 @@ const app = new Hono()
         const data = await db
             .select({
                 id: patient.id,
+                patientId: patient.patientId,
                 firstName: patient.firstName,
                 lastName: patient.lastName,
                 email: patient.email,
                 phoneNumber: patient.phoneNumber,
                 insuranceCarrier: patient.insuranceCarrier,
-                preferredLanguage: patient.preferredLanguage
+                preferredLanguage: patient.preferredLanguage,
+                claimNumber: patient.claimNumber,
+                dateOfBirth: patient.dateOfBirth
             })
             .from(patient)
 
@@ -164,12 +166,15 @@ const app = new Hono()
             const [data] = await db
                 .select({
                     id: patient.id,
+                    patientId: patient.patientId,
                     firstName: patient.firstName,
                     lastName: patient.lastName,
                     email: patient.email,
                     phoneNumber: patient.phoneNumber,
                     preferredLanguage: patient.preferredLanguage,
-                    insuranceCarrier: patient.insuranceCarrier
+                    insuranceCarrier: patient.insuranceCarrier,
+                    claimNumber:patient.claimNumber,
+                    dateOfBirth: patient.dateOfBirth
                 })
                 .from(patient)
                 .where(
@@ -192,26 +197,46 @@ const app = new Hono()
         zValidator(
             'json',
             // only allow the first name to be passed in the post request for client to see
-            insertPatientSchema.pick({
-                firstName: true,
-                lastName: true,
-                email: true,
-                phoneNumber: true,
-                insuranceCarrier: true,
-                preferredLanguage: true
+            insertPatientSchema.omit({
+                id: true,
+                patientId: true,
+                createdAt: true,
+                updatedAt: true,
+            }).extend({
+                // Override dateOfBirth to handle string → Date conversion
+                dateOfBirth: z.coerce.date().optional()
             })
         ),
         async (c) => {
             const values = c.req.valid('json')
             const auth = getAuth(c)
+            console.log('Validated values:', JSON.stringify(values, null, 2));
 
             if (!auth?.userId) {
                 return c.json({ error: "Unauthorized" }, 401)
             }
 
+            const currentYear = new Date().getFullYear()
+            const lastPatient = await db.select({patientId: patient.patientId})
+                .from(patient)
+                .where(like(patient.patientId, `PAT-${currentYear}-%`))
+                .orderBy(desc(patient.patientId))
+                .limit(1);
+            let nextNumber = 1;
+            if (lastPatient.length > 0 && lastPatient[0].patientId) {
+                const parts = lastPatient[0].patientId.split('-');
+                if (parts.length === 3) {
+                    nextNumber = parseInt(parts[2]) + 1;
+                }
+            }
+
+            const patientId = `PAT-${currentYear}-${nextNumber.toString().padStart(3, '0')}`;
+
+
             // insert patient values using spread which only allows picked values
             const [data] = await db.insert(patient).values({
                 id: createId(),
+                patientId,
                 ...values
             }).returning()
             return c.json({ data })
@@ -225,14 +250,15 @@ const app = new Hono()
             id: z.string()
         })),
         // this route makes sure that the first name is the only value that can be updated
-        zValidator("json", insertPatientSchema.pick({
-            firstName: true,
-            lastName: true,
-            email: true,
-            phoneNumber: true,
-            insuranceCarrier: true,
-            preferredLanguage: true
-        })),
+        zValidator("json", insertPatientSchema.omit({
+            id: true,
+            patientId: true,
+            createdAt: true,
+            updatedAt: true,
+            }).extend({
+                dateOfBirth: z.coerce.date().optional()
+            })
+        ),
         async (c) => {
             const { id } = c.req.valid('param')
             const values = c.req.valid('json')
