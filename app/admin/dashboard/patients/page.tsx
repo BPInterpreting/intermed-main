@@ -16,7 +16,7 @@ const PatientsClient = (
     const patientsQuery = useGetPatients()
     const patients = patientsQuery.data || []
 
-    const patientTableFilters: SupportedFilters[] = ['fullName']
+    const patientTableFilters: SupportedFilters[] = ['globalSearch']
 
     if(patientsQuery.isLoading){
         return (

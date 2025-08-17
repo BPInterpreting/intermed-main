@@ -25,6 +25,7 @@ import {Button} from "@/components/ui/button";
 import { Input } from "@/components/ui/input"
 import {Trash} from "lucide-react";
 import {DataTableToolbar, SupportedFilters} from "@/components/ui/data-table-toolbar";
+import {format} from "date-fns";
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[]
@@ -39,10 +40,9 @@ export function DataTable<TData, TValue>({
 
 }: DataTableProps<TData, TValue>) {
     const [sorting, setSorting] = React.useState<SortingState>([])
-    const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-        []
-    )
+    const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
     const [rowSelection, setRowSelection] = React.useState({})
+    const [globalFilter, setGlobalFilter] = React.useState('')
 
     const table = useReactTable({
         data,
@@ -56,10 +56,90 @@ export function DataTable<TData, TValue>({
         onRowSelectionChange: setRowSelection,
         getFacetedRowModel: getFacetedRowModel(),
         getFacetedUniqueValues: getFacetedUniqueValues(),
+        onGlobalFilterChange: setGlobalFilter,
+        globalFilterFn: (row, columnId, filterValue) =>{
+
+            console.log({ row, columnId, filterValue });
+            const search = filterValue.toLowerCase().trim();
+
+            if (!search) return true
+
+            const original = row.original as any; // Type assertion to avoid TS errors
+
+            const firstName = original.firstName?.toLowerCase() || '';
+            const lastName = original.lastName?.toLowerCase() || '';
+            const fullName = `${firstName} ${lastName}`.trim();
+            const phoneNumber = row.getValue('phoneNumber')?.toString() || ''
+            const dateOfBirth = row.getValue("dateOfBirth")
+
+            const searchWords = search.split(/\s+/).filter((word: string) => word.length > 0);
+
+            // For single word search or phone/date search
+            if (searchWords.length === 1) {
+                const singleSearch = searchWords[0];
+
+                // Name search - check if the search term appears in any part
+                if (firstName.includes(singleSearch) ||
+                    lastName.includes(singleSearch) ||
+                    fullName.includes(singleSearch)) {
+                    return true;
+                }
+
+                // Phone search
+                const cleanPhone = phoneNumber.replace(/\D/g, '');
+                const searchPhone = singleSearch.replace(/\D/g, '');
+                if (searchPhone && cleanPhone.includes(searchPhone)) {
+                    return true;
+                }
+
+                // Date search
+                if (dateOfBirth) {
+                    try {
+                        let date: Date;
+
+                        if (dateOfBirth instanceof Date) {
+                            date = dateOfBirth;
+                        } else if (typeof dateOfBirth === 'string' || typeof dateOfBirth === 'number') {
+                            date = new Date(dateOfBirth);
+                        } else {
+                            return false;
+                        }
+
+                        if (isNaN(date.getTime())) {
+                            return false;
+                        }
+
+                        const formatted1 = format(date, "MM/dd/yyyy").toLowerCase();
+                        const formatted2 = format(date, "M/d/yyyy").toLowerCase();
+                        const formatted3 = format(date, "yyyy-MM-dd").toLowerCase();
+
+                        if (formatted1.includes(singleSearch) ||
+                            formatted2.includes(singleSearch) ||
+                            formatted3.includes(singleSearch)) {
+                            return true;
+                        }
+                    } catch (e) {
+                        // Continue if date parsing fails
+                    }
+                }
+            } else {
+                // Multiple words - check if ALL words appear in the name
+                // This matches your custom filterFn logic
+                const allWordsMatch = searchWords.every((word: string) =>
+                    firstName.includes(word) || lastName.includes(word)
+                );
+
+                if (allWordsMatch) {
+                    return true;
+                }
+            }
+            return false
+        },
         state: {
             sorting,
             columnFilters,
             rowSelection,
+            globalFilter,
         },
     })
 

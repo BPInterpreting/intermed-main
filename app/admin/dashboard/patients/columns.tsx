@@ -46,19 +46,6 @@ export const columns: ColumnDef<ResponseType>[] = [
                 </div>
             )
         },
-        filterFn: (row, id, value) => {
-            const firstName = (row.original.firstName || '').toLowerCase();
-            const lastName = (row.original.lastName || '').toLowerCase();
-            const searchValue = value.toLowerCase();
-
-            // Split search into individual words (keeping spaces intact in original data)
-            const searchWords = searchValue.trim().split(/\s+/).filter((word: string) => word.length > 0);
-
-            // Each search word must match somewhere in first or last name
-            return searchWords.every((word: string) =>
-                firstName.includes(word) || lastName.includes(word)
-            );
-        }
     },
     {
         accessorKey: "dateOfBirth",

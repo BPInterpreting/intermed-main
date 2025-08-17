@@ -11,7 +11,7 @@ import { DataTableFacetedFilter } from "./data-table-faceted-filter"
 import {useGetAppointments} from "@/features/appointments/api/use-get-appointments";
 import {useMemo} from "react";
 
-export type SupportedFilters = 'patient' | 'name' | 'firstName' | 'status' | 'interpreter' | 'lastName' | 'fullName'
+export type SupportedFilters = 'patient' | 'name' | 'firstName' | 'status' | 'interpreter' | 'lastName' | 'fullName' | 'globalSearch'
 
 interface AppointmentData {
     interpreterFirstName?: string;
@@ -28,7 +28,7 @@ export function DataTableToolbar<TData>({
     table,
     enabledFilters = []
 }: DataTableToolbarProps<TData>) {
-    const isFiltered = table.getState().columnFilters.length > 0
+    const isFiltered = table.getState().columnFilters.length > 0 || !!table.getState().globalFilter
 
     const {data: appointment} = useGetAppointments()
 
@@ -64,6 +64,20 @@ export function DataTableToolbar<TData>({
     return (
         <div className="flex items-center justify-between">
             <div className="flex flex-1 items-center space-x-2">
+                {enabledFilters?.includes('globalSearch') && (
+                    <div className="flex items-center space-x-2">
+                        <Input
+                            placeholder={'Search name, Phone Number or DOB...'}
+                            value={table.getState().globalFilter ?? ''}
+                            onChange={(event) => table.setGlobalFilter(event.target.value)}
+                            className="h-8 w-[200px] lg:w-[300px]"
+                        />
+                        <span className="text-xs text-muted-foreground hidden lg:inline">
+                            eg: John Doe • 555-1234 • 08/15/1990
+                        </span>
+                    </div>
+
+                )}
                 {enabledFilters?.includes('patient') && table.getColumn("patient") && (
                     <Input
                         placeholder="Filter Patient..."
@@ -134,7 +148,11 @@ export function DataTableToolbar<TData>({
                 {isFiltered && (
                     <Button
                         variant="ghost"
-                        onClick={() => table.resetColumnFilters()}
+                        onClick={() => {
+                            table.resetColumnFilters()
+                            table.setGlobalFilter('')
+                        }
+                    }
                         className="h-8 px-2 lg:px-3"
                     >
                         Reset
