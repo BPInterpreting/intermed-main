@@ -16,7 +16,7 @@ const InterpretersClient = (
     const interpretersQuery = useGetInterpreters()
     const interpreters  = interpretersQuery.data || []
 
-    const interpreterTableFilters: SupportedFilters[] = ['firstName']
+    const interpreterTableFilters: SupportedFilters[] = ['globalSearch']
 
     if(interpretersQuery.isLoading){
         return (

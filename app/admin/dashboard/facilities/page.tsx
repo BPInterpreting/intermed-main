@@ -17,7 +17,7 @@ const FacilitiesClient = (
     const facilitiesQuery = useGetFacilities()
     const facilities  = facilitiesQuery.data || []
 
-    const facilityTableFilters: SupportedFilters[] = ['name']
+    const facilityTableFilters: SupportedFilters[] = ['globalSearch']
 
     if(facilitiesQuery.isLoading){
         return (

@@ -57,83 +57,151 @@ export function DataTable<TData, TValue>({
         getFacetedRowModel: getFacetedRowModel(),
         getFacetedUniqueValues: getFacetedUniqueValues(),
         onGlobalFilterChange: setGlobalFilter,
-        globalFilterFn: (row, columnId, filterValue) =>{
+            // In data-table.tsx - Smart globalFilterFn that adapts to table type
+            globalFilterFn: (row, columnId, filterValue) => {
+                const search = filterValue.toLowerCase().trim();
+                if (!search) return true;
 
-            console.log({ row, columnId, filterValue });
-            const search = filterValue.toLowerCase().trim();
+                const original = row.original as any;
 
-            if (!search) return true
+                // === APPOINTMENTS TABLE SPECIFIC ===
+                // Check if this is an appointments table (has bookingId)
+                if ('bookingId' in original) {
+                    // Search booking ID
+                    const bookingId = original.bookingId?.toString().toLowerCase() || '';
+                    if (bookingId.includes(search)) {
+                        return true;
+                    }
 
-            const original = row.original as any; // Type assertion to avoid TS errors
+                    // Search patient name (handles both single field and split fields)
+                    const patientFirstName = original.patient?.toLowerCase() || '';
+                    const patientLastName = original.patientLastName?.toLowerCase() || '';
+                    const patientFullName = `${patientFirstName} ${patientLastName}`.trim();
 
-            const firstName = original.firstName?.toLowerCase() || '';
-            const lastName = original.lastName?.toLowerCase() || '';
-            const fullName = `${firstName} ${lastName}`.trim();
-            const phoneNumber = row.getValue('phoneNumber')?.toString() || ''
-            const dateOfBirth = row.getValue("dateOfBirth")
+                    if (patientFullName.includes(search) ||
+                        patientFirstName.includes(search) ||
+                        patientLastName.includes(search)) {
+                        return true;
+                    }
 
-            const searchWords = search.split(/\s+/).filter((word: string) => word.length > 0);
+                    // Optionally search interpreter name if you want
+                    const interpreterFirst = original.interpreterFirstName?.toLowerCase() || '';
+                    const interpreterLast = original.interpreterLastName?.toLowerCase() || '';
+                    const interpreterName = `${interpreterFirst} ${interpreterLast}`.trim();
 
-            // For single word search or phone/date search
-            if (searchWords.length === 1) {
-                const singleSearch = searchWords[0];
+                    if (interpreterName.includes(search)) {
+                        return true;
+                    }
 
-                // Name search - check if the search term appears in any part
-                if (firstName.includes(singleSearch) ||
-                    lastName.includes(singleSearch) ||
-                    fullName.includes(singleSearch)) {
-                    return true;
+                    return false; // Don't search other fields for appointments
                 }
 
-                // Phone search
-                const cleanPhone = phoneNumber.replace(/\D/g, '');
-                const searchPhone = singleSearch.replace(/\D/g, '');
-                if (searchPhone && cleanPhone.includes(searchPhone)) {
-                    return true;
-                }
+                // === FACILITIES TABLE ===
+                if ('facilityName' in original) {
+                    const facilityName = original.facilityName?.toLowerCase() || '';
+                    const address = original.address?.toLowerCase() || '';
+                    const phone = original.phoneNumber || original.phone || '';
 
-                // Date search
-                if (dateOfBirth) {
-                    try {
-                        let date: Date;
+                    if (facilityName.includes(search) || address.includes(search)) {
+                        return true;
+                    }
 
-                        if (dateOfBirth instanceof Date) {
-                            date = dateOfBirth;
-                        } else if (typeof dateOfBirth === 'string' || typeof dateOfBirth === 'number') {
-                            date = new Date(dateOfBirth);
-                        } else {
-                            return false;
-                        }
-
-                        if (isNaN(date.getTime())) {
-                            return false;
-                        }
-
-                        const formatted1 = format(date, "MM/dd/yyyy").toLowerCase();
-                        const formatted2 = format(date, "M/d/yyyy").toLowerCase();
-                        const formatted3 = format(date, "yyyy-MM-dd").toLowerCase();
-
-                        if (formatted1.includes(singleSearch) ||
-                            formatted2.includes(singleSearch) ||
-                            formatted3.includes(singleSearch)) {
+                    if (phone) {
+                        const cleanPhone = phone.replace(/\D/g, '');
+                        const searchPhone = search.replace(/\D/g, '');
+                        if (searchPhone && cleanPhone.includes(searchPhone)) {
                             return true;
                         }
-                    } catch (e) {
-                        // Continue if date parsing fails
+                    }
+
+                    return false;
+                }
+
+                // === PATIENTS/INTERPRETERS TABLES ===
+                // Handle different name field patterns
+                let searchableName = '';
+
+                if (original.firstName || original.lastName) {
+                    const firstName = original.firstName?.toLowerCase() || '';
+                    const lastName = original.lastName?.toLowerCase() || '';
+                    searchableName = `${firstName} ${lastName}`.trim();
+                } else if (original.name) {
+                    searchableName = original.name.toLowerCase();
+                } else if (original.fullName) {
+                    searchableName = original.fullName.toLowerCase();
+                }
+
+                // Split search into words
+                const searchWords = search.split(/\s+/).filter((word: string) => word.length > 0);
+
+                // For single word search
+                if (searchWords.length === 1) {
+                    const singleSearch = searchWords[0];
+
+                    // Name search
+                    if (searchableName.includes(singleSearch)) {
+                        return true;
+                    }
+
+                    // Phone search
+                    const phoneNumber = original.phoneNumber || original.phone || '';
+                    if (phoneNumber) {
+                        const cleanPhone = phoneNumber.replace(/\D/g, '');
+                        const searchPhone = singleSearch.replace(/\D/g, '');
+                        if (searchPhone && cleanPhone.includes(searchPhone)) {
+                            return true;
+                        }
+                    }
+
+                    // Email search
+                    const email = original.email || '';
+                    if (email && email.toLowerCase().includes(singleSearch)) {
+                        return true;
+                    }
+
+                    // Date of birth (only for patients)
+                    if ('dateOfBirth' in original && original.dateOfBirth) {
+                        try {
+                            let date: Date;
+
+                            if (original.dateOfBirth instanceof Date) {
+                                date = original.dateOfBirth;
+                            } else if (typeof original.dateOfBirth === 'string' || typeof original.dateOfBirth === 'number') {
+                                date = new Date(original.dateOfBirth);
+                            } else {
+                                return false;
+                            }
+
+                            if (isNaN(date.getTime())) {
+                                return false;
+                            }
+
+                            const formatted1 = format(date, "MM/dd/yyyy").toLowerCase();
+                            const formatted2 = format(date, "M/d/yyyy").toLowerCase();
+                            const formatted3 = format(date, "yyyy-MM-dd").toLowerCase();
+
+                            if (formatted1.includes(singleSearch) ||
+                                formatted2.includes(singleSearch) ||
+                                formatted3.includes(singleSearch)) {
+                                return true;
+                            }
+                        } catch (e) {
+                            // Continue
+                        }
+                    }
+                } else {
+                    // Multiple words - check if ALL words appear in the name
+                    const allWordsMatch = searchWords.every((word: string) =>
+                        searchableName.includes(word)
+                    );
+
+                    if (allWordsMatch) {
+                        return true;
                     }
                 }
-            } else {
-                // Multiple words - check if ALL words appear in the name
-                // This matches your custom filterFn logic
-                const allWordsMatch = searchWords.every((word: string) =>
-                    firstName.includes(word) || lastName.includes(word)
-                );
 
-                if (allWordsMatch) {
-                    return true;
-                }
-            }
-            return false
+                return false;
+
         },
         state: {
             sorting,
