@@ -17,13 +17,14 @@ const app = new Hono()
         zValidator('query', z.object({
             endTime: z.string().optional().nullable(),
             patientId: z.string().optional(),
+            interpreterId: z.string().optional()
         })),
         async (c) => {
             const auth = getAuth(c)
             const userId = auth?.userId
             const userRole = (auth?.sessionClaims?.metadata as {role: string})?.role
 
-            const { patientId } = c.req.valid('query')
+            const { patientId, interpreterId } = c.req.valid('query')
 
             if (!userId) {
                 return c.json({ error: "Unauthorized" }, 401)
@@ -42,8 +43,10 @@ const app = new Hono()
             // if the patientId is present, filter by it. this is used for querying appointments by patient
             const patientCondition = patientId ? eq(appointments.patientId, patientId) : and();
 
+            const interpreterCondition = interpreterId ? eq(appointments.interpreterId, interpreterId) : and()
+
             // Combine conditions - this will always be a valid SQL object
-            const finalWhereClause = and(baseConditions, patientCondition);
+            const finalWhereClause = and(baseConditions, patientCondition, interpreterCondition);
 
             let data = await db
             .select({

@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { client } from '@/lib/hono';
 import {useSearchParams} from "next/navigation";
 
-export const useGetAppointments = () => {
+export const useGetAppointments = (interpreterId?: string) => {
     // const params =  useSearchParams()
     // const from = params.get('from') || ''
     // const to = params.get('to') || ''
@@ -14,13 +14,16 @@ export const useGetAppointments = () => {
     const query = useQuery({
 
         //queryKey is the name of the data stored in cache to be reused later again instead or parsing data all over again
-        queryKey: ['appointments'],
-         //queryFn is function that query will use to request data as promise which resloves data or a throws error if it fails
+        queryKey: interpreterId
+            ? ["appointments", { interpreterId }]  // Different cache key when filtered
+            : ["appointments"],
+        //queryFn is function that query will use to request data as promise which resloves data or a throws error if it fails
         queryFn: async () => {
             const response = await client.api.appointments.$get({
                 query: {
                     patientId: undefined,
-                    endTime: undefined
+                    endTime: undefined,
+                    interpreterId: interpreterId || undefined
                 }
             })
 

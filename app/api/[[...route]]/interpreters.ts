@@ -38,6 +38,7 @@ const app = new Hono()
                     phoneNumber: interpreter.phoneNumber,
                     isCertified: interpreter.isCertified,
                     clerkUserId: interpreter.clerkUserId,
+                    createdAt: interpreter.createdAt
                     // targetLanguages: interpreter.targetLanguages,
                     // isCertified: interpreter.isCertified,
                     // specialty: interpreter.specialty,
@@ -73,6 +74,7 @@ const app = new Hono()
                     phoneNumber: interpreter.phoneNumber,
                     isCertified: interpreter.isCertified,
                     clerkUserId: interpreter.clerkUserId,
+                    createdAt: interpreter.createdAt
                 })
                 .from(interpreter)
                 // --- CORRECTED where clause ---
@@ -175,6 +177,7 @@ const app = new Hono()
                     phoneNumber: interpreter.phoneNumber,
                     isCertified: interpreter.isCertified,
                     clerkUserId: interpreter.clerkUserId,
+                    createdAt: interpreter.createdAt
                     // targetLanguages: interpreter.targetLanguages,
                     // isCertified: interpreter.isCertified,
                     // specialty: interpreter.specialty,

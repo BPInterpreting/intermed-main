@@ -1,6 +1,6 @@
 'use client'
 
-import {Edit, MoreHorizontal, Trash} from "lucide-react";
+import {Edit, Eye, MoreHorizontal, Trash} from "lucide-react";
 import {Button} from "@/components/ui/button"
 import {
     DropdownMenu,
@@ -13,6 +13,8 @@ import {
 import {useConfirm} from "@/hooks/use-confirm";
 import {useUpdateInterpreter} from "@/features/interpreters/hooks/use-update-interpreter";
 import {useDeleteInterpreter} from "@/features/interpreters/api/use-delete-interpreter";
+import {useRouter} from "next/navigation";
+import Link from "next/link";
 
 type Props = {
     id: string;
@@ -20,6 +22,7 @@ type Props = {
 
 export const Actions = ({id}: Props) => {
     const {onOpen} = useUpdateInterpreter()
+    const router = useRouter()
     const deleteMutation = useDeleteInterpreter(id)
     const [ConfirmDialog, confirm] = useConfirm(
         'Are you sure you want to delete this Interpreter?',
@@ -60,7 +63,15 @@ export const Actions = ({id}: Props) => {
                             Delete
                         </DropdownMenuItem>
                         <DropdownMenuSeparator/>
-                        <DropdownMenuLabel>Details</DropdownMenuLabel>
+                        <DropdownMenuItem
+                            asChild
+                            disabled={deleteMutation.isPending}
+                        >
+                            <Link href={`/admin/dashboard/interpreters/${id}`} className="flex items-center">
+                                <Eye className="size-4 mr-2"/>
+                                Details
+                            </Link>
+                        </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </>
