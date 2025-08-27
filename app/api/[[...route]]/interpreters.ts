@@ -34,6 +34,9 @@ const app = new Hono()
                     id: interpreter.id,
                     firstName: interpreter.firstName,
                     lastName: interpreter.lastName,
+                    address: interpreter.address,
+                    latitude: interpreter.latitude,
+                    longitude: interpreter.longitude,
                     email: interpreter.email,
                     phoneNumber: interpreter.phoneNumber,
                     isCertified: interpreter.isCertified,
@@ -70,6 +73,9 @@ const app = new Hono()
                     id: interpreter.id,
                     firstName: interpreter.firstName,
                     lastName: interpreter.lastName,
+                    address: interpreter.address,
+                    latitude: interpreter.latitude,
+                    longitude: interpreter.longitude,
                     email: interpreter.email,
                     phoneNumber: interpreter.phoneNumber,
                     isCertified: interpreter.isCertified,
@@ -174,6 +180,9 @@ const app = new Hono()
                     firstName: interpreter.firstName,
                     lastName: interpreter.lastName,
                     email: interpreter.email,
+                    address: interpreter.address,
+                    latitude: interpreter.latitude,
+                    longitude: interpreter.longitude,
                     phoneNumber: interpreter.phoneNumber,
                     isCertified: interpreter.isCertified,
                     clerkUserId: interpreter.clerkUserId,
@@ -206,12 +215,18 @@ const app = new Hono()
                 firstName: true,
                 lastName: true,
                 email: true,
+                address: true,
+                latitude: true,
+                longitude: true,
                 phoneNumber: true,
                 isCertified: true,
                 // targetLanguages: true,
                 // isCertified: true,
                 // specialty: true,
                 // coverageArea: true
+            }).extend({
+                latitude: z.number().optional(),
+                longitude: z.number().optional(),
             })
         ),
         async (c) => {
@@ -225,11 +240,17 @@ const app = new Hono()
                 return c.json({ error: "Unauthorized" }, 401)
             }
 
+            const dbValues = {
+                ...values,
+                latitude: values.latitude?.toString(),
+                longitude: values.longitude?.toString(),
+            }
+
             // insert patient values using spread which only allows picked values
             const [data] = await db.insert(interpreter).values({
                 id: createId(),
                 clerkUserId: auth.userId,
-                ...values
+                ...dbValues
             }).returning()
             console.log("Inserted data:", data);
             if (!data) {
@@ -250,6 +271,9 @@ const app = new Hono()
         zValidator("json", insertInterpreterSchema.pick({
             firstName: true,
             lastName: true,
+            address: true,
+            latitude: true,
+            longitude: true,
             email: true,
             phoneNumber: true,
             isCertified: true

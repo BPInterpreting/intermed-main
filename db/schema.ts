@@ -63,6 +63,9 @@ export const interpreter =pgTable("interpreter", {
     lastName: varchar("lastName").notNull(),
     email: varchar("email").notNull(),
     phoneNumber: varchar("phoneNumber").notNull(),
+    address: text("address"),
+    longitude: numeric("longitude"),
+    latitude: numeric("latitude"),
     isCertified: boolean('is_certified').default(false),
     clerkUserId: text("clerkUserId").notNull().unique(), //stores the clerk id of the user
     expoPushToken: text("expo_push_token"), // stores the expo push token for notifications
