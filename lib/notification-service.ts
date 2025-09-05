@@ -5,8 +5,8 @@
 * */
 
 import { db } from '@/db/drizzle'
-import { interpreter } from "@/db/schema";
-import { eq } from 'drizzle-orm'
+import {appointmentOffers, interpreter} from "@/db/schema";
+import {and, eq, isNull, sql} from 'drizzle-orm'
 
 //interface for the actual notification
 interface NotificationData {
@@ -194,3 +194,131 @@ export function createAppointmentNotification(
             };
     }
 }
+
+// this function is to send the notification offer to the interpreter
+export async function sendOfferNotification(
+    appointment: any,
+    interpreters: any[]
+) {
+    console.log(`[Notifications] Sending offer notifications for appointment ${appointment.id} to ${interpreters.length} interpreters`)
+
+    const results = []
+
+    for (const interpreter of interpreters) {
+        if (!interpreter.expoPushToken) {
+            console.log(`[Notifications] Skipping interpreter ${interpreter.id} - no push token`)
+            continue
+        }
+
+        try {
+            const message = {
+                to: interpreter.expoPushToken,
+                sound: 'default',
+                title: '🆕 New Appointment Available!',
+                body: `${appointment.appointmentType || 'Medical'} interpretation needed on ${new Date(appointment.date).toLocaleDateString()}`,
+                data: {
+                    appointmentId: appointment.id,
+                    type: 'new_offer',
+                    isRushAppointment: appointment.isRushAppointment,
+                    distance: interpreter.distance
+                },
+                ios: {
+                    badge: 1,
+                    sound: 'default',
+                },
+                android: {
+                    channelId: 'default',
+                    priority: 'high',
+                },
+            }
+
+            const response = await fetch('https://exp.host/--/api/v2/push/send', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Accept-encoding': 'gzip, deflate',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(message),
+            })
+
+            const responseData = await response.json()
+
+            if (response.ok) {
+                console.log(`[Notifications] Sent to interpreter ${interpreter.id}`)
+                results.push({ interpreterId: interpreter.id, success: true })
+            } else {
+                console.error(`[Notifications] Failed for interpreter ${interpreter.id}:`, responseData)
+                results.push({ interpreterId: interpreter.id, success: false, error: responseData })
+            }
+
+        } catch (error) {
+            console.error(`[Notifications] Error sending to interpreter ${interpreter.id}:`, error)
+            results.push({ interpreterId: interpreter.id, success: false, error })
+        }
+    }
+
+    console.log(`[Notifications] Sent ${results.filter(r => r.success).length}/${interpreters.length} notifications successfully`)
+    return results
+}
+
+// Optional: Add function to notify when offer is taken
+export async function notifyOfferTaken(appointmentId: string, acceptedByInterpreterId: string) {
+    // Query all other interpreters who were offered this appointment
+    const offeredInterpreters = await db
+        .select({
+            interpreterId: appointmentOffers.interpreterId,
+            token: interpreter.expoPushToken
+        })
+        .from(appointmentOffers)
+        .innerJoin(interpreter, eq(appointmentOffers.interpreterId, interpreter.id))
+        .where(
+            and(
+                eq(appointmentOffers.appointmentId, appointmentId),
+                sql`${appointmentOffers.interpreterId} != ${acceptedByInterpreterId}`,
+                isNull(appointmentOffers.response)
+            )
+        )
+
+    // Send "no longer available" notification to each
+    for (const interp of offeredInterpreters) {
+        if (interp.token) {
+            // Send notification that appointment is no longer available
+            // You can implement this similar to above
+                    const message = {
+                        to: interp.token,
+                        sound: 'default',
+                        title: 'Appointment No Longer Available',
+                        body: 'Appointment Accepted By Another Interpreter',
+                        data: {
+                            appointmentId: appointmentId,
+                            type: 'offer_taken'
+                        },
+                        ios: {
+                            badge: 1,
+                            sound: 'default',
+                        },
+                        android: {
+                            channelId: 'default',
+                            priority: 'high',
+                        }
+                    }
+                    try {
+                        await fetch('https://exp.host/--/api/v2/push/send', {
+                            method: 'POST',
+                            headers: {
+                                'Accept': 'application/json',
+                                'Accept-encoding': 'gzip, deflate',
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(message),
+                        })
+
+                        console.log(`[Notifications] Notified ${interp.interpreterId} that offer was taken`)
+                    } catch (error) {
+                        console.error(`[Notifications] Failed to notify interpreter ${interp.interpreterId}:`, error)
+                    }
+        }
+    }
+}
+

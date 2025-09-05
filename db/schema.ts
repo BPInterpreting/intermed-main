@@ -96,6 +96,10 @@ export const appointments = pgTable("appointments", {
     notes: text("notes"),
     appointmentType : varchar("appointmentType"),
     status: varchar("status").default('Pending'),
+    offerMode: boolean('offerMode').default(false),
+    offerSentAt: timestamp('offer_sent_at', {mode: 'date'}),
+    assignedAt: timestamp("assigned_at", {mode: 'date'}),
+    isRushAppointment: boolean('is_rush_appointment').default(false),
     patientId: text("patient_id").references(() => patient.id, {
         onDelete: "set null",
     }),
@@ -129,6 +133,38 @@ export const appointmentsRelations = relations(appointments, ({ one }) => ({
 export const insertAppointmentSchema = createInsertSchema(appointments, {
     date: z.coerce.date(),
 })
+
+export const appointmentOffers = pgTable("appointmentOffers", {
+    id: text("id").primaryKey(),
+    appointmentId: text("appointment_id").references(() => appointments.id, {
+        onDelete: "cascade",
+    }).notNull(),
+    interpreterId: text("interpreter_id").references(() => interpreter.id, {
+        onDelete: "cascade",
+    }).notNull(),
+    notifiedAt: timestamp('notified_at', {mode: 'date'}).notNull().defaultNow(),
+    viewedAt: timestamp('viewed_at', {mode: 'date'}),
+    respondedAt: timestamp('responded_at', {mode: 'date'}),
+    response: varchar("response"),
+    distanceMiles: numeric("distance_miles"),
+    hasFacilityHistory: boolean('has_facility_history').default(false),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+})
+
+export const appointmentOffersRelations = relations(appointmentOffers, ({ one }) => ({
+    appointment: one(appointments, {
+        fields: [appointmentOffers.appointmentId],
+        references: [appointments.id]
+    }),
+    interpreter: one(interpreter, {
+        fields: [appointmentOffers.interpreterId],
+        references: [interpreter.id]
+    })
+}))
+
+// Add the insert schema
+export const insertAppointmentOfferSchema = createInsertSchema(appointmentOffers)
 
 export const followUpRequest = pgTable("follow_up_request", {
     id: text("id").primaryKey(),

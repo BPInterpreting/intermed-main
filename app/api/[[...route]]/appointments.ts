@@ -1,11 +1,38 @@
 import {Hono} from 'hono'
 import {db} from '@/db/drizzle'
-import {appointments, facilities, insertAppointmentSchema, interpreter, patient} from "@/db/schema";
+import {appointmentOffers, appointments, facilities, insertAppointmentSchema, interpreter, patient} from "@/db/schema";
 import {z} from 'zod'
 import {zValidator} from '@hono/zod-validator'
 import {createId} from "@paralleldrive/cuid2";
-import {and, asc, eq, inArray, sql} from "drizzle-orm";
+import {and, asc, desc, eq, inArray, isNotNull, isNull, sql} from "drizzle-orm";
 import {clerkMiddleware, getAuth} from "@hono/clerk-auth";
+
+//Haversine formula used to calculate the distance between interpreter and the facility location
+//all interpreteters within the distance of the appointement location get a notification.
+
+// uses raduis of the earth
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const R = 3959 //earth radius
+    //conversion of degrees to radians
+    const dLat = (lat2 - lat1) * Math.PI / 180
+    const dLon = (lon2 - lon1) * Math.PI / 180
+    //havsersine formula applcation
+    const a =
+        Math.sin(dLat/2) * Math.sin(dLat/2) + //latitude
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * //adjustment for position on earth
+        Math.sin(dLon / 2) * Math.sin(dLon / 2)
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)) //calculate angular distance
+    return R * c //converts to miles
+}
+
+// TEMPORARY TEST - Remove after debugging
+const facilityLat = 38.126233899999995;
+const facilityLng = -122.24766359999998;
+const interpreterLat = 38.2460811;
+const interpreterLng = -122.0552988;
+const testDistance = calculateDistance(facilityLat, facilityLng, interpreterLat, interpreterLng);
+console.log('TEST: Direct calculation with known coords:', testDistance, 'miles');
+// END TEST
 
 //all the routes are chained to the main Hono app
 const app = new Hono()
@@ -89,11 +116,71 @@ const app = new Hono()
                 asc(appointments.startTime)
             )
 
-            console.log("Fetched Appointments Data:", data); // Log full data for debugging
-            console.log("Number of Appointments Fetched:", data.length);
+            // console.log("Fetched Appointments Data:", data); // Log full data for debugging
+            // console.log("Number of Appointments Fetched:", data.length);
 
             return c.json({ data })
 })
+    //this get route is for interpreters to see the offers sent to them
+    .get(
+        '/offers/available',
+        clerkMiddleware(),
+        async (c) => {
+            const auth = getAuth(c)
+
+            if (!auth?.userId) {
+                return c.json({ error: "Unauthorized" }, 401)
+            }
+
+            //gets the interpreter
+            const [currentInterpreter] = await db
+                .select()
+                .from(interpreter)
+                .where(eq(interpreter.clerkUserId, auth.userId))
+                .limit(1)
+
+            if (!currentInterpreter) {
+                return c.json({ error: "Interpreter not found" }, 404)
+            }
+
+            //gets the offers for this interpreter
+            const offers = await db
+                .select({
+                    appointmentId: appointments.id,
+                    bookingId: appointments.bookingId,
+                    date: appointments.date,
+                    startTime: appointments.startTime,
+                    appointmentType: appointments.appointmentType,
+                    isRushAppointment: appointments.isRushAppointment,
+                    facilityName: facilities.name,
+                    facilityAddress: facilities.address,
+                    patientFirstName: patient.firstName,
+                    patientLastName: patient.lastName,
+                    distanceMiles: appointmentOffers.distanceMiles,
+                    notifiedAt: appointmentOffers.notifiedAt,
+                })
+                .from(appointmentOffers)
+                .innerJoin(appointments, eq(appointmentOffers.appointmentId, appointments.id))
+                .innerJoin(facilities, eq(appointments.facilityId, facilities.id))
+                .innerJoin(patient, eq(appointments.patientId, patient.id))
+                .where(
+                    and(
+                        eq(appointmentOffers.interpreterId, currentInterpreter.id),
+                        isNull(appointmentOffers.response),
+                        isNull(appointments.interpreterId) // Still unassigned
+                    )
+                )
+                .orderBy(
+                    desc(appointments.isRushAppointment),
+                    appointments.date,
+                    appointments.startTime
+                )
+
+            return c.json({ data: offers })
+        }
+
+    )
+
     // get the facility by id
     .get(
         '/:id',
@@ -169,6 +256,62 @@ const app = new Hono()
             return c.json({data})
 
         })
+    //this route gets the count of interpreters in the 40 mile radius. Used in the appointment form to display
+    //how many will be available in the area when offer is triggered
+    .get(
+        '/offers/interpreter-count',
+        clerkMiddleware(),
+        zValidator('query', z.object({
+            facilityId: z.string()
+        })),
+        async (c) => {
+            const { facilityId } = c.req.valid('query')
+
+            // Get facility location
+            const [facility] = await db
+                .select()
+                .from(facilities)
+                .where(eq(facilities.id, facilityId))
+                .limit(1)
+
+            if (!facility) {
+                return c.json({ count: 0 })
+            }
+
+            // Get interpreters with location and push token
+            const interpreters = await db
+                .select()
+                .from(interpreter)
+                .where(
+                    and(
+                        isNotNull(interpreter.latitude),
+                        isNotNull(interpreter.longitude),
+                        isNotNull(interpreter.expoPushToken)
+                    )
+                )
+
+            // Count those within 40 miles
+            let count = 0
+            for (const interp of interpreters) {
+                console.log('Facility coords:', facility.latitude, facility.longitude)
+                console.log('Interpreter coords:', interp.latitude, interp.longitude)
+                const distance = calculateDistance(
+                    parseFloat(facility.latitude),
+                    parseFloat(facility.longitude),
+                    parseFloat(interp.latitude!),
+                    parseFloat(interp.longitude!)
+                )
+
+                console.log(`Distance calculated for interpreter ${interp.id}:`, distance)
+
+                if (distance <= 40) count++
+            }
+
+
+
+            return c.json({ count })
+        }
+    )
     .post(
         '/',
         clerkMiddleware(),
@@ -179,6 +322,10 @@ const app = new Hono()
                 bookingId: true,
                 createdAt: true,
                 updatedAt: true,
+            }).extend({
+                interpreterId: z.string().optional().nullable(),
+                offerMode: z.boolean().optional(),
+                isRushAppointment: z.boolean().optional()
             })
         ),
         async (c) => {
@@ -190,15 +337,116 @@ const app = new Hono()
             }
 
             try {
+                //isOffer if no interpreter is assigned to the appointment already
+                const isOffer = !values.interpreterId
+
                 // Create the appointment
+                //along with the value spread
                 const [data] = await db.insert(appointments).values({
                     id: createId(),
-                    ...values
+                    ...values,
+                    //value overrides to avoid client setting business rules and let backend enforce them.
+                    offerMode: isOffer, // prevents front-end from deciding if appointment is an offer instead this is set by the backend based on whether a interpreterId was selected
+                    status: isOffer ? 'offer_pending' : values.status || 'Pending', //offers are set to offer pending status. avoid sending confirmed to an appointment with not interpreter assigned
+                    isRushAppointment: values.isRushAppointment || false //always se to false if not active to avoid undefined or null values in database
                 }).returning()
 
-                console.log(`[Appointments] Created appointment ${data.id}`);
+                console.log(`[Appointments] Created ${isOffer ? 'offer' : 'regular'} appointment ${data.id}`);
 
-                // ✨ Send notification if interpreter is assigned
+                // if the appointment turns out to be an offer return the following logic
+                if (isOffer) {
+                    //1. first is to get the facility details in question
+                    if (!data.facilityId) {
+                        return c.json({ error: "Cannot create offer without facility" }, 400)
+                    }
+                    const [facility] = await db
+                        .select()
+                        .from(facilities)
+                        .where(eq(facilities.id, data.facilityId))
+                        .limit(1)
+
+                    if (!facility) {
+                        return c.json({ error: 'Facility not found' }, 404)
+                    }
+
+                    //2. get the interpreters along with the push token and location
+                    const interpreters = await db
+                        .select()
+                        .from(interpreter)
+                        .where(
+                            and(
+                                isNotNull(interpreter.latitude),
+                                isNotNull(interpreter.longitude),
+                                isNotNull(interpreter.expoPushToken)
+                            )
+                        )
+
+                    //3. calculate the distance and create offers
+                    //these are empty arrays that hold records and interpreters that will be notified of the appointemnt
+                    const offerRecords = []
+                    const interpretersToNotify = []
+
+                    //for loop that calculates the distance based on the haversinse formula and needs both the lat and lon of facility and interpreter
+                    for (const interp of interpreters) {
+                        const distance = calculateDistance(
+                            parseFloat(facility.latitude),
+                            parseFloat(facility.longitude),
+                            parseFloat(interp. latitude!),
+                            parseFloat(interp.longitude!)
+                        )
+
+                        console.log('Distance calculated:', distance);
+                        console.log('Distance as string:', distance.toString());
+
+                        //if the distance is within 40miles push into the offer record array. also push into array of interpreters to notify
+                        if (distance <= 40) {
+                            const offerRecord = {
+                                id: createId(),
+                                appointmentId: data.id,
+                                interpreterId: interp.id,
+                                distanceMiles: distance.toString(),
+                                hasFacilityHistory: false
+                            };
+
+                            console.log('Offer record being saved:', offerRecord);
+                            console.log('Distance value type:', typeof distance);
+                            console.log('Distance string value:', distance.toString());
+
+                            offerRecords.push(offerRecord);
+                            interpretersToNotify.push(interp);
+                        }
+
+                    }
+
+                    if (offerRecords.length > 0) {
+                        //this inserts the array of offerRecords into the actual data table in database for tracking
+                        console.log('About to insert offers:', JSON.stringify(offerRecords, null, 2));
+                        await db.insert(appointmentOffers).values(offerRecords)
+                        console.log('Offers inserted successfully');
+
+                        //updates the appointment status
+                        await  db.update(appointments)
+                            .set({
+                                status: 'offer_sent',
+                                offerSentAt: new Date()
+                            })
+                            .where(eq(appointments.id, data.id))
+
+                        //send the push notification
+                        const { sendOfferNotification } = await import('@/lib/notification-service')
+                        await sendOfferNotification(data, interpretersToNotify)
+
+                        console.log(`[Appointments] Sent offer to ${offerRecords.length} interpreters`)
+                    }
+
+                    return c.json({
+                        data,
+                        offerSent: true,
+                        interpretersNotified: offerRecords.length
+                    })
+                }
+
+                // Send notification if interpreter is assigned
                 if (data.interpreterId) {
                     console.log(`[Appointments] Sending notification to interpreter: ${data.interpreterId}`);
 
@@ -269,8 +517,143 @@ const app = new Hono()
             }
         }
     )
+    //this is the post route for interpreters to accept offers
+    .post(
+        '/offers/:appointmentId/accept',
+        clerkMiddleware(),
+        zValidator('param', z.object({
+            appointmentId: z.string()
+        })),
+        async (c) => {
+            const { appointmentId } = c.req.valid('param')
+            const auth = getAuth(c)
 
-    //individual facility can be updated by id
+            if (!auth?.userId) {
+                return c.json({ error: "Unauthorized" }, 401)
+            }
+
+            // Get interpreter
+            const [currentInterpreter] = await db
+                .select()
+                .from(interpreter)
+                .where(eq(interpreter.clerkUserId, auth.userId))
+                .limit(1)
+
+            if (!currentInterpreter) {
+                return c.json({ error: "Interpreter not found" }, 404)
+            }
+
+            try {
+                const results = await db.transaction(async (tx) => {
+                    //check if the appointemnt is still available by using a databse transaction
+                    // looks for the appointment in the database and checks if the interpreterId field is null
+                    //does this transaction in one swoop
+                    const [appointment] = await tx
+                        .select()
+                        .from(appointments)
+                        .where(and(
+                            eq(appointments.id, appointmentId),
+                            isNull(appointments.interpreterId)
+                        ))
+                        .limit(1)
+
+                    if (!appointment) {
+                        throw new Error('already-taken')
+                    }
+
+                    //this transaction assigns the interpreter to the appointment
+                    await tx.update(appointments)
+                        .set({
+                            interpreterId: currentInterpreter.id,
+                            assignedAt: new Date(),
+                            status: 'Pending Confirmation'
+                        })
+                        .where(eq(appointments.id, appointmentId))
+
+                    //gets marked as accepted in the offers table
+                    await tx.update(appointmentOffers)
+                        .set({
+                            response: 'accepted',
+                            respondedAt: new Date()
+                        })
+                        .where(
+                            and(
+                                eq(appointmentOffers.appointmentId, appointmentId),
+                                eq(appointmentOffers.interpreterId, currentInterpreter.id)
+                            )
+                        )
+
+                    return appointment
+                })
+
+                //TODO: notify other interpreters the appointment is taken
+                return c.json({
+                    success: true,
+                    message: "Appointment accepted successfully",
+                })
+            } catch (error) {
+                console.error('[Offers] Accept error details:', error);
+                //TODO: Check and see if this is okay
+                if (error instanceof Error && error.message === 'already-taken') {
+
+                    return c.json({
+                        success: false,
+                        error: "This appointment is already taken"
+                    }, 409)
+                }
+                return c.json({ error: "Failed to accept offer" }, 500)
+            }
+        }
+    )
+    .post(
+        '/offers/:appointmentId/decline',
+        clerkMiddleware(),
+        zValidator('param', z.object({
+            appointmentId: z.string()
+        })),
+        async (c) => {
+            const { appointmentId } = c.req.valid('param')
+            const auth = getAuth(c)
+
+            if (!auth?.userId) {
+                return c.json({ error: 'Unauthorized' }, 401)
+            }
+
+            //get the interpreter based on the clerk id
+            const [currentInterpreter] = await db
+                .select()
+                .from(interpreter)
+                .where(eq(interpreter.clerkUserId, auth.userId))
+                .limit(1)
+
+            if (!currentInterpreter) {
+                return c.json({ error: "Interpreter not found" }, 404)
+            }
+
+            //this updates the offer record for when the interpreter declines the appointment.
+            await db.update(appointmentOffers)
+                .set({
+                    response: 'decline',
+                    respondedAt: new Date()
+                })
+                .where(
+                    and(
+                        eq(appointmentOffers.appointmentId, appointmentId),
+                        eq(appointmentOffers.interpreterId, currentInterpreter.id)
+                    )
+                )
+
+            console.log(`[Appointments] Interpreter ${currentInterpreter.id} declined appointment ${appointmentId}`)
+
+            // TODO: Check if all notified interpreters have declined
+            // If so, you might want to notify admin or expand the radius
+
+            return c.json({
+                success: true,
+                message: 'Offer declined'
+            })
+        }
+    )
     //individual facility can be updated by id
     // UPDATED PATCH ROUTE - handles interpreter reassignment
     .patch(

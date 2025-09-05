@@ -22,6 +22,9 @@ import {
     SelectValue
 } from "@/components/ui/select";
 import {Switch} from "@/components/ui/switch";
+import {useState} from "react";
+import {Card, CardContent, CardDescription, CardHeader} from "@/components/ui/card";
+import {useInterpreterCount} from "@/features/appointments/api/use-get-interpreter-count";
 
 const intervalRegex = /^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$/i;
 
@@ -31,7 +34,7 @@ const formSchema = z.object({
     date: z.coerce.date(),
     patientId: z.string().nullable(),
     facilityId: z.string().nullable(),
-    interpreterId: z.string().nullable(),
+    interpreterId: z.string().nullable().optional(),
     startTime: z.string(),
     projectedEndTime: z.string().nullable(),
     // duration: z.string().regex(intervalRegex, {message: 'Invalid duration format. Example: 1h30m'}).nullable(),
@@ -40,7 +43,9 @@ const formSchema = z.object({
     appointmentType: z.string().nullable(),
     isCertified: z.boolean().optional(),
     notes: z.string().nullable().optional(),
-    status: z.string().nullable()
+    status: z.string().nullable(),
+    offerMode: z.boolean().optional(),
+    isRushAppointment: z.boolean().optional(),
 })
 
 //this api schema is used in the onSubmit function to send the data to the server
@@ -81,9 +86,16 @@ export const AppointmentForm = ({
         defaultValues: defaultValues
     })
 
+    const [isOfferMode, setIsOfferMode] = useState(false)
+    const facilityId = form.watch('facilityId')
+    const interpreterCount = useInterpreterCount(facilityId)
+
     const handleSubmit = (values: FormValues) => {
         onSubmit({
-            ...values
+            ...values,
+            interpreterId: values.offerMode ? null : values.interpreterId,
+            offerMode: values.offerMode ?? false,
+            isRushAppointment: values.isRushAppointment ?? false,
         })
     }
 
@@ -225,25 +237,74 @@ export const AppointmentForm = ({
                                    </FormItem>
                                )}
                            />
-                           <FormField
-                               control={form.control}
-                               name="interpreterId"
-                               render={({ field }) => (
-                                   <FormItem>
-                                       <FormLabel>Interpreter</FormLabel>
-                                       <FormControl>
-                                           <CustomSelect
-                                               options={interpreterOptions}
-                                               value={field.value}
-                                               onChange={field.onChange}
-                                               // onCreate={onCreateFacility}
-                                               placeholder="Select an Interpreter..."
-                                               disabled={disabled}
-                                           />
-                                       </FormControl>
-                                   </FormItem>
-                               )}
-                           />
+                              <div className='mt-2'>
+                                  {/*this is a toggle for offer mode. when checked it sets the interpreterId to null triggering the backend operation to send out offer to other interpreters in the area.*/}
+                                  <FormField
+                                      control={form.control}
+                                      name="offerMode"
+                                      render={({field}) => (
+                                          <FormItem className="relative rounded-lg border p-4 shadow-sm min-h-[100px]">
+                                              <div className="space-y-1 pr-16">
+                                                  <FormLabel>Switch to enable offer mode</FormLabel>
+                                                  <FormDescription>
+                                                      Enabling will send offer out to multiple interpreters in a 40 mile radius
+                                                  </FormDescription>
+                                              </div>
+                                              <FormControl>
+                                                  <div className="absolute bottom-2 right-4">
+                                                      <Switch
+                                                          checked={field.value ?? false}
+                                                          onCheckedChange={(checked) => {
+                                                              field.onChange(checked);
+                                                              setIsOfferMode(checked);
+                                                              if (checked) {
+                                                                  form.setValue('interpreterId', null);
+                                                              }
+                                                          }}
+                                                      />
+                                                  </div>
+                                              </FormControl>
+                                          </FormItem>
+                                      )}
+                                  />
+                              </div>
+
+                              {!isOfferMode &&
+                                  <FormField
+                                      control={form.control}
+                                      name="interpreterId"
+                                      render={({ field }) => (
+                                          <FormItem>
+                                              <FormLabel>Interpreter</FormLabel>
+                                              <FormControl>
+                                                  <CustomSelect
+                                                      options={interpreterOptions}
+                                                      value={field.value}
+                                                      onChange={field.onChange}
+                                                      // onCreate={onCreateFacility}
+                                                      placeholder="Select an Interpreter..."
+                                                      disabled={disabled}
+                                                  />
+                                              </FormControl>
+                                          </FormItem>
+                                      )}
+                                  />
+                              }
+                              {isOfferMode &&
+                                  <Card className={'mt-2'}>
+                                      <CardContent className={'flex items-center justify-center'}>
+                                          <CardDescription className={'p-1'}>
+                                              {facilityId && interpreterCount.data && (
+                                                  <span className="block mt-1 font-medium text-primary">
+                                                      {interpreterCount.data.count} interpreters available in area
+                                                  </span>
+                                              )}
+                                              Offer will automatically be sent out to multiple interpreters in the area. Refer to offer interface to monitor status changes
+                                          </CardDescription>
+                                      </CardContent>
+                                  </Card>
+                              }
+
                            {/*<FormItem>*/}
                            {/*    <FormLabel>Appointment Type</FormLabel>*/}
                            {/*    <FormControl>*/}
@@ -334,7 +395,6 @@ export const AppointmentForm = ({
                                                           onCheckedChange={field.onChange}
                                                       />
                                                   </div>
-
                                               </FormControl>
                                           </FormItem>
                                       )}

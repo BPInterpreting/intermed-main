@@ -79,7 +79,16 @@ export const NewAppointmentDialog = () => {
 
 
     const onSubmit = (values: FormValues) => {
-        createMutation.mutate(values, {
+        // Cleaned up the values to match API expectations
+        const cleanedValues = {
+            ...values,
+            offerMode: values.offerMode ?? undefined,  // Convert null to undefined
+            isRushAppointment: values.isRushAppointment ?? undefined,  // Convert null to undefined
+            // Remove interpreterId if in offer mode
+            interpreterId: values.offerMode ? undefined : values.interpreterId ?? undefined
+        }
+
+        createMutation.mutate(cleanedValues, {
             onSuccess: () => {
                 onClose()
             }
