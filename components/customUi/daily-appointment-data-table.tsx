@@ -88,7 +88,7 @@ export const DailyAppointmentsWidget: React.FC = () => {
         return (
             <Card className="w-full shadow-lg">
                 <CardHeader>
-                    <CardTitle className="text-2xl font-semibold text-gray-800">Daily Appointments</CardTitle>
+                    <CardTitle >Daily Appointments</CardTitle>
                     <CardDescription>Loading appointment data...</CardDescription>
                 </CardHeader>
                 <CardContent className="flex justify-center items-center h-48">
@@ -107,7 +107,7 @@ export const DailyAppointmentsWidget: React.FC = () => {
         <Card className="w-full shadow-lg">
             <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <CardTitle className="text-2xl font-semibold text-gray-800">Daily Appointments</CardTitle>
+                    <CardTitle className="text-2xl font-semibold text-primary">Daily Appointments</CardTitle>
                     <CardDescription>
                         Displaying appointments for {format(selectedDate, "PPP")}.
                     </CardDescription>

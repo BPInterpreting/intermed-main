@@ -14,7 +14,6 @@ export const Navbar = () => {
                     <UserButton
                         showName
                         appearance={{
-
                             elements: {
                                 userButtonBox : {
                                     flexDirection: 'row-reverse',

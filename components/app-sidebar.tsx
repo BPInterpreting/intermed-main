@@ -36,6 +36,8 @@ import {
     SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import {TbBuildingHospital} from "react-icons/tb";
+import {useNewAppointment} from "@/features/appointments/hooks/use-new-appointments";
+import {Collapsible} from "@radix-ui/react-collapsible";
 
 const data = {
     user: {
@@ -51,8 +53,18 @@ const data = {
         },
         {
             title: "Appointments",
-            url: "/admin/dashboard/appointments",
+            // url: "/admin/dashboard/appointments",
             icon: IconCalendar,
+            items: [
+                {
+                    title: 'History',
+                    url: "/admin/dashboard/appointments",
+                },
+                {
+                    title: 'Offers',
+                    url: "/admin/dashboard/offers",
+                }
+            ]
         },
         {
             title: "Facilities",
@@ -155,6 +167,9 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+
+    const newAppointment = useNewAppointment()
+
     return (
         <Sidebar collapsible="offcanvas" {...props}>
             <SidebarHeader>
@@ -166,19 +181,22 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         >
                             <a href="/admin/dashboard/home">
                                 <IconInnerShadowTop className="!size-5" />
-                                <span className="text-base font-semibold">Acme Inc.</span>
+                                <span className="text-base font-semibold">PenaMed</span>
                             </a>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarHeader>
             <SidebarContent>
-                <NavMain items={data.navMain} />
-                <NavDocuments items={data.documents} />
-                <NavSecondary items={data.navSecondary} className="mt-auto" />
+                <NavMain
+                    items={data.navMain}
+                    onCreateAppointment={newAppointment.onOpen}
+                />
+                {/*<NavDocuments items={data.documents} />*/}
+                {/*<NavSecondary items={data.navSecondary} className="mt-auto" />*/}
             </SidebarContent>
             <SidebarFooter>
-                <NavUser user={data.user} />
+                <NavUser />
             </SidebarFooter>
         </Sidebar>
     )

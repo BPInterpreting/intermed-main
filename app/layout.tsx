@@ -6,6 +6,7 @@ import {ClerkProvider} from "@clerk/nextjs";
 import {QueryProvider} from "@/providers/query-provider";
 import {Toaster} from "@/components/ui/sonner";
 import {DialogProvider} from "@/providers/dialog-provider";
+import {ThemeProvider} from "next-themes";
 
 
 const inter = Inter({ subsets: ["latin"] });
@@ -24,15 +25,20 @@ export default function RootLayout({
 }>) {
   return (
       <ClerkProvider >
-        <html lang="en">
+        <html lang="en" suppressHydrationWarning>
         <body className={inter.className}>
-        {/*<ThemeProvider attribute="class" defaultTheme="system" enableSystem>*/}
+        <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+        >
           <QueryProvider>
             <DialogProvider />
             <Toaster position='top-center' richColors />
             {children}
           </QueryProvider>
-        {/*</ThemeProvider>*/}
+        </ThemeProvider>
         </body>
         </html>
       </ClerkProvider>

@@ -45,12 +45,15 @@ interface FacilityDistributionPieProps {
 }
 
 const COLORS = [
-    '#8884d8',
-    '#82ca9d',
-    '#ffc658',
-    '#ff8042',
-    '#00C49F',
-    '#FFBB28',
+    "#a0c4ff", // Lightest Blue
+    "#83b0ff",
+    "#6495ed",
+    "#4169e1",
+    "#0047ab",
+    "#002366", // Darkest Blue
+    // Add more shades if you expect more than 6 slices
+    "#001d3d",
+    "#00122d",
 ];
 
 
@@ -119,7 +122,7 @@ export const FacilityDistributionPieChart = ({
                     <CardTitle>{title}</CardTitle>
                     <CardDescription>{description}</CardDescription>
                 </div>
-                {facilityNames.length >1  && (
+                {facilityNames.length > 1  && (
                     <Select value={activeFacility} onValueChange={setActiveFacility}>
                         <SelectTrigger
                             className={'ml-auto h-7 w-auto min-w-[130px] max-w-[200px] rounded-lg pl-2.5 text-xs'}
@@ -134,7 +137,7 @@ export const FacilityDistributionPieChart = ({
                                     key={item.name}
                                     className='rounded-lg [&span]:flex'
                                 >
-                                    <div className='flex items-center gap-2 text-sm'>
+                                    <div className='flex items-center gap-2 text-sm truncate'>
                                         <span
                                             className='flex h-3 w-3 shrink-0 rounded-sm'
                                             style={{ backgroundColor: item.fill }}
@@ -171,7 +174,7 @@ export const FacilityDistributionPieChart = ({
                                         <Sector
                                             {...props}
                                             outerRadius={outerRadius + 10}
-                                            innerRadius={outerRadius + 6}
+                                            innerRadius={outerRadius + 10}
                                         />
                                     </g>
                                 )}
