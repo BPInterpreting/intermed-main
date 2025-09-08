@@ -11,6 +11,9 @@ import {useCreateInterpreter} from "@/features/interpreters/api/use-create-inter
 const formSchema  = insertInterpreterSchema.pick({
     firstName: true,
     lastName: true,
+    address: true,
+    longitude: true,
+    latitude: true,
     email: true,
     phoneNumber: true,
     isCertified: true,
@@ -49,6 +52,9 @@ export const NewInterpreterDialog = () => {
                         defaultValues={{
                             firstName: '',
                             lastName: '',
+                            address: '',
+                            longitude: 0,
+                            latitude: 0,
                             email: '',
                             phoneNumber: '',
                             isCertified: false,

@@ -33,6 +33,7 @@ export const columns: ColumnDef<ResponseType>[] = [
         header: 'Status',
         size: 200,
         cell: ({ row }) => {
+
             switch (row.original.status) {
                 case "Interpreter Requested":
                     return (

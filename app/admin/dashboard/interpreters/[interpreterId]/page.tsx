@@ -241,18 +241,18 @@ const InterpreterClient = () => {
                                     {/*        </div>*/}
                                     {/*    </div>*/}
                                     {/*</div>*/}
-                                    {/*<div>*/}
-                                    {/*    <div className={'flex flex-row items-center space-x-2'}>*/}
-                                    {/*        <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center" >*/}
-                                    {/*            <MapPinHouse height={30} width={30} />*/}
-                                    {/*        </div>*/}
-                                    {/*        <div className={'flex flex-col '}>*/}
-                                    {/*            <span className="text-sm text-muted-foreground">Billing Address</span>*/}
-                                    {/*            <span className="font-medium">2039 Indiana St. Vallejo CA</span>*/}
-                                    {/*        </div>*/}
+                                    <div>
+                                        <div className={'flex flex-row items-center space-x-2'}>
+                                            <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center" >
+                                                <MapPinHouse height={30} width={30} />
+                                            </div>
+                                            <div className={'flex flex-col '}>
+                                                <span className="text-sm text-muted-foreground">Billing Address</span>
+                                                <span className="font-medium">{interpreter?.address}</span>
+                                            </div>
 
-                                    {/*    </div>*/}
-                                    {/*</div>*/}
+                                        </div>
+                                    </div>
                                 </div>
                             </CardContent>
                         </Card>

@@ -8,15 +8,15 @@ import {and, asc, desc, eq, inArray, isNotNull, isNull, sql} from "drizzle-orm";
 import {clerkMiddleware, getAuth} from "@hono/clerk-auth";
 
 //Haversine formula used to calculate the distance between interpreter and the facility location
-//all interpreteters within the distance of the appointement location get a notification.
+//all interpreters within the distance of the appointment location get a notification.
 
-// uses raduis of the earth
+// uses radius of the earth
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
     const R = 3959 //earth radius
     //conversion of degrees to radians
     const dLat = (lat2 - lat1) * Math.PI / 180
     const dLon = (lon2 - lon1) * Math.PI / 180
-    //havsersine formula applcation
+    //havsersine formula application
     const a =
         Math.sin(dLat/2) * Math.sin(dLat/2) + //latitude
         Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * //adjustment for position on earth
@@ -24,15 +24,6 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)) //calculate angular distance
     return R * c //converts to miles
 }
-
-// TEMPORARY TEST - Remove after debugging
-const facilityLat = 38.126233899999995;
-const facilityLng = -122.24766359999998;
-const interpreterLat = 38.2460811;
-const interpreterLng = -122.0552988;
-const testDistance = calculateDistance(facilityLat, facilityLng, interpreterLat, interpreterLng);
-console.log('TEST: Direct calculation with known coords:', testDistance, 'miles');
-// END TEST
 
 //all the routes are chained to the main Hono app
 const app = new Hono()
@@ -176,6 +167,21 @@ const app = new Hono()
                     appointments.startTime
                 )
 
+            // Viewed At: if the length of offers list for an inpterpreter is greater than 0 thus updates the appointmentOffers viewedAt attribute to the moment the user viewed the appointment
+            if (offers.length > 0) {
+                const offerIds = offers.map(o => o.appointmentId)
+
+                await db.update(appointmentOffers)
+                    .set({ viewedAt: new Date() })
+                    .where(
+                        and(
+                            eq(appointmentOffers.interpreterId, currentInterpreter.id),
+                            inArray(appointmentOffers.appointmentId, offerIds),
+                            isNull(appointmentOffers.viewedAt) // Only update if not already viewed
+                        )
+                    )
+            }
+
             return c.json({ data: offers })
         }
 
@@ -256,7 +262,7 @@ const app = new Hono()
             return c.json({data})
 
         })
-    //this route gets the count of interpreters in the 40 mile radius. Used in the appointment form to display
+    //this route gets the count of interpreters in the 40-mile radius. Used in the appointment form to display
     //how many will be available in the area when offer is triggered
     .get(
         '/offers/interpreter-count',
@@ -310,6 +316,89 @@ const app = new Hono()
 
 
             return c.json({ count })
+        }
+    )
+    .get(
+        '/offers/monitoring',
+         clerkMiddleware(),
+        async(c) => {
+
+            const auth = getAuth(c)
+            const userRole = (auth?.sessionClaims?.metadata as {role: string})?.role
+
+            if (userRole !== 'admin'){
+                return c.json({ error: "Admin access required" }, 403)
+            }
+
+            const offers = await db
+                .select({
+                    appointmentId: appointments.id,
+                    bookingId: appointments.bookingId,
+                    date: appointments.date,
+                    startTime: appointments.startTime,
+                    status: appointments.status,
+                    offerSentAt: appointments.offerSentAt,
+                    isRushAppointment: appointments.isRushAppointment,
+                    facilityName: facilities.name,
+                    patientName: sql`${patient.firstName} || ' ' || ${patient.lastName}`,
+
+                    // computes the offer status
+                    offerStatus: sql<string>`
+                        CASE
+                            WHEN ${appointments.interpreterId} IS NOT NULL THEN 'Accepted'
+                            -- this scenario is for when all interpreters decline 
+                             WHEN 
+                            (SELECT COUNT(*) FROM ${appointmentOffers} WHERE ${appointmentOffers.appointmentId} = ${appointments.id}) > 0 
+                            AND 
+                            (SELECT COUNT(*) FROM ${appointmentOffers} WHERE ${appointmentOffers.appointmentId} = ${appointments.id}) = 
+                            (SELECT COUNT(*) FROM ${appointmentOffers} WHERE ${appointmentOffers.appointmentId} = ${appointments.id} AND ${appointmentOffers.response} = 'decline')
+                            THEN 'All Declined'
+                            
+                            WHEN ${appointments.status} = 'offer_pending' THEN 'Pending'
+                            WHEN ${appointments.status} = 'offer_sent' THEN 'Sent'
+                            ELSE ${appointments.status}
+                        END
+                    `,
+
+                //         show who accepted the appointment
+                    acceptedBy: sql<string>`
+                    CASE
+                        WHEN ${appointments.interpreterId} IS NOT NULL
+                        THEN (SELECT ${interpreter.firstName} || ' ' || ${interpreter.lastName}
+                            FROM ${interpreter}
+                            WHERE ${interpreter.id} = ${appointments.interpreterId})
+                        ELSE NULL
+                    END
+                `,
+
+                    // RESPONSE METRICS: these are all the counts of who was notified who decline and viewed
+                    notifiedCount: sql`(
+                        SELECT COUNT(*)
+                        FROM ${appointmentOffers}
+                        WHERE ${appointmentOffers.appointmentId} = ${appointments.id}
+                    )`,
+
+                    viewedCount: sql<number>`(
+                                                 SELECT COUNT(*)
+                                                 FROM ${appointmentOffers}
+                                                 WHERE ${appointmentOffers.appointmentId} = ${appointments.id}
+                                                   AND ${appointmentOffers.viewedAt} IS NOT NULL
+                                             )`,
+                    declinedCount: sql<number>`(
+                                                   SELECT COUNT(*)
+                                                   FROM ${appointmentOffers}
+                                                   WHERE ${appointmentOffers.appointmentId} = ${appointments.id}
+                                                     AND ${appointmentOffers.response} = 'decline'
+                                               )`,
+                    interpreterId: appointments.interpreterId
+                })
+                .from(appointments)
+                .leftJoin(facilities, eq(appointments.facilityId, facilities.id))
+                .leftJoin(patient, eq(appointments.patientId, patient.id))
+                .where(eq(appointments.offerMode, true))
+                .orderBy(desc(appointments.createdAt))
+
+            return c.json({ data: offers })
         }
     )
     .post(
@@ -545,7 +634,7 @@ const app = new Hono()
 
             try {
                 const results = await db.transaction(async (tx) => {
-                    //check if the appointemnt is still available by using a databse transaction
+                    //check if the appointment is still available by using a database transaction
                     // looks for the appointment in the database and checks if the interpreterId field is null
                     //does this transaction in one swoop
                     const [appointment] = await tx

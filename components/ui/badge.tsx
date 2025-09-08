@@ -16,9 +16,9 @@ const badgeVariants = cva(
           "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
         outline: "text-foreground",
           confirmed:
-              "border-transparent bg-emerald-500/60 text-emerald-800 hover:bg-success/80",
+              "border-transparent bg-emerald-500/60 text-emerald-900 hover:bg-success/80",
           pendingConfirmation:
-              "border-transparent bg-yellow-500/60 text-yellow-700 hover:bg-success/80",
+              "border-transparent bg-yellow-500/60 text-yellow-800 hover:bg-success/80",
           pendingAuthorization:
                 "border-transparent bg-violet-500/60 text-violet-800 hover:bg-success/80",
           cancelled:
