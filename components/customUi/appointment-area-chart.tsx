@@ -68,7 +68,7 @@ export const AppointmentAreaChart = ({
     const chartConfig = {
         appointments: {
             label: "Appointments",
-            color: "hsl(var(--primary))",
+            color: "hsl(221, 83%, 53%)",
         },
     } satisfies ChartConfig
 

@@ -25,6 +25,8 @@ import {Switch} from "@/components/ui/switch";
 import {useState} from "react";
 import {Card, CardContent, CardDescription, CardHeader} from "@/components/ui/card";
 import {useInterpreterCount} from "@/features/appointments/api/use-get-interpreter-count";
+import {SimpleTimePicker} from "@/components/customUi/time-picker-ampm";
+
 
 const intervalRegex = /^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$/i;
 
@@ -131,11 +133,13 @@ export const AppointmentForm = ({
                                        <FormItem>
                                            <FormLabel>Start Time</FormLabel>
                                            <FormControl>
-                                               <TimePick
-                                                    value={field.value}
-                                                    onChange={field.onChange}
-                                                    disabled={disabled}
-                                               />
+                                               <div className="flex flex-col gap-3">
+                                                   <TimePick
+                                                       value={field.value}
+                                                       onChange={field.onChange}
+                                                       disabled={disabled}
+                                                   />
+                                               </div>
                                            </FormControl>
                                        </FormItem>
                                    )}
