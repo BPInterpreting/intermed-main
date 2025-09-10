@@ -16,17 +16,17 @@ const badgeVariants = cva(
           "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
         outline: "text-foreground",
           confirmed:
-              "border-transparent bg-emerald-500/60 text-emerald-900 hover:bg-success/80",
+              "bg-emerald-100 text-emerald-700 dark:bg-emerald-700/30 dark:text-emerald-300",
           pendingConfirmation:
-              "border-transparent bg-yellow-500/60 text-yellow-800 hover:bg-success/80",
+              "bg-yellow-100 text-yellow-700 dark:bg-yellow-700/30 dark:text-yellow-300",
           pendingAuthorization:
-                "border-transparent bg-violet-500/60 text-violet-800 hover:bg-success/80",
+                "bg-violet-100 text-violet-700 dark:bg-violet-700/30 dark:text-violet-300",
           cancelled:
-              "border-transparent bg-red-700/70 text-red-950 hover:bg-success/80",
+              "bg-red-100 text-red-700 dark:bg-red-700/30 dark:text-red-300",
           closed:
-              "border-transparent bg-sky-500/60 text-blue-800 hover:bg-success/80",
+              "bg-blue-100 text-blue-700 dark:bg-blue-700/30 dark:text-blue-300",
           interpreterRequested:
-              "border-transparent bg-rose-500/20 text-pink-700 hover:bg-success/80",
+              "bg-rose-100 text-rose-700 dark:bg-rose-700/30 dark:text-rose-300",
 
 
       },
