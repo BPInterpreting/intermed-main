@@ -30,6 +30,16 @@ const app = new Hono()
 
 // all the '/' routes are relative to the base path of this file which is /api/facility
     .get(
+        '/test/:id',
+        clerkMiddleware(),
+        zValidator('param', z.object({ id: z.string() })),
+        async (c) => {
+            const { id } = c.req.valid('param');
+            console.log(`[API-TEST] Successfully hit the test route with ID: ${id}`);
+            return c.json({ message: `Test successful for ID: ${id}` });
+        }
+    )
+    .get(
         '/',
         clerkMiddleware(),
         zValidator('query', z.object({
@@ -187,81 +197,6 @@ const app = new Hono()
 
     )
 
-    // get the facility by id
-    .get(
-        '/:id',
-        clerkMiddleware(),
-        zValidator('param', z.object({
-            id: z.string().optional(),
-        })),
-        zValidator('query', z.object({
-            endTime: z.string().optional().nullable(),
-        })),
-        async (c) => {
-            const auth = getAuth(c)
-            const userId = auth?.userId
-            const userRole = (auth?.sessionClaims?.metadata as {role: string})?.role
-
-            //the param is validated
-            const { id } = c.req.valid('param')
-
-            if (!id) {
-                return c.json({ error: "Invalid id" }, 400)
-            }
-
-            if (!userId) {
-                return c.json({error: "Unauthorized"}, 401)
-            }
-
-            if (!userRole) {
-                return c.json({error: "Role not found"}, 403)
-            }
-
-            //data that is returned is the id and first name of the facility from the facility table
-            const [data] = await db
-                .select({
-                    id: appointments.id,
-                    bookingId: appointments.bookingId,
-                    date: appointments.date,
-                    startTime: appointments.startTime,
-                    endTime: appointments.endTime,
-                    projectedEndTime: appointments.projectedEndTime,
-                    duration: appointments.duration,
-                    projectedDuration: appointments.projectedDuration,
-                    appointmentType: appointments.appointmentType,
-                    notes: appointments.notes,
-                    status: appointments.status,
-                    isCertified: appointments.isCertified,
-                    facilityId: appointments.facilityId,
-                    patientId: appointments.patientId,
-                    patientFirstName: patient.firstName,
-                    patientLastName: patient.lastName,
-                    interpreterId: appointments.interpreterId,
-                    interpreterFirstName: interpreter.firstName,
-                    interpreterLastName: interpreter.lastName,
-                    createdAt: appointments.createdAt,
-                    updatedAt: appointments.updatedAt,
-                    // interpreterSpecialty: interpreter.specialty,
-                    // interpreterCoverageArea: interpreter.coverageArea,
-                    // interpreterTargetLanguages: interpreter.targetLanguages
-                })
-                .from(appointments)
-                .innerJoin(patient, eq(appointments.patientId, patient.id))
-                .innerJoin(interpreter, eq(appointments.interpreterId, interpreter.id))
-                .innerJoin(facilities, eq(appointments.facilityId, facilities.id))
-                .where(userRole === 'admin' ? and(eq(appointments.id, id)) : and(eq(interpreter.clerkUserId, userId), eq(appointments.id, id)))
-                .orderBy(
-                    asc(appointments.date),
-                    asc(appointments.startTime)
-                )
-
-            if (!data) {
-                return c.json({ error: "Facility not found" }, 404)
-            }
-
-            return c.json({data})
-
-        })
     //this route gets the count of interpreters in the 40-mile radius. Used in the appointment form to display
     //how many will be available in the area when offer is triggered
     .get(
@@ -401,6 +336,154 @@ const app = new Hono()
             return c.json({ data: offers })
         }
     )
+    .get(
+        '/offers/monitoring/:id',
+        clerkMiddleware(),
+        zValidator('param', z.object({
+            id: z.string(),
+        })),
+        async(c) => {
+
+            const auth = getAuth(c)
+            const userRole = (auth?.sessionClaims?.metadata as {role: string})?.role
+            const { id } = c.req.valid('param');
+            console.log(`[API] Fetching offer details for ID: ${id}`);
+
+            if (userRole !== 'admin'){
+                return c.json({ error: "Admin access required" }, 403)
+            }
+
+            const [offer] = await db
+                .select({
+                    appointmentId: appointments.id,
+                    bookingId: appointments.bookingId,
+                    date: appointments.date,
+                    startTime: appointments.startTime,
+                    status: appointments.status,
+                    offerSentAt: appointments.offerSentAt,
+                    isRushAppointment: appointments.isRushAppointment,
+                    isCertified: appointments.isCertified,
+                    facilityName: facilities.name,
+                    facilityPhoneNumber: facilities.phoneNumber,
+                    facilityAddress: facilities.address,
+                    createdAt: appointments.createdAt,
+                    patientName: sql`${patient.firstName} || ' ' || ${patient.lastName}`,
+                    notifiedCount: sql`(SELECT COUNT(*) FROM ${appointmentOffers} WHERE ${appointmentOffers.appointmentId} = ${appointments.id})`,
+                    viewedCount: sql`(SELECT COUNT(*) FROM ${appointmentOffers} WHERE ${appointmentOffers.appointmentId} = ${appointments.id} AND ${appointmentOffers.viewedAt} IS NOT NULL)`,
+                    declinedCount: sql`(SELECT COUNT(*) FROM ${appointmentOffers} WHERE ${appointmentOffers.appointmentId} = ${appointments.id} AND ${appointmentOffers.response} = 'decline')`,
+                    acceptedByInterpreterId: appointments.interpreterId,
+                })
+                .from(appointments)
+                .leftJoin(facilities, eq(appointments.facilityId, facilities.id))
+                .leftJoin(patient, eq(appointments.patientId, patient.id))
+                .where(
+                    eq(appointments.id, id)
+                )
+                .limit(1)
+
+            console.log('[API] Database query result for offer:', offer);
+
+            if (!offer) {
+                return c.json({ error: "Offer not found" }, 404);
+            }
+
+            const interpreterResponses = await db
+                .select({
+                    interpreterId: interpreter.id,
+                    firstName: interpreter.firstName,
+                    lastName: interpreter.lastName,
+                    response: appointmentOffers.response,
+                    viewedAt: appointmentOffers.viewedAt,
+                    respondedAt: appointmentOffers.respondedAt,
+                    distanceMiles: appointmentOffers.distanceMiles,
+                })
+                .from(appointmentOffers)
+                .innerJoin(interpreter, eq(appointmentOffers.interpreterId, interpreter.id))
+                .where(eq(appointmentOffers.appointmentId, id))
+                .orderBy(asc(interpreter.lastName));
+
+            const data = {
+                ...offer,
+                interpreters: interpreterResponses,
+            };
+
+            return c.json({ data });
+        }
+    )
+    .get(
+        '/:id',
+        clerkMiddleware(),
+        zValidator('param', z.object({
+            id: z.string().optional(),
+        })),
+        zValidator('query', z.object({
+            endTime: z.string().optional().nullable(),
+        })),
+        async (c) => {
+            const auth = getAuth(c)
+            const userId = auth?.userId
+            const userRole = (auth?.sessionClaims?.metadata as {role: string})?.role
+
+            //the param is validated
+            const { id } = c.req.valid('param')
+
+            if (!id) {
+                return c.json({ error: "Invalid id" }, 400)
+            }
+
+            if (!userId) {
+                return c.json({error: "Unauthorized"}, 401)
+            }
+
+            if (!userRole) {
+                return c.json({error: "Role not found"}, 403)
+            }
+
+            //data that is returned is the id and first name of the facility from the facility table
+            const [data] = await db
+                .select({
+                    id: appointments.id,
+                    bookingId: appointments.bookingId,
+                    date: appointments.date,
+                    startTime: appointments.startTime,
+                    endTime: appointments.endTime,
+                    projectedEndTime: appointments.projectedEndTime,
+                    duration: appointments.duration,
+                    projectedDuration: appointments.projectedDuration,
+                    appointmentType: appointments.appointmentType,
+                    notes: appointments.notes,
+                    status: appointments.status,
+                    isCertified: appointments.isCertified,
+                    facilityId: appointments.facilityId,
+                    patientId: appointments.patientId,
+                    patientFirstName: patient.firstName,
+                    patientLastName: patient.lastName,
+                    interpreterId: appointments.interpreterId,
+                    interpreterFirstName: interpreter.firstName,
+                    interpreterLastName: interpreter.lastName,
+                    createdAt: appointments.createdAt,
+                    updatedAt: appointments.updatedAt,
+                    // interpreterSpecialty: interpreter.specialty,
+                    // interpreterCoverageArea: interpreter.coverageArea,
+                    // interpreterTargetLanguages: interpreter.targetLanguages
+                })
+                .from(appointments)
+                .innerJoin(patient, eq(appointments.patientId, patient.id))
+                .innerJoin(interpreter, eq(appointments.interpreterId, interpreter.id))
+                .innerJoin(facilities, eq(appointments.facilityId, facilities.id))
+                .where(userRole === 'admin' ? and(eq(appointments.id, id)) : and(eq(interpreter.clerkUserId, userId), eq(appointments.id, id)))
+                .orderBy(
+                    asc(appointments.date),
+                    asc(appointments.startTime)
+                )
+
+            if (!data) {
+                return c.json({ error: "Facility not found" }, 404)
+            }
+
+            return c.json({data})
+
+        })
     .post(
         '/',
         clerkMiddleware(),

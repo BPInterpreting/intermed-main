@@ -7,7 +7,7 @@ import {client} from "@/lib/hono";
 import {Button} from "@/components/ui/button";
 import {ArrowUpDown} from "lucide-react";
 import {format, parse} from "date-fns";
-import {Actions} from "@/app/admin/dashboard/appointments/actions";
+import {Actions} from "@/app/admin/dashboard/offers/actions";
 
 export type ResponseType = InferResponseType<typeof client.api.appointments.offers.monitoring.$get, 200>["data"][0]
 
@@ -18,7 +18,7 @@ export const columns: ColumnDef<any>[] = [
         size:80,
         cell: ({ row }) => {
             return(
-                <Actions id={row.original.id} />
+                <Actions id={row.original.appointmentId} />
             )
         }
     },
@@ -28,7 +28,7 @@ export const columns: ColumnDef<any>[] = [
         size: 100
     },
     {
-        accessorKey: "offerStatus", // 👈 Change this from "status"
+        accessorKey: "offerStatus",
         header: "Status",
         cell: ({ row }) => {
             const status = row.getValue("offerStatus") as string

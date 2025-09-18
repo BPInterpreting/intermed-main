@@ -10,7 +10,7 @@ import appointments from "@/app/api/[[...route]]/appointments";
 import interpreters from "@/app/api/[[...route]]/interpreters";
 import followUpRequests from "@/app/api/[[...route]]/followUpRequests";
 
-// export const runtime = 'edge';
+export const runtime = 'edge';
 //initialize the new hono api instance where base is out /api route
 const app = new Hono().basePath('/api')
 app.use('*', cors({

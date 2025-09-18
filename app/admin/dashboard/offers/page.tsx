@@ -13,7 +13,6 @@ export default function OffersMonitoringPage() {
     const offers = offersQuery.data || []
     const newAppointment = useNewAppointment()
 
-
     return (
     <>
         <div className='flex-1 px-4 w-full pb-10'>
