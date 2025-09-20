@@ -30,14 +30,15 @@ import {format} from "date-fns";
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[]
     data: TData[]
-    enabledFilters?: SupportedFilters[];
+    enabledFilters?: SupportedFilters[]
+    getRowClassName?: (row: TData) => string
 }
 
 export function DataTable<TData, TValue>({
     columns,
     data,
-    enabledFilters
-
+    enabledFilters,
+    getRowClassName
 }: DataTableProps<TData, TValue>) {
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
@@ -218,7 +219,9 @@ export function DataTable<TData, TValue>({
                 <Table>
                     <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (
-                            <TableRow key={headerGroup.id}>
+                            <TableRow
+                                key={headerGroup.id}
+                            >
                                 {headerGroup.headers.map((header) => {
                                     return (
                                         <TableHead
@@ -246,6 +249,7 @@ export function DataTable<TData, TValue>({
                                 <TableRow
                                     key={row.id}
                                     data-state={row.getIsSelected() && "selected"}
+                                    className={getRowClassName ? getRowClassName(row.original) : ""}
                                 >
                                     {row.getVisibleCells().map((cell) => (
                                         <TableCell

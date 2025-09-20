@@ -24,6 +24,7 @@ import {useState} from "react";
 import { Progress } from "@/components/ui/progress"
 import {cn} from "@/lib/utils";
 import interpreters from "@/app/api/[[...route]]/interpreters";
+import DepletionRate from "@/components/customUi/depletion-rate";
 
 
 const OfferClient = () => {
@@ -31,7 +32,6 @@ const OfferClient = () => {
     const offerId = params.offerId as string;
     const { data: offer, isLoading } = useGetIndividualOffer(offerId)
 
-    const [progress, setProgress] = useState(13);
     const [date, setDate] = useState<Date>(new Date());
 
     // This code runs while the data is being fetched
@@ -174,16 +174,18 @@ const OfferClient = () => {
                     <div className={'lg:col-span-2 space-y-1'}>
                         <Card>
                             <CardContent className="flex flex-row justify-between items-center p-2">
-                                <div className={'flex flex-row space-x-5'}>
                                     <div>
                                         <div className="text-2xl font-bold">{offer.notifiedCount}</div>
                                         <p className="text-xs text-muted-foreground">TOTAL INTERPRETERS</p>
                                     </div>
-                                    <div className={'pr-20'}>
+                                    <div className={''}>
                                         <p className="text-xs text-muted-foreground">Depletion Rate</p>
-                                        <Progress value={progress} />
+                                        <DepletionRate
+                                            notifiedCount={offer?.notifiedCount || 0}
+                                            declinedCount={offer?.declinedCount || 0}
+                                            acceptedCount={offer?.acceptedByInterpreterId ? 1 : 0}
+                                        />
                                     </div>
-                                </div>
                             </CardContent>
                         </Card>
                         {/*Card for the Data Table*/}
@@ -196,7 +198,24 @@ const OfferClient = () => {
                             </CardHeader>
                             <CardContent>
                                 {/*    data Table goes here */}
-                                <DataTable columns={columns} data={offer.interpreters} />
+                                <DataTable
+                                    columns={columns}
+                                    data={
+                                    offer.interpreters?.sort((a: any, b: any) =>{
+                                        if (a.response ==='accepted') return -1
+                                        if (b.response === 'accepted') return 1
+                                        if (a.response === 'decline' && !b.response) return -1
+                                        if (!a.response && b.response === "decline") return 1
+                                        return 0
+                                    }) || []
+                                }
+                                    getRowClassName={(row) => {
+                                        if (row.response === "accepted") {
+                                            return "bg-green-50 hover:bg-green-100 border-l-4 border-l-green-500";
+                                        }
+                                        return "";
+                                    }}
+                                />
                             </CardContent>
                         </Card>
 

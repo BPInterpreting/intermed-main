@@ -272,7 +272,7 @@ const InterpreterClient = () => {
                         <Card>
                             <CardHeader className='pb-4 flex flex-row justify-between'>
                                 <div>
-                                    <CardTitle> Appointments </CardTitle>
+                                    <CardTitle>Appointments</CardTitle>
                                     <CardDescription> Recent and Upcoming Appointments </CardDescription>
                                 </div>
                                 <div>
