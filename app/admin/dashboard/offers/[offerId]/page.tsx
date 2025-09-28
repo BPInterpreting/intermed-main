@@ -14,7 +14,18 @@ import {Button} from "@/components/ui/button";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
 import {format, parse, parseISO} from "date-fns";
 import {Separator} from "@/components/ui/separator";
-import {BadgeCheck, CalendarIcon, Hospital, Loader2, Mail, MapPinHouse, Phone, Printer, User} from "lucide-react";
+import {
+    BadgeCheck,
+    CalendarIcon,
+    Hospital,
+    Loader2,
+    Mail,
+    MapPinHouse,
+    Maximize2,
+    Phone,
+    Printer,
+    User
+} from "lucide-react";
 import {appointmentOffers} from "@/db/schema";
 import { columns } from "@/app/admin/dashboard/offers/[offerId]/columns";
 import {DataTable} from "@/components/ui/data-table";
@@ -25,12 +36,14 @@ import { Progress } from "@/components/ui/progress"
 import {cn} from "@/lib/utils";
 import interpreters from "@/app/api/[[...route]]/interpreters";
 import DepletionRate from "@/components/customUi/depletion-rate";
+import {useExpandOfferRadius} from "@/features/appointments/api/use-expand-offer-radius";
 
 
 const OfferClient = () => {
     const params = useParams();
     const offerId = params.offerId as string;
     const { data: offer, isLoading } = useGetIndividualOffer(offerId)
+    const expandRadiusMutation = useExpandOfferRadius();
 
     const [date, setDate] = useState<Date>(new Date());
 
@@ -186,6 +199,28 @@ const OfferClient = () => {
                                             acceptedCount={offer?.acceptedByInterpreterId ? 1 : 0}
                                         />
                                     </div>
+                                <div>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => expandRadiusMutation.mutate({ appointmentId: offerId })}
+                                        disabled={expandRadiusMutation.isPending}
+                                        className="gap-2"
+                                    >
+                                        {expandRadiusMutation.isPending ? (
+                                            <>
+                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                                Expanding...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Maximize2 className="h-4 w-4" />
+                                                Expand Radius
+                                            </>
+                                        )}
+                                    </Button>
+                                    <p className={'text-xs text-muted-foreground truncate'}>*expands radius from 30 to 50 miles from the facility</p>
+                                </div>
                             </CardContent>
                         </Card>
                         {/*Card for the Data Table*/}

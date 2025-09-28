@@ -251,7 +251,7 @@ export const AppointmentForm = ({
                                               <div className="space-y-1 pr-16">
                                                   <FormLabel>Switch to enable offer mode</FormLabel>
                                                   <FormDescription>
-                                                      Enabling will send offer out to multiple interpreters in a 40 mile radius
+                                                      Enabling will send offer out to multiple interpreters in a 30 mile radius
                                                   </FormDescription>
                                               </div>
                                               <FormControl>
@@ -308,7 +308,6 @@ export const AppointmentForm = ({
                                       </CardContent>
                                   </Card>
                               }
-
                            {/*<FormItem>*/}
                            {/*    <FormLabel>Appointment Type</FormLabel>*/}
                            {/*    <FormControl>*/}

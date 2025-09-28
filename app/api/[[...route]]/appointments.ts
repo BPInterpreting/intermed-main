@@ -6,6 +6,8 @@ import {zValidator} from '@hono/zod-validator'
 import {createId} from "@paralleldrive/cuid2";
 import {and, asc, desc, eq, inArray, isNotNull, isNull, sql} from "drizzle-orm";
 import {clerkMiddleware, getAuth} from "@hono/clerk-auth";
+import {toast} from "sonner";
+import interpreters from "@/app/api/[[...route]]/interpreters";
 
 //Haversine formula used to calculate the distance between interpreter and the facility location
 //all interpreters within the distance of the appointment location get a notification.
@@ -23,6 +25,121 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
         Math.sin(dLon / 2) * Math.sin(dLon / 2)
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)) //calculate angular distance
     return R * c //converts to miles
+}
+
+async function expandOfferRadius(appointmentId: string, expandedByUserId?: string){
+    try {
+        //get the appointment data, facility and interpreter from the data base
+        const [appointment] = await db
+            .select({
+                id: appointments.id,
+                date: appointments.date,
+                startTime: appointments.startTime,
+                appointmentType: appointments.appointmentType,
+                isRushAppointment: appointments.isRushAppointment,
+                facilityId: appointments.facilityId,
+                searchRadius: appointments.searchRadius,
+                interpreterId: appointments.interpreterId
+            })
+            .from(appointments)
+            .where(eq(appointments.id, appointmentId))
+            .limit(1)
+
+        if (!appointment) {
+            throw new Error("No appointments found.")
+        }
+
+        if (appointment.searchRadius >= 50) {
+            console.log(`[Appointments] Radius already expanded to ${appointment.searchRadius}`);
+            return { success: false, message: 'Radius already expanded' };
+        }
+
+        // Check if already assigned
+        if (appointment.interpreterId) {
+            console.log(`[Appointments] Appointment already assigned`);
+            return { success: false, message: 'Appointment already assigned' };  // Fixed: removed toast
+        }
+
+        const [facility] = await db
+            .select()
+            .from(facilities)
+            .where(eq(facilities.id, appointment.facilityId!))
+            .limit(1)
+
+        if (!facility) {
+            throw new Error('Facility not found');
+        }
+
+        const interpreters = await db
+            .select()
+            .from(interpreter)
+            .where(
+                and(
+                    isNotNull(interpreter.latitude),
+                    isNotNull(interpreter.longitude),
+                    isNotNull(interpreter.expoPushToken)
+                )
+            )
+
+        //finds interpreters in the expanded range
+        const newOfferRecords = [];
+        const newInterpretersToNotify = [];
+
+        for (const interp of interpreters) {
+            const distance = calculateDistance(
+                parseFloat(facility.latitude),
+                parseFloat(facility.longitude),
+                parseFloat(interp.latitude!),
+                parseFloat(interp.longitude!)
+            );
+
+            if (distance > 30 && distance <= 50){
+                const offerRecord = {
+                    id: createId(),
+                    appointmentId: appointment.id,
+                    interpreterId: interp.id,
+                    distanceMiles: distance.toString(),
+                    hasFacilityHistory: false
+                }
+
+                newOfferRecords.push(offerRecord)
+                newInterpretersToNotify.push({
+                    ...interp,
+                    distance: distance,
+                })
+            }
+
+        }
+
+        //updates the appointment radius to the new expanded radius
+        await db.update(appointments)
+            .set({
+                searchRadius: 50,
+                radiusExpandedAt: new Date(),
+                radiusExpandedBy: expandedByUserId || null
+            })
+            .where(eq(appointments.id, appointmentId))
+
+        if (newOfferRecords.length > 0) {
+            await db.insert(appointmentOffers).values(newOfferRecords)
+
+            const { sendOfferNotification } =await import('@/lib/notification-service')
+            await sendOfferNotification(appointment, newInterpretersToNotify)
+
+            console.log(`[Appointments] Expanded radius to 50 miles, notified ${newOfferRecords.length} new interpreters`);
+        }
+
+        return {
+            success: true,
+            newInterpretersToNotify: newOfferRecords.length,
+        }
+
+        } catch (error: unknown) {
+        if (error instanceof Error) {
+            console.error(`[Appointments] Error expanding radius:`, error)
+            toast.error(error.message)
+        }
+    }
 }
 
 //all the routes are chained to the main Hono app
@@ -197,7 +314,7 @@ const app = new Hono()
 
     )
 
-    //this route gets the count of interpreters in the 40-mile radius. Used in the appointment form to display
+    //this route gets the count of interpreters in the 30-mile radius. Used in the appointment form to display
     //how many will be available in the area when offer is triggered
     .get(
         '/offers/interpreter-count',
@@ -231,7 +348,7 @@ const app = new Hono()
                     )
                 )
 
-            // Count those within 40 miles
+            // Count those within 30 miles
             let count = 0
             for (const interp of interpreters) {
                 console.log('Facility coords:', facility.latitude, facility.longitude)
@@ -245,7 +362,7 @@ const app = new Hono()
 
                 console.log(`Distance calculated for interpreter ${interp.id}:`, distance)
 
-                if (distance <= 40) count++
+                if (distance <= 30) count++
             }
 
 
@@ -517,6 +634,7 @@ const app = new Hono()
                 const [data] = await db.insert(appointments).values({
                     id: createId(),
                     ...values,
+                    searchRadius: 30,
                     //value overrides to avoid client setting business rules and let backend enforce them.
                     offerMode: isOffer, // prevents front-end from deciding if appointment is an offer instead this is set by the backend based on whether a interpreterId was selected
                     status: isOffer ? 'offer_pending' : values.status || 'Pending', //offers are set to offer pending status. avoid sending confirmed to an appointment with not interpreter assigned
@@ -571,7 +689,7 @@ const app = new Hono()
                         console.log('Distance as string:', distance.toString());
 
                         //if the distance is within 40miles push into the offer record array. also push into array of interpreters to notify
-                        if (distance <= 40) {
+                        if (distance <= 30) {
                             const offerRecord = {
                                 id: createId(),
                                 appointmentId: data.id,
@@ -778,6 +896,34 @@ const app = new Hono()
         }
     )
     .post(
+        '/offers/:appointmentId/expand',
+        clerkMiddleware(),
+        zValidator('param', z.object({
+            appointmentId: z.string()
+        })),
+        async (c)=> {
+            const { appointmentId } = c.req.valid('param')
+            const auth = getAuth(c)
+            const userRole = (auth?.sessionClaims?.metadata as {role: string})?.role
+
+            if (!auth?.userId) {
+                return c.json({ error: "Unauthorized" }, 401);
+            }
+
+            try {
+                const result = await expandOfferRadius(appointmentId, auth.userId)
+                return  c.json(result)
+            } catch (error) {
+                console.error('[Offers] Manual expansion error:', error);
+                return c.json({
+                    success: false,
+                    error: "Failed to expand radius"
+                }, 500);
+
+            }
+        }
+    )
+    .post(
         '/offers/:appointmentId/decline',
         clerkMiddleware(),
         zValidator('param', z.object({
@@ -819,6 +965,29 @@ const app = new Hono()
 
             // TODO: Check if all notified interpreters have declined
             // If so, you might want to notify admin or expand the radius
+
+            const [stats] = await db
+                .select({
+                    totalNotified: sql<number>`COUNT(*)`,
+                    totalDeclined: sql<number>`COUNT(CASE WHEN response = 'decline' THEN 1 END)`,
+                    searchRadius: appointments.searchRadius,
+                    interpreterId: appointments.interpreterId
+                })
+                .from(appointmentOffers)
+                .innerJoin(appointments, eq(appointmentOffers.appointmentId, appointments.id))
+                .where(eq(appointmentOffers.appointmentId, appointmentId));
+
+            if (stats && stats.totalNotified > 0 && stats.totalNotified === stats.totalDeclined){
+                if (stats.searchRadius < 50 && !stats.interpreterId){
+                    console.log(`[Appointments] All interpreters declined, auto-expanding radius`)
+                    try {
+                        await expandOfferRadius(appointmentId);
+                    } catch (error) {
+                        console.error(`[Appointments] Auto-expansion failed:`, error);
+                    }
+
+                }
+            }
 
             return c.json({
                 success: true,
