@@ -7,7 +7,9 @@ import {createId} from "@paralleldrive/cuid2";
 import {and, asc, desc, eq, inArray, isNotNull, isNull, sql} from "drizzle-orm";
 import {clerkMiddleware, getAuth} from "@hono/clerk-auth";
 import {toast} from "sonner";
+import { publishAdminNotification } from '@/lib/ably';
 import interpreters from "@/app/api/[[...route]]/interpreters";
+import {createAdminNotification} from "@/app/api/[[...route]]/notifications";
 
 //Haversine formula used to calculate the distance between interpreter and the facility location
 //all interpreters within the distance of the appointment location get a notification.
@@ -1024,16 +1026,21 @@ const app = new Hono()
                 const [beforeUpdate] = await db
                     .select({
                         id: appointments.id,
+                        bookingId: appointments.bookingId,
                         date: appointments.date,
                         startTime: appointments.startTime,
+                        status: appointments.status,
                         interpreterId: appointments.interpreterId,
                         appointmentType: appointments.appointmentType,
                         facilityName: facilities.name,
                         facilityAddress: facilities.address,
                         patientFirstName: patient.firstName,
                         patientLastName: patient.lastName,
+                        interpreterFirstName: interpreter.firstName,
+                        interpreterLastName: interpreter.lastName
                     })
                     .from(appointments)
+                    .leftJoin(interpreter, eq(appointments.interpreterId, interpreter.id))
                     .innerJoin(facilities, eq(appointments.facilityId, facilities.id))
                     .innerJoin(patient, eq(appointments.patientId, patient.id))
                     .where(eq(appointments.id, id))
@@ -1061,6 +1068,44 @@ const app = new Hono()
 
                 if (!data) {
                     return c.json({ error: "Appointment not found" }, 404)
+                }
+
+
+                //checks if that status changed
+                if (values.status && values.status !== beforeUpdate.status) {
+                    const { publishAdminNotification } = await import('@/lib/ably');
+
+                    //readable messages for the toast notification
+                    const userName = beforeUpdate.interpreterFirstName
+                    const bookingId = beforeUpdate.bookingId
+                    const newStatus = values.status
+                    let notificationMessage = ''
+
+                    switch (newStatus) {
+                        case "Confirmed":
+                            notificationMessage = `${userName} confirmed appointment #${bookingId}`
+                            break
+                        case "Closed":
+                            notificationMessage = `Appointment #${bookingId} with ${userName} has been closed`
+                            break
+                    }
+
+                    await createAdminNotification(notificationMessage)
+
+                    // Publish status change notification
+                    await publishAdminNotification('appointment-status-changed', {
+                        message: notificationMessage,
+                        appointmentId: data.id,
+                        bookingId: data.bookingId,
+                        previousStatus: beforeUpdate.status,
+                        newStatus: values.status,
+                        // Add interpreter name if assigned
+                        interpreterName: data.interpreterId ?
+                            `${beforeUpdate.interpreterFirstName} ${beforeUpdate.interpreterLastName}` :
+                            null
+                    });
+
+                    console.log(`[Appointments] Status changed from ${beforeUpdate.status} to ${values.status}`);
                 }
 
                 console.log(`[Appointments] Updated appointment ${data.id}`);

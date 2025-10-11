@@ -169,6 +169,15 @@ export const appointmentOffersRelations = relations(appointmentOffers, ({ one })
 // Add the insert schema
 export const insertAppointmentOfferSchema = createInsertSchema(appointmentOffers)
 
+export const notifications = pgTable("notifications", {
+    id: text("id").primaryKey(),
+    userId: text('user_id').notNull(), //this gets the clerkId of the user
+    message: text("message").notNull(),
+    isRead: boolean("is_read").default(false).notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    link: text('link') //this optional link goes to url that is clicked
+})
+
 export const followUpRequest = pgTable("follow_up_request", {
     id: text("id").primaryKey(),
     date: timestamp("date", {mode: "date"}).notNull(),

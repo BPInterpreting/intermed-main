@@ -9,6 +9,7 @@ import facilities from "@/app/api/[[...route]]/facilities";
 import appointments from "@/app/api/[[...route]]/appointments";
 import interpreters from "@/app/api/[[...route]]/interpreters";
 import followUpRequests from "@/app/api/[[...route]]/followUpRequests";
+import notifications from "@/app/api/[[...route]]/notifications";
 
 // export const runtime = 'edge';
 //initialize the new hono api instance where base is out /api route
@@ -29,6 +30,7 @@ const route = app
     .route('/appointments', appointments)
     .route('/interpreters', interpreters)
     .route('/followUpRequests', followUpRequests)
+    .route('/notifications', notifications)
 
 export const GET = handle(app)
 export const POST = handle(app)
