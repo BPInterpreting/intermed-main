@@ -643,6 +643,28 @@ const app = new Hono()
                     isRushAppointment: values.isRushAppointment || false //always se to false if not active to avoid undefined or null values in database
                 }).returning()
 
+                // Check if the newly created appointment has the special status
+                if (data.status === 'Interpreter Requested') {
+                    // We need to get the interpreter's name if an ID was provided
+                    let userName = 'A user';
+                    if (data.interpreterId) {
+                        const [interpreterData] = await db.select({ firstName: interpreter.firstName }).from(interpreter).where(eq(interpreter.id, data.interpreterId)).limit(1);
+                        if (interpreterData) {
+                            userName = interpreterData.firstName;
+                        }
+                    }
+
+                    const bookingId = data.bookingId;
+                    const notificationMessage = `${userName} has requested a new follow up from appointment #${bookingId}`;
+
+                    // Create the persistent notification and send the real-time toast
+                    await createAdminNotification(notificationMessage, data.id);
+                    await publishAdminNotification('appointment-status-changed', {
+                        message: notificationMessage,
+                        bookingId: bookingId,
+                    });
+                }
+
                 console.log(`[Appointments] Created ${isOffer ? 'offer' : 'regular'} appointment ${data.id}`);
 
                 // if the appointment turns out to be an offer return the following logic
@@ -1070,9 +1092,16 @@ const app = new Hono()
                     return c.json({ error: "Appointment not found" }, 404)
                 }
 
+                const statusesToIgnore = [
+                    'Pending Confirmation',
+                    'No Show',
+                    'Late CX',
+                    'Pending Authorization'
+                ]
+
 
                 //checks if that status changed
-                if (values.status && values.status !== beforeUpdate.status) {
+                if (values.status && values.status !== beforeUpdate.status && !statusesToIgnore.includes(values.status)) {
                     const { publishAdminNotification } = await import('@/lib/ably');
 
                     //readable messages for the toast notification
@@ -1088,6 +1117,8 @@ const app = new Hono()
                         case "Closed":
                             notificationMessage = `Appointment #${bookingId} with ${userName} has been closed`
                             break
+                        case "Interpreter Requested":
+                            notificationMessage = `${userName} has requested a new follow up from appointment #${bookingId}`
                     }
 
                     await createAdminNotification(notificationMessage)

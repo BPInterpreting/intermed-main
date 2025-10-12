@@ -21,7 +21,7 @@ export function SiteHeader() {
     const router = useRouter()
     
     const handleShowAllClick = () => {
-        console.log('show all')
+        router.push('/admin/dashboard/notifications')
     }
 
     return (

@@ -10,9 +10,6 @@ const HomePage =   () => {
 
     return (
         <div className='flex flex-col mx-2 p-4 gap-y-8'>
-
-            {/*<NotificationListener />*/}
-
             <div className='flex flex-col '>
                 <DataGrid/>
                 <DataCharts/>

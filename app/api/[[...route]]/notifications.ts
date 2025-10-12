@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { createId } from '@paralleldrive/cuid2';
 import { clerkClient } from '@clerk/nextjs/server';
 
-export async function createAdminNotification(message: string) {
+export async function createAdminNotification(message: string, appointmentId?: string) {
     // --- DEBUGGING LOGS START ---
     console.log("\n--- [createAdminNotification] START ---");
     console.log(`[1] Received message: "${message}"`);
@@ -32,6 +32,7 @@ export async function createAdminNotification(message: string) {
             id: createId(),
             userId: userId,
             message: message,
+            link: appointmentId ? `/admin/dashboard/appointments/${appointmentId}` : undefined,
         }));
 
         console.log(`[4] Preparing to insert ${notificationRecords.length} notification(s) into the database.`);
