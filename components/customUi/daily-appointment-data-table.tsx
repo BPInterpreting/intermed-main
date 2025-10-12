@@ -19,46 +19,21 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-
-// This interface should match the data from useGetAppointments
-export interface AppointmentData {
-    id: string;
-    bookingId?: number | string | null;
-    date: string; // ISO String format
-    startTime: string;
-    status: string | null;
-    patientFirstName?: string;
-    patientLastName?: string;
-    facility?: string;
-    interpreterFirstName?: string;
-    interpreterLastName?: string;
-    isCertified?: boolean | null;
-    appointmentType?: string | null;
-}
-
-// Helper function for status badge styling
-const getStatusBadgeClasses = (status: string | null): string => {
-    switch (status) {
-        case 'Interpreter Requested': return 'bg-rose-100 text-rose-700 dark:bg-rose-700/30 dark:text-rose-300';
-        case 'Confirmed': return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-700/30 dark:text-emerald-300';
-        case 'Pending Authorization': return 'bg-violet-100 text-violet-700 dark:bg-violet-700/30 dark:text-violet-300';
-        case 'Pending Confirmation': return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-700/30 dark:text-yellow-300';
-        case 'Closed': return 'bg-blue-100 text-blue-700 dark:bg-blue-700/30 dark:text-blue-300';
-        case 'Late CX':
-        case 'No Show': return 'bg-red-100 text-red-700 dark:bg-red-700/30 dark:text-red-300';
-        default: return 'bg-gray-100 text-gray-700 dark:bg-gray-700/30 dark:text-gray-300';
-    }
-};
+import {DataTable} from "@/components/ui/data-table";
+import {columns, ResponseType} from "@/app/admin/dashboard/home/columns";
+import {SupportedFilters} from "@/components/ui/data-table-toolbar";
 
 export const DailyAppointmentsWidget: React.FC = () => {
     // State to manage the selected date
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
     const { data: allAppointments, isLoading, error } = useGetAppointments();
 
+    const appointmentTableFilters: SupportedFilters[] = ['globalSearch', "status", "interpreter"]
+
     // Memoized list of appointments for the selected day
     const appointmentsForSelectedDay = useMemo(() => {
         if (!allAppointments) return [];
-        return allAppointments.filter((appointment: AppointmentData) => {
+        return allAppointments.filter((appointment: ResponseType) => {
             try {
                 // isSameDay correctly compares the calendar date, ignoring time
                 return isSameDay(parseISO(appointment.date), selectedDate);
@@ -141,53 +116,13 @@ export const DailyAppointmentsWidget: React.FC = () => {
                 </div>
             </CardHeader>
             <CardContent>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Booking ID</TableHead>
-                            <TableHead>Patient</TableHead>
-                            <TableHead>Facility</TableHead>
-                            <TableHead>Start Time</TableHead>
-                            <TableHead>Interpreter</TableHead>
-                            <TableHead>Type</TableHead>
-                            <TableHead>Certified</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {appointmentsForSelectedDay.length > 0 ? (
-                            // Map through appointments for the selected day
-                            appointmentsForSelectedDay.map((appt) => {
-                                const patientFullName = `${appt.patient || ''} ${appt.patientLastName || ''}`.trim() || 'N/A';
-                                const interpreterFullName = `${appt.interpreterFirstName || ''} ${appt.interpreterLastName || ''}`.trim() || 'N/A';
-                                const statusBadgeClasses = getStatusBadgeClasses(appt.status);
-
-                                return (
-                                    <TableRow key={appt.id}>
-                                        <TableCell>
-                                            <span className={`px-2 py-1 text-xs font-semibold rounded-full ${statusBadgeClasses}`}>
-                                                {appt.status || 'N/A'}
-                                            </span>
-                                        </TableCell>
-                                        <TableCell className="font-medium">{appt.bookingId || 'N/A'}</TableCell>
-                                        <TableCell>{patientFullName}</TableCell>
-                                        <TableCell>{appt.facility || 'N/A'}</TableCell>
-                                        <TableCell>{formatDisplayTime(appt.startTime)}</TableCell>
-                                        <TableCell>{interpreterFullName}</TableCell>
-                                        <TableCell>{appt.appointmentType || 'N/A'}</TableCell>
-                                        <TableCell>{appt.isCertified ? 'Yes' : (appt.isCertified === false ? 'No' : 'N/A')}</TableCell>
-                                    </TableRow>
-                                );
-                            })
-                        ) : (
-                            <TableRow>
-                                <TableCell colSpan={8} className="h-24 text-center">
-                                    No appointments found for this date.
-                                </TableCell>
-                            </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
+                {isLoading ? (
+                    <div>
+                        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                    </div>
+                ): (
+                    <DataTable columns={columns} data={appointmentsForSelectedDay} enabledFilters={appointmentTableFilters} />
+                )}
             </CardContent>
         </Card>
     );
