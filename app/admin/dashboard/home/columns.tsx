@@ -122,7 +122,17 @@ export const columns: ColumnDef<ResponseType>[] = [
     },
     {
         accessorKey: "startTime",
-        header: "Start Time",
+        header: ({ column }) => {
+            return (
+                <Button
+                    variant="ghost"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                >
+                    Start Time
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                </Button>
+            )
+        },
         cell: ({ row }) => {
             const timeString = row.getValue("startTime") as string
             const parsedTime = parse(timeString, "HH:mm:ss", new Date())
