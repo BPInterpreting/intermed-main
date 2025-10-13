@@ -63,6 +63,21 @@ export const columns: ColumnDef<ResponseType>[] = [
     {
         accessorKey: 'message',
         header: 'Message',
+        cell: ({ row }) => {
+            const notification = row.original
+
+            return(
+                <div>
+                    <p>{notification.message}</p>
+                    {notification.subtext && (
+                        <p className="text-xs text-gray-500 mt-1">
+                            {notification.subtext}
+                        </p>
+                    )}
+                </div>
+
+            )
+        }
     },
     {
         accessorKey: 'createdAt',

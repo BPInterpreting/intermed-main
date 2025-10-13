@@ -2,29 +2,57 @@ import { Hono } from 'hono';
 import { db } from '@/db/drizzle';
 import { and, desc, eq, inArray } from 'drizzle-orm';
 import { clerkMiddleware, getAuth } from '@hono/clerk-auth';
-import { notifications } from '@/db/schema';
+import {appointments, facilities, notifications} from '@/db/schema';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
 import { createId } from '@paralleldrive/cuid2';
 import { clerkClient } from '@clerk/nextjs/server';
+import {format, parse} from "date-fns";
+
 
 export async function createAdminNotification(message: string, appointmentId?: string) {
-    // --- DEBUGGING LOGS START ---
     console.log("\n--- [createAdminNotification] START ---");
     console.log(`[1] Received message: "${message}"`);
+    console.log(`[2] Received appointmentId: ${appointmentId}`);
 
     try {
         const client = await clerkClient();
         const users = await client.users.getUserList({ limit: 499 });
-        console.log(`[2] Fetched ${users.data.length} total users from Clerk.`);
-
         const adminUsers = users.data.filter(user => (user.publicMetadata as { role?: string })?.role === 'admin');
-        console.log(`[3] Found ${adminUsers.length} user(s) with the 'admin' role.`);
 
         if (adminUsers.length === 0) {
-            console.log("[4] No admin users found. Exiting function. Check Clerk public metadata.");
-            console.log("--- [createAdminNotification] END ---\n");
-            return; // Exit if no admins are found
+            console.log("[X] No admin users found. Exiting.");
+            return;
+        }
+
+        let subtext: string | undefined = undefined;
+
+        if (appointmentId) {
+            const [appointmentDetails] = await db
+                .select({
+                    facilityName: facilities.name,
+                    facilityAddress: facilities.address,
+                    date: appointments.date,
+                    startTime: appointments.startTime,
+                })
+                .from(appointments)
+                .innerJoin(facilities, eq(appointments.facilityId, facilities.id))
+                .where(eq(appointments.id, appointmentId))
+                .limit(1)
+
+            console.log("[3] Fetched appointment details from DB:", appointmentDetails);
+
+            if (appointmentDetails) {
+                const formattedDate = format(new Date(appointmentDetails.date), "PPP");
+                const parsedTime = parse(appointmentDetails.startTime, "HH:mm:ss", new Date());
+                const formattedTime = format(parsedTime, "p");
+                subtext = `${appointmentDetails.facilityName} - ${formattedDate} at ${formattedTime}`;
+                console.log(`[4] ✅ Successfully created subtext: "${subtext}"`);
+            } else {
+                console.log("[4] ❌ Appointment details not found for ID. Subtext will be null.");
+            }
+        } else {
+            console.log("[3] No appointmentId provided. Skipping subtext creation.");
         }
 
         const adminUserIds = adminUsers.map(user => user.id);
@@ -32,28 +60,28 @@ export async function createAdminNotification(message: string, appointmentId?: s
             id: createId(),
             userId: userId,
             message: message,
+            subtext: subtext,
             link: appointmentId ? `/admin/dashboard/appointments/${appointmentId}` : undefined,
         }));
 
-        console.log(`[4] Preparing to insert ${notificationRecords.length} notification(s) into the database.`);
+        console.log("[5] Preparing to insert notification:", notificationRecords[0]);
         await db.insert(notifications).values(notificationRecords);
-        console.log(`[5] ✅ Successfully inserted notifications into the database!`);
+        console.log("[6] ✅ Successfully inserted into DB.");
 
         const { publishUserNotification } = await import('@/lib/ably');
         for (const record of notificationRecords) {
             await publishUserNotification(record.userId, 'new-notification', record);
         }
-        console.log("--- [createAdminNotification] END ---\n");
 
     } catch (error) {
         console.error("[X] ❌ An error occurred in createAdminNotification:", error);
+    } finally {
         console.log("--- [createAdminNotification] END ---\n");
     }
 }
 
 
 const app = new Hono()
-    // ... (rest of the file is unchanged) ...
     .get(
         '/',
         clerkMiddleware(),
@@ -85,8 +113,10 @@ const app = new Hono()
                 .select({
                     id: notifications.id,
                     message: notifications.message,
+                    subtext: notifications.subtext,
                     isRead: notifications.isRead,
                     createdAt: notifications.createdAt,
+                    link: notifications.link,
                 })
                 .from(notifications)
                 .where(eq(notifications.userId, auth.userId))

@@ -173,6 +173,7 @@ export const notifications = pgTable("notifications", {
     id: text("id").primaryKey(),
     userId: text('user_id').notNull(), //this gets the clerkId of the user
     message: text("message").notNull(),
+    subtext: text("sub_text"),
     isRead: boolean("is_read").default(false).notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     link: text('link') //this optional link goes to url that is clicked

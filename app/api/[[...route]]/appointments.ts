@@ -1121,7 +1121,7 @@ const app = new Hono()
                             notificationMessage = `${userName} has requested a new follow up from appointment #${bookingId}`
                     }
 
-                    await createAdminNotification(notificationMessage)
+                    await createAdminNotification(notificationMessage, data.id)
 
                     // Publish status change notification
                     await publishAdminNotification('appointment-status-changed', {

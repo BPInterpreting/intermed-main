@@ -76,6 +76,9 @@ export const NotificationBell = ({ onShowAllClick }: NotificationBellProps) => {
                                 <div className={`h-2 w-2 rounded-full mt-1.5 mr-3 ${!notification.isRead ? 'bg-blue-500' : 'bg-transparent'}`} />
                                 <div className="flex-1">
                                     <p className="text-sm">{notification.message}</p>
+                                    {notification.subtext && (
+                                        <p className="text-xs text-gray-500 mt-1">{notification.subtext}</p>
+                                    )}
                                     <p className="text-xs text-gray-400">
                                         {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
                                     </p>
