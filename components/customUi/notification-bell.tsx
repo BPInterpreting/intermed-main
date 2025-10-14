@@ -11,6 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Button } from '@/components/ui/button';
 import {Bell, Check, XCircle} from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import {useRouter} from "next/navigation";
 
 // Define the type for the component's props
 interface NotificationBellProps {
@@ -21,6 +22,7 @@ export const NotificationBell = ({ onShowAllClick }: NotificationBellProps) => {
     const notificationsQuery = useGetNotifications()
     const markAsReadMutation = useMarkNotificationsAsRead()
     const [isOpen, setIsOpen] = React.useState(false)
+    const router = useRouter()
 
     if (notificationsQuery.isLoading) {
         return (
@@ -50,6 +52,19 @@ export const NotificationBell = ({ onShowAllClick }: NotificationBellProps) => {
         }
     }
 
+    const handleNotificationClick = (notification: typeof latestNotifications[0]) => {
+        // Mark as read if it's currently unread
+        if (!notification.isRead) {
+            markAsReadMutation.mutate([notification.id]);
+        }
+        // Navigate to the link if it exists
+        if (notification.link) {
+            router.push(notification.link);
+        }
+        // Close the popover
+        setIsOpen(false);
+    };
+
     return (
         <Popover open={isOpen} onOpenChange={setIsOpen}>
             <PopoverTrigger asChild>
@@ -72,7 +87,11 @@ export const NotificationBell = ({ onShowAllClick }: NotificationBellProps) => {
                         <p className="p-4 text-sm text-center text-gray-500">No new notifications</p>
                     ) : (
                         latestNotifications.map((notification) => (
-                            <div key={notification.id} className="flex items-start p-4 border-t hover:bg-gray-50">
+                            <div
+                                key={notification.id}
+                                onClick={() => handleNotificationClick(notification)}
+                                className={`flex items-start p-4 border-t hover:bg-gray-50 dark:hover:bg-gray-800 ${notification.link ? 'cursor-pointer' : ''}`}
+                            >
                                 <div className={`h-2 w-2 rounded-full mt-1.5 mr-3 ${!notification.isRead ? 'bg-blue-500' : 'bg-transparent'}`} />
                                 <div className="flex-1">
                                     <p className="text-sm">{notification.message}</p>

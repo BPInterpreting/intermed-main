@@ -9,39 +9,9 @@ import { MoreHorizontal } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
 import { useMarkNotificationsAsRead } from "@/features/notifications/use-mark-notifications-as-read";
+import {Actions} from "@/app/admin/dashboard/notifications/actions";
 
 export type ResponseType = InferResponseType<typeof client.api.notifications.$get, 200>["data"][0];
-
-// Actions Cell Component
-const ActionsCell = ({ row }: { row: { original: ResponseType } }) => {
-    const { mutate: markAsRead } = useMarkNotificationsAsRead();
-    const notification = row.original;
-
-    return (
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 w-8 p-0">
-                    <span className="sr-only">Open menu</span>
-                    <MoreHorizontal className="h-4 w-4" />
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                    onClick={() => markAsRead([notification.id])}
-                    disabled={notification.isRead}
-                >
-                    Mark as Read
-                </DropdownMenuItem>
-                {notification.link && (
-                    <DropdownMenuItem asChild>
-                        <Link href={notification.link}>View Appointment</Link>
-                    </DropdownMenuItem>
-                )}
-            </DropdownMenuContent>
-        </DropdownMenu>
-    );
-};
-
 
 export const columns: ColumnDef<ResponseType>[] = [
     {
@@ -89,7 +59,9 @@ export const columns: ColumnDef<ResponseType>[] = [
     },
     {
         id: 'actions',
-        cell: ActionsCell,
+        header: 'Actions',
+        // This correctly passes the entire notification object to the Actions component
+        cell: ({ row }) => <Actions notification={row.original} />,
     },
 ];
 
