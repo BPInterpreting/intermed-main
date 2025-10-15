@@ -576,6 +576,8 @@ const app = new Hono()
                     facilityId: appointments.facilityId,
                     facilityName: facilities.name,
                     facilityAddress: facilities.address,
+                    facilityLongitude: facilities.longitude,
+                    facilityLatitude: facilities.latitude,
                     patientId: appointments.patientId,
                     patientFirstName: patient.firstName,
                     patientLastName: patient.lastName,

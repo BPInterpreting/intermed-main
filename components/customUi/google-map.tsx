@@ -17,6 +17,8 @@ interface GoogleMapComponentProps {
     initialAddress?: string;
     height?: string | number;
     className?: string;
+    isDisplayOnly?: boolean
+    initialZoom?: number
 }
 
 declare global {
@@ -38,6 +40,7 @@ const MapContent = ({
                         initialLongitude,
                         initialAddress,
                         height,
+                        isDisplayOnly,
                     }: Omit<GoogleMapComponentProps, 'className'>) => {
 
 
@@ -166,19 +169,20 @@ const MapContent = ({
                     position: 'absolute'
                 }}
             >
-                <gmp-place-autocomplete
-                    ref={autocompleteRef}
-                    style={{
-                        backgroundColor: 'white',
-                        color: 'black',
-                        borderRadius: '8px',
-                        width: '100%',
-                        height: '50px',
-                        fontSize: '14px'
-                    }}
-                />
+                {!isDisplayOnly && (
+                    <gmp-place-autocomplete
+                        ref={autocompleteRef}
+                        style={{
+                            backgroundColor: 'white',
+                            color: 'black',
+                            borderRadius: '8px',
+                            width: '100%',
+                            height: '50px',
+                            fontSize: '14px'
+                        }}
+                    />
+                )}
             </div>
-
             {/* Marker with InfoWindow */}
             {markerPosition && (
                 <>
@@ -222,6 +226,8 @@ const GoogleMapComponent = ({
                                 initialAddress = '',
                                 height = '400px',
                                 className = '',
+                                isDisplayOnly = false,
+    initialZoom,
                             }: GoogleMapComponentProps) => {
 
     const center = {
@@ -308,13 +314,16 @@ const GoogleMapComponent = ({
                 <Map
                     style={{ width: '100%', height: typeof height === 'string' ? height : `${height}px` }}
                     defaultCenter={center}  // Sets initial position only
-                    defaultZoom={13}        // Sets initial zoom only
+                    defaultZoom={initialZoom || 15}        // Sets initial zoom only
                     mapId={process.env.NEXT_PUBLIC_GOOGLE_MAP_ID!}
                     mapTypeControl={false}
                     fullscreenControl={true}
                     streetViewControl={true}  // Disabled to prevent crashes with AdvancedMarker
                     zoomControl={true}
                     mapTypeId={'hybrid'}
+                    gestureHandling={isDisplayOnly ? 'none' : 'greedy'}
+                    disableDefaultUI={isDisplayOnly}
+
 
 
                 >
@@ -325,6 +334,7 @@ const GoogleMapComponent = ({
                         initialLongitude={initialLongitude}
                         initialAddress={initialAddress}
                         height={height}
+                        isDisplayOnly={isDisplayOnly}
                     />
                 </Map>
             </div>

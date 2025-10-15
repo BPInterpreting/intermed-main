@@ -19,6 +19,14 @@ import { format, parseISO } from "date-fns";
 import { Calendar, Clock, Building, User, Hash, Stethoscope, UserCheck } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import {Badge} from "@/components/ui/badge";
+import dynamic from "next/dynamic";
+const GoogleMapComponent = dynamic(
+    () => import('@/components/customUi/google-map'),
+    {
+        ssr: false,
+        loading: () => <div className="flex h-full items-center justify-center bg-secondary"><p>Loading map...</p></div>
+    }
+);
 
 // Helper to format time strings (e.g., "14:30:00" to "2:30 PM")
 const formatTime = (timeString: string | null | undefined) => {
@@ -130,11 +138,7 @@ const AppointmentClient = () => {
                         </BreadcrumbList>
                     </Breadcrumb>
                     <h2 className="text-3xl font-bold tracking-tight">
-                        {
-                            patientFullName
-                                ? `${patientFullName} on ${appointment?.date ? format(parseISO(appointment.date), 'PPP') : 'Date TBD'}`
-                                : 'Appointment Details'
-                        }
+                        BookingID #{appointment?.bookingId}
                     </h2>
                 </div>
                 <div className="flex gap-2">
@@ -223,8 +227,23 @@ const AppointmentClient = () => {
                 <div className={'lg:col-span-2 space-y-4'}>
                     {/* Map Placeholder Card */}
                     <Card>
-                        <CardContent className="h-[250px] flex items-center justify-center bg-secondary rounded-lg p-6">
-                            <p className="text-muted-foreground">Map Placeholder</p>
+                        <CardHeader>
+                            <CardTitle>{appointment?.facilityName || "Location"}</CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-0 rounded-b-lg overflow-hidden">
+                            {appointment?.facilityLatitude && appointment?.facilityLongitude ? (
+                                <GoogleMapComponent
+                                    initialLatitude={Number(appointment.facilityLatitude)}
+                                    initialLongitude={Number(appointment.facilityLongitude)}
+                                    isDisplayOnly={true}
+                                    initialZoom={17}
+                                    height={250}
+                                />
+                            ) : (
+                                <div className="h-[250px] flex items-center justify-center bg-secondary">
+                                    <p className="text-muted-foreground">Location data not available.</p>
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
 
