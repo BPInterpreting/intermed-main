@@ -93,6 +93,8 @@ export const appointments = pgTable("appointments", {
     projectedDuration: varchar("projected_duration"),
     duration: interval("duration"),
     isCertified: boolean('is_certified').default(false),
+    adminNotes: text("admin_notes"),
+    interpreterNotes: text('interpreter_notes'),
     notes: text("notes"),
     appointmentType : varchar("appointmentType"),
     status: varchar("status").default('Pending'),

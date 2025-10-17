@@ -3,7 +3,7 @@ import {NextResponse} from "next/server";
 
 
 const isAdminRoute = createRouteMatcher(['/admin(.*)'])
-const isProtectedRoute = createRouteMatcher(['/admin(.*)', '/'])
+const isProtectedRoute = createRouteMatcher(['/admin(.*)'])
 
 export default clerkMiddleware(async (auth, req) => {
     if (isProtectedRoute(req)) await auth.protect()

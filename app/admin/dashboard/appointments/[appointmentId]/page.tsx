@@ -210,15 +210,6 @@ const AppointmentClient = () => {
                                     <span className="font-medium">{appointment?.appointmentType || 'N/A'}</span>
                                 </div>
                             </div>
-                            {/*<div className={'flex flex-row items-center space-x-4'}>*/}
-                            {/*    <div className="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center">*/}
-                            {/*        <Hash className="h-5 w-5 text-muted-foreground" />*/}
-                            {/*    </div>*/}
-                            {/*    <div className={'flex flex-col'}>*/}
-                            {/*        <span className="text-sm text-muted-foreground">Confirmation #</span>*/}
-                            {/*        <span className="font-medium">{appointment?.confirmationNumber || 'N/A'}</span>*/}
-                            {/*    </div>*/}
-                            {/*</div>*/}
                         </CardContent>
                     </Card>
                 </div>
