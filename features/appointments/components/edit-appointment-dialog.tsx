@@ -101,6 +101,7 @@ export const EditAppointmentDialog = () => {
         appointmentType: appointmentQuery.data.appointmentType,
         isCertified: appointmentQuery.data.isCertified ?? false,
         notes: appointmentQuery.data.notes,
+        adminNotes: appointmentQuery.data.adminNotes,
         status: appointmentQuery.data.status,
 
     } : {
@@ -116,6 +117,7 @@ export const EditAppointmentDialog = () => {
         isCertified: false,
         date: new Date(),
         notes: '',
+        adminNotes: '',
         status: ''
     }
 

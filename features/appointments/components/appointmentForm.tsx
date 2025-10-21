@@ -45,6 +45,7 @@ const formSchema = z.object({
     appointmentType: z.string().nullable(),
     isCertified: z.boolean().optional(),
     notes: z.string().nullable().optional(),
+    adminNotes: z.string().nullable().optional(),
     status: z.string().nullable(),
     offerMode: z.boolean().optional(),
     isRushAppointment: z.boolean().optional(),
@@ -406,7 +407,7 @@ export const AppointmentForm = ({
 
                            <FormField
                                control={form.control}
-                               name="notes"
+                               name="adminNotes"
                                render={({ field }) => (
                                    <FormItem>
                                        <FormLabel>Notes</FormLabel>

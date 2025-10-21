@@ -1,10 +1,7 @@
 //hook is used to fetch multiple facilities from the database that will be used to display the data in the UI
 
 import { useQuery } from '@tanstack/react-query';
-
 import { client } from '@/lib/hono';
-
-
 
 export const useGetIndividualAppointment = (id?: string) => {
 

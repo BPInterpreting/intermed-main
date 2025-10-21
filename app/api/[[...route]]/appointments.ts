@@ -201,6 +201,8 @@ const app = new Hono()
                 bookingId: appointments.bookingId,
                 date: appointments.date,
                 notes: appointments.notes,
+                adminNotes: appointments.adminNotes,
+                interpreterNotes: appointments.interpreterNotes,
                 startTime: appointments.startTime,
                 endTime: appointments.endTime,
                 projectedEndTime: appointments.projectedEndTime,
@@ -278,6 +280,7 @@ const app = new Hono()
                     patientLastName: patient.lastName,
                     distanceMiles: appointmentOffers.distanceMiles,
                     notifiedAt: appointmentOffers.notifiedAt,
+                    adminNotes: appointments.adminNotes
                 })
                 .from(appointmentOffers)
                 .innerJoin(appointments, eq(appointmentOffers.appointmentId, appointments.id))
@@ -479,6 +482,7 @@ const app = new Hono()
                     date: appointments.date,
                     startTime: appointments.startTime,
                     status: appointments.status,
+                    adminNotes: appointments.adminNotes,
                     offerSentAt: appointments.offerSentAt,
                     isRushAppointment: appointments.isRushAppointment,
                     isCertified: appointments.isCertified,
@@ -571,6 +575,8 @@ const app = new Hono()
                     projectedDuration: appointments.projectedDuration,
                     appointmentType: appointments.appointmentType,
                     notes: appointments.notes,
+                    adminNotes: appointments.adminNotes,
+                    interpreterNotes: appointments.interpreterNotes,
                     status: appointments.status,
                     isCertified: appointments.isCertified,
                     facilityId: appointments.facilityId,

@@ -20,6 +20,9 @@ import { Calendar, Clock, Building, User, Hash, Stethoscope, UserCheck } from "l
 import { Skeleton } from "@/components/ui/skeleton";
 import {Badge} from "@/components/ui/badge";
 import dynamic from "next/dynamic";
+import {ScrollArea} from "@/components/ui/scroll-area";
+import {useEditAppointment} from "@/features/appointments/api/use-edit-appointment";
+import {useUpdateAppointment} from "@/features/appointments/hooks/use-update-appointment";
 const GoogleMapComponent = dynamic(
     () => import('@/components/customUi/google-map'),
     {
@@ -42,6 +45,9 @@ const formatTime = (timeString: string | null | undefined) => {
 const AppointmentClient = () => {
     const params = useParams();
     const appointmentId = params.appointmentId as string;
+    const editMutation = useEditAppointment(appointmentId);
+    const {onOpen} = useUpdateAppointment()
+
 
     const { data: appointment, isLoading } = useGetIndividualAppointment(appointmentId);
 
@@ -142,8 +148,12 @@ const AppointmentClient = () => {
                     </h2>
                 </div>
                 <div className="flex gap-2">
-                    <Button variant="outline">Assign Interpreter</Button>
-                    <Button variant="default">Edit</Button>
+                    <Button
+                        variant="default"
+                        onClick={() => onOpen(appointmentId)}
+                    >
+                        Edit
+                    </Button>
                 </div>
             </div>
 
@@ -216,6 +226,25 @@ const AppointmentClient = () => {
 
                 {/* Right Column - 2/3 */}
                 <div className={'lg:col-span-2 space-y-4'}>
+                    {/* Assigned Interpreter Card */}
+                    <Card>
+                        <CardContent className="flex flex-row justify-between items-center p-2">
+                            <div className={'text-2xl font-bold'}>Assigned Interpreter</div>
+                            {appointment?.interpreterId ? (
+                                <div className={'flex flex-row items-center space-x-4'}>
+                                    <div className="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center">
+                                        <UserCheck className="h-5 w-5 text-muted-foreground" />
+                                    </div>
+                                    <div className={'flex flex-col'}>
+                                        <span className="text-sm text-muted-foreground">Name</span>
+                                        <span className="font-medium">{`${appointment.interpreterFirstName} ${appointment.interpreterLastName}`}</span>
+                                    </div>
+                                </div>
+                            ) : (
+                                <p className="text-sm text-muted-foreground">No interpreter assigned yet.</p>
+                            )}
+                        </CardContent>
+                    </Card>
                     {/* Map Placeholder Card */}
                     <Card>
                         <CardHeader>
@@ -237,38 +266,38 @@ const AppointmentClient = () => {
                             )}
                         </CardContent>
                     </Card>
-
-                    {/* Assigned Interpreter Card */}
+                    {/* Notes Card */}
                     <Card>
                         <CardHeader>
-                            <CardTitle>Assigned Interpreter</CardTitle>
+                            <CardTitle>Notes</CardTitle>
+                            <CardDescription>Notes from the admin and interpreter</CardDescription>
                         </CardHeader>
-                        <CardContent>
-                            {appointment?.interpreterId ? (
-                                <div className={'flex flex-row items-center space-x-4'}>
-                                    <div className="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center">
-                                        <UserCheck className="h-5 w-5 text-muted-foreground" />
-                                    </div>
-                                    <div className={'flex flex-col'}>
-                                        <span className="text-sm text-muted-foreground">Name</span>
-                                        <span className="font-medium">{`${appointment.interpreterFirstName} ${appointment.interpreterLastName}`}</span>
-                                    </div>
-                                </div>
-                            ) : (
-                                <p className="text-sm text-muted-foreground">No interpreter assigned yet.</p>
-                            )}
-                        </CardContent>
-                    </Card>
+                        <CardContent className={'flex flex-row gap-4'}>
+                            <Card className='flex-1'>
+                                <CardHeader>
+                                    <CardTitle>Admin Notes</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <ScrollArea>
+                                        <p className="text-sm text-muted-foreground min-h-[80px] whitespace-pre-wrap">
+                                            {appointment?.adminNotes || "No notes from admin."}
+                                        </p>
+                                    </ScrollArea>
 
-                    {/* Available Interpreters Card */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Available Interpreters</CardTitle>
-                            <CardDescription>Qualified interpreters for this appointment.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <p>Available Interpreters DataTable will be placed here.</p>
+                                </CardContent>
+                            </Card>
+                            <Card className='flex-1'>
+                                <CardHeader>
+                                    <CardTitle>Interpreter Notes</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <p className="text-sm text-muted-foreground min-h-[80px] whitespace-pre-wrap">
+                                        {appointment?.interpreterNotes || "No notes from interpreter."}
+                                    </p>
+                                </CardContent>
+                            </Card>
                         </CardContent>
+
                     </Card>
                 </div>
             </div>

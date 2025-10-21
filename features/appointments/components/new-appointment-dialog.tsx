@@ -1,27 +1,12 @@
 'use client'
 
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { z } from "zod"
-
-import {useNewFacility} from "@/features/facilities/hooks/use-new-facility";
-import {PatientForm} from "@/features/patients/components/patientForm";
+import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,} from "@/components/ui/dialog"
+import {z} from "zod"
 import {insertAppointmentSchema} from "@/db/schema";
-import {useCreateFacility} from "@/features/facilities/api/use-create-facility";
-import {FacilityForm} from "@/features/facilities/components/facilityForm";
 import {useNewAppointment} from "@/features/appointments/hooks/use-new-appointments";
 import {useCreateAppointment} from "@/features/appointments/api/use-create-appointment";
 import {useGetPatients} from "@/features/patients/api/use-get-patients";
 import {useGetFacilities} from "@/features/facilities/api/use-get-facilities";
-import {useCreatePatient} from "@/features/patients/api/use-create-patient";
 import {AppointmentForm} from "@/features/appointments/components/appointmentForm";
 import {Loader2} from "lucide-react";
 import {useGetInterpreters} from "@/features/interpreters/api/use-get-interpreters";
