@@ -15,7 +15,20 @@ import notifications from "@/app/api/[[...route]]/notifications";
 //initialize the new hono api instance where base is out /api route
 const app = new Hono().basePath('/api')
 app.use('*', cors({
-    origin: ['http://localhost:8081', 'https://www.pena-med.com', 'https://intermed-main.vercel.app', 'https://localhost:3000'],
+    origin: [
+        // Development/local origins
+        'http://localhost:8081',
+        'https://localhost:3000',
+        // Old domain (keep until new domain is fully migrated)
+        'https://www.pena-med.com',
+        // Old Vercel URL (will update after repo rename)
+        'https://intermed-main.vercel.app',
+        // TODO: Add your new InterpreFi domain here when available:
+        // 'https://interprefi.com',
+        // 'https://www.interprefi.com',
+        // TODO: Add new Vercel URL after repo rename:
+        // 'https://interprefi.vercel.app',
+    ],
     allowHeaders: ['X-Custom-Header', 'Upgrade-Insecure-Requests'],
     allowMethods: ['POST', 'GET', 'OPTIONS'],
     exposeHeaders: ['Content-Length', 'X-Kuma-Revision'],

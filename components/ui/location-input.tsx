@@ -19,7 +19,7 @@ async function geocodeAddress(address: string):Promise<Suggestion[]> {
         const response = await fetch(url,
             {
                 headers: {
-                    'User-Agent': 'Intermed/1.0 (bpena707@icloud.com)'
+                    'User-Agent': 'InterpreFi/1.0 (bpena707@icloud.com)'
                 }
             })
         const data = await response.json()

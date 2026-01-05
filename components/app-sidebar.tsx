@@ -181,7 +181,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         >
                             <a href="/admin/dashboard/home">
                                 <IconInnerShadowTop className="!size-5" />
-                                <span className="text-base font-semibold">PenaMed</span>
+                                <span className="text-base font-semibold">InterpreFi</span>
                             </a>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
