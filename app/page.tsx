@@ -61,13 +61,13 @@ export default function LandingPage() {
                 </div>
                 <CardTitle>Interpreter Portal</CardTitle>
                 <CardDescription>
-                  Access your interpreter account through our mobile app to view and manage your appointments.
+                  Interpreters use the mobile app. For now, you can login or sign up here.
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Link href="/sign-in" className="w-full">
+                <Link href="/interpreter" className="w-full">
                   <Button variant="outline" className="w-full" size="lg">
-                    Interpreter Login
+                    Open Interpreter Portal
                   </Button>
                 </Link>
               </CardContent>
