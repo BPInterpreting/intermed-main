@@ -1,7 +1,5 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { QrCode, Smartphone } from "lucide-react";
 
 export default function InterpreterPortalPlaceholderPage() {
@@ -14,47 +12,41 @@ export default function InterpreterPortalPlaceholderPage() {
           </div>
           <h1 className="text-3xl font-bold">Interpreter Portal</h1>
           <p className="text-muted-foreground">
-            Interpreters use the InterpreFi mobile app. A QR code deep-link will live here.
+            Sign up and access your interpreter account through the InterpreFi mobile app.
           </p>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Mobile app access (coming soon)</CardTitle>
-            <CardDescription>For now, use the buttons below to login or create an account.</CardDescription>
+            <CardTitle>Get Started with the Mobile App</CardTitle>
+            <CardDescription>
+              Scan the QR code below with your phone to download and sign up for the InterpreFi interpreter app.
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="rounded-lg border bg-muted/40 p-6">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-md bg-background border flex items-center justify-center">
-                  <QrCode className="h-5 w-5" />
+            {/* QR Code Placeholder */}
+            <div className="flex flex-col items-center space-y-4">
+              <div className="rounded-lg border-2 border-dashed border-muted-foreground/25 bg-muted/40 p-8 flex items-center justify-center">
+                <div className="flex flex-col items-center space-y-3">
+                  <div className="h-48 w-48 rounded-lg bg-background border-2 border-muted flex items-center justify-center">
+                    <QrCode className="h-24 w-24 text-muted-foreground/50" />
+                  </div>
+                  <p className="text-sm font-medium text-muted-foreground">QR Code Placeholder</p>
                 </div>
-                <div>
-                  <p className="font-medium">QR code placeholder</p>
-                  <p className="text-sm text-muted-foreground">
-                    We’ll replace this with a scannable QR code that opens the InterpreFi interpreter app.
-                  </p>
-                </div>
+              </div>
+              
+              <div className="text-center space-y-2 max-w-md">
+                <p className="text-sm font-medium">
+                  Scan this QR code with your phone camera
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  This will open the InterpreFi interpreter app where you can sign up for an account and manage your appointments.
+                </p>
               </div>
             </div>
 
-            <Separator />
-
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Link href="/sign-in" className="w-full">
-                <Button className="w-full" size="lg">
-                  Interpreter Login
-                </Button>
-              </Link>
-              <Link href="/sign-up" className="w-full">
-                <Button variant="outline" className="w-full" size="lg">
-                  Interpreter Sign Up
-                </Button>
-              </Link>
-            </div>
-
-            <div className="text-sm text-muted-foreground">
-              <Link href="/" className="underline underline-offset-4">
+            <div className="text-center text-sm text-muted-foreground">
+              <Link href="/" className="underline underline-offset-4 hover:text-foreground">
                 Back to home
               </Link>
             </div>
