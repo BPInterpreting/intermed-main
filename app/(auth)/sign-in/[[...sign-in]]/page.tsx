@@ -11,7 +11,7 @@ export default function Page() {
                         Welcome Back!
                     </h1>
                     <p className="text-[#7E8CA0] text-base">
-                        Log in or Create account to get back your account!
+                        Sign in to access your account
                     </p>
                 </div>
                 <div className="flex items-center justify-center mt-8">

@@ -18,6 +18,9 @@ const config = {
   		}
   	},
   	extend: {
+  		fontFamily: {
+  			barlow: ['var(--font-barlow)', 'sans-serif'],
+  		},
   		colors: {
   			border: 'hsl(var(--border))',
   			input: 'hsl(var(--input))',

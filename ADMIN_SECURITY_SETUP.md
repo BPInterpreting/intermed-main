@@ -113,9 +113,20 @@ Since public signup is enabled for interpreters, security is enforced through:
 ## Additional Security Recommendations
 
 1. **Use Email Verification**: Require email verification in Clerk settings (applies to all users)
-2. **Enable MFA**: Consider requiring multi-factor authentication for admins specifically
+
+2. **MFA Configuration (Selective)**: 
+   - **For Admins**: Consider requiring MFA for admin accounts only
+   - **For Interpreters**: Keep MFA optional to reduce friction on mobile app
+   - **How to Configure**: 
+     - Clerk Dashboard → Settings → Multi-factor Authentication
+     - You can set MFA as "Optional" globally, then programmatically require it for admin users
+     - Or use Clerk's session token metadata to conditionally require MFA based on role
+   - **Note**: Enabling MFA globally would require all interpreters to use it every login, which may be too much friction for mobile app usage
+
 3. **Monitor User Activity**: Check Clerk dashboard regularly for new signups and verify no unauthorized accounts have admin role
+
 4. **Regular Role Audits**: Periodically review all users in Clerk to ensure only intended accounts have the `admin` role
+
 5. **IP Restrictions** (Optional): If you have static IPs, consider restricting admin login to specific IPs
 
 ## Support

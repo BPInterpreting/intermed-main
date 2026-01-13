@@ -21,13 +21,13 @@ app.use('*', cors({
         'https://localhost:3000',
         // Old domain (keep until new domain is fully migrated)
         'https://www.pena-med.com',
-        // Old Vercel URL (will update after repo rename)
+        // Old Vercel URL (keep until new one is confirmed working)
         'https://intermed-main.vercel.app',
+        // New Vercel URL (after repo rename)
+        'https://interprefi.vercel.app',
         // TODO: Add your new InterpreFi domain here when available:
         // 'https://interprefi.com',
         // 'https://www.interprefi.com',
-        // TODO: Add new Vercel URL after repo rename:
-        // 'https://interprefi.vercel.app',
     ],
     allowHeaders: ['X-Custom-Header', 'Upgrade-Insecure-Requests'],
     allowMethods: ['POST', 'GET', 'OPTIONS'],

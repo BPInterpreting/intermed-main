@@ -1,5 +1,5 @@
 import type {Metadata} from "next";
-import {Inter} from "next/font/google";
+import {Inter, Barlow} from "next/font/google";
 import "./globals.css";
 import {ClerkProvider} from "@clerk/nextjs";
 import {QueryProvider} from "@/providers/query-provider";
@@ -9,6 +9,11 @@ import {ThemeProvider} from "next-themes";
 import {AblyClientProvider} from "@/providers/ably-provider";
 
 const inter = Inter({ subsets: ["latin"] });
+const barlow = Barlow({ 
+  subsets: ["latin"],
+  weight: ["900"],
+  variable: "--font-barlow",
+});
 
 export const metadata: Metadata = {
   title: "InterpreFi - Interpreter Management System",
@@ -23,7 +28,7 @@ export default function RootLayout({
   return (
       <ClerkProvider >
         <html lang="en" suppressHydrationWarning>
-        <body className={inter.className}>
+        <body className={`${inter.className} ${barlow.variable}`}>
         <ThemeProvider
             attribute="class"
             defaultTheme="system"
