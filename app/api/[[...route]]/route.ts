@@ -25,9 +25,9 @@ app.use('*', cors({
         'https://intermed-main.vercel.app',
         // New Vercel URL (after repo rename)
         'https://interprefi.vercel.app',
-        // TODO: Add your new InterpreFi domain here when available:
-        // 'https://interprefi.com',
-        // 'https://www.interprefi.com',
+        // New custom domain
+        'https://interprefi.com',
+        'https://www.interprefi.com',
     ],
     allowHeaders: ['X-Custom-Header', 'Upgrade-Insecure-Requests'],
     allowMethods: ['POST', 'GET', 'OPTIONS'],
