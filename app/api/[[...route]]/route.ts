@@ -23,8 +23,8 @@ app.use('*', cors({
         'https://www.pena-med.com',
         // Old Vercel URL (keep until new one is confirmed working)
         'https://intermed-main.vercel.app',
-        // New Vercel URL (after repo rename)
-        'https://interprefi.vercel.app',
+        // New Vercel URL (after repo rename to interprefi-admin)
+        'https://interprefi-admin.vercel.app',
         // New custom domain
         'https://interprefi.com',
         'https://www.interprefi.com',
