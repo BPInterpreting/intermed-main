@@ -7,6 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Users, MapPin, Clock, Smartphone, AppWindow, Bell, CheckCircle } from "lucide-react";
 
+// Prevent static prerendering - fixes Next.js 15 build error
+export const dynamic = "force-dynamic";
+
 export default function LandingPage() {
   const [image1Loaded, setImage1Loaded] = useState(false);
   const [image2Loaded, setImage2Loaded] = useState(false);
