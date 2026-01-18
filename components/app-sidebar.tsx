@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import Image from "next/image"
 import {
     IconCamera,
     IconChartBar,
@@ -177,11 +178,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     <SidebarMenuItem>
                         <SidebarMenuButton
                             asChild
-                            className="data-[slot=sidebar-menu-button]:!p-1.5"
+                            size="lg"
+                            className="data-[slot=sidebar-menu-button]:!p-1.5 h-16 overflow-visible"
                         >
-                            <a href="/admin/dashboard/home">
-                                <IconInnerShadowTop className="!size-5" />
-                                <span className="text-base font-semibold">InterpreFi</span>
+                            <a href="/admin/dashboard/home" className="flex items-center justify-start w-full">
+                                <div className="relative h-16 w-96">
+                                    <Image
+                                        src="/branding/Transparent Logo.png"
+                                        alt="InterpreFi"
+                                        fill
+                                        className="object-contain object-left"
+                                        sizes="384px"
+                                    />
+                                </div>
                             </a>
                         </SidebarMenuButton>
                     </SidebarMenuItem>

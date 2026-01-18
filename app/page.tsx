@@ -25,8 +25,17 @@ export default function LandingPage() {
       {/* Header */}
       <header className="border-b">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-xl font-barlow font-black">InterpreFi</span>
+          <div className="flex items-center justify-start gap-2 flex-1">
+            <div className="relative h-12 w-[420px] overflow-visible">
+              <Image
+                src="/branding/Transparent Logo.png"
+                alt="InterpreFi"
+                fill
+                className="object-contain object-left origin-left scale-150"
+                sizes="420px"
+                priority
+              />
+            </div>
           </div>
           {/* TODO: Remove sign-in button in production - kept for testing purposes only */}
           <Link href="/sign-in">
@@ -342,7 +351,15 @@ export default function LandingPage() {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <span className="text-lg font-barlow font-black">InterpreFi</span>
+              <div className="relative h-10 w-80">
+                <Image
+                  src="/branding/Transparent Logo.png"
+                  alt="InterpreFi"
+                  fill
+                  className="object-contain"
+                  sizes="320px"
+                />
+              </div>
             </div>
             <p className="text-sm text-muted-foreground text-center">
               © {new Date().getFullYear()} InterpreFi. All rights reserved.
