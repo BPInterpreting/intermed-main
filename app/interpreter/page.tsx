@@ -3,6 +3,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { QrCode, Smartphone } from "lucide-react";
 
 export default function InterpreterPortalPlaceholderPage() {
+  const appStoreUrl = process.env.NEXT_PUBLIC_INTERPREFI_APP_STORE_URL ?? "";
+  const qrCodeUrl = appStoreUrl
+    ? `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(
+        appStoreUrl,
+      )}`
+    : "";
+
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-2xl space-y-6">
@@ -28,10 +35,20 @@ export default function InterpreterPortalPlaceholderPage() {
             <div className="flex flex-col items-center space-y-4">
               <div className="rounded-lg border-2 border-dashed border-muted-foreground/25 bg-muted/40 p-8 flex items-center justify-center">
                 <div className="flex flex-col items-center space-y-3">
-                  <div className="h-48 w-48 rounded-lg bg-background border-2 border-muted flex items-center justify-center">
-                    <QrCode className="h-24 w-24 text-muted-foreground/50" />
+                  <div className="h-48 w-48 rounded-lg bg-background border-2 border-muted flex items-center justify-center overflow-hidden">
+                    {qrCodeUrl ? (
+                      <img
+                        alt="InterpreFi app store QR code"
+                        className="h-full w-full object-contain"
+                        src={qrCodeUrl}
+                      />
+                    ) : (
+                      <QrCode className="h-24 w-24 text-muted-foreground/50" />
+                    )}
                   </div>
-                  <p className="text-sm font-medium text-muted-foreground">QR Code Placeholder</p>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    {appStoreUrl ? "Scan to download" : "QR Code Placeholder"}
+                  </p>
                 </div>
               </div>
               
@@ -40,8 +57,15 @@ export default function InterpreterPortalPlaceholderPage() {
                   Scan this QR code with your phone camera
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  This will open the InterpreFi interpreter app where you can sign up for an account and manage your appointments.
+                  {appStoreUrl
+                    ? "This will open the InterpreFi app in the App Store so you can download and sign up."
+                    : "Add NEXT_PUBLIC_INTERPREFI_APP_STORE_URL to your environment to enable the App Store QR code."}
                 </p>
+                {appStoreUrl ? (
+                  <Link href={appStoreUrl} className="text-sm underline underline-offset-4 hover:text-foreground">
+                    Open the App Store
+                  </Link>
+                ) : null}
               </div>
             </div>
 

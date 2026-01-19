@@ -1,5 +1,6 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
-import {NextResponse} from "next/server";
+import { NextResponse } from "next/server";
+import { getRoleFromClaims } from "@/utils/get-role";
 
 
 const isAdminRoute = createRouteMatcher(['/admin(.*)'])
@@ -12,7 +13,7 @@ export default clerkMiddleware(async (auth, req) => {
     if (isAdminLoginRoute(req)) {
         // If user is already logged in, check if they're an admin
         const { sessionClaims } = await auth();
-        const role = (sessionClaims?.metadata as { role?: string })?.role;
+        const role = getRoleFromClaims(sessionClaims as { metadata?: { role?: string }, publicMetadata?: { role?: string } });
         
         // If already logged in as admin, redirect to dashboard
         if (role === 'admin') {
@@ -32,7 +33,7 @@ export default clerkMiddleware(async (auth, req) => {
     const { sessionId, sessionClaims } = await auth();
 
     // Check admin role for all admin routes (except login)
-    const role = (sessionClaims?.metadata as { role?: string })?.role;
+    const role = getRoleFromClaims(sessionClaims as { metadata?: { role?: string }, publicMetadata?: { role?: string } });
     if (isAdminRoute(req) && !isAdminLoginRoute(req) && role !== 'admin') {
         const url = new URL('/', req.url)
         return NextResponse.redirect(url)
