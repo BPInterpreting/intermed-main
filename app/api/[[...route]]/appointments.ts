@@ -1010,7 +1010,8 @@ const app = new Hono()
                 })
                 .from(appointmentOffers)
                 .innerJoin(appointments, eq(appointmentOffers.appointmentId, appointments.id))
-                .where(eq(appointmentOffers.appointmentId, appointmentId));
+                .where(eq(appointmentOffers.appointmentId, appointmentId))
+                .groupBy(appointments.searchRadius, appointments.interpreterId);
 
             if (stats && stats.totalNotified > 0 && stats.totalNotified === stats.totalDeclined){
                 if (stats.searchRadius < 50 && !stats.interpreterId){
