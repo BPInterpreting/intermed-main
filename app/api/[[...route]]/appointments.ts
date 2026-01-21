@@ -7,7 +7,6 @@ import {createId} from "@paralleldrive/cuid2";
 import {and, asc, desc, eq, inArray, isNotNull, isNull, sql} from "drizzle-orm";
 import { clerkMiddleware, getAuth } from "@hono/clerk-auth";
 import { clerkClient } from "@clerk/nextjs/server";
-import { getRoleFromClaims } from "@/utils/get-role";
 import {toast} from "sonner";
 import { publishAdminNotification } from '@/lib/ably';
 import interpreters from "@/app/api/[[...route]]/interpreters";
@@ -171,7 +170,7 @@ const app = new Hono()
         async (c) => {
             const auth = getAuth(c)
             const userId = auth?.userId
-            const userRole = getRoleFromClaims(auth?.sessionClaims as { metadata?: { role?: string }, publicMetadata?: { role?: string } })
+            const userRole = (auth?.sessionClaims?.metadata as {role: string})?.role
 
             const { patientId, interpreterId } = c.req.valid('query')
 
@@ -383,7 +382,7 @@ const app = new Hono()
         async(c) => {
 
             const auth = getAuth(c)
-            const userRole = getRoleFromClaims(auth?.sessionClaims as { metadata?: { role?: string }, publicMetadata?: { role?: string } })
+            const userRole = (auth?.sessionClaims?.metadata as {role: string})?.role
 
             if (userRole !== 'admin'){
                 return c.json({ error: "Admin access required" }, 403)
@@ -469,22 +468,11 @@ const app = new Hono()
         async(c) => {
 
             const auth = getAuth(c)
-            const userId = auth?.userId
-            let userRole = getRoleFromClaims(auth?.sessionClaims as { metadata?: { role?: string }, publicMetadata?: { role?: string } })
+            const userRole = (auth?.sessionClaims?.metadata as {role: string})?.role
             const { id } = c.req.valid('param');
             console.log(`[API] Fetching offer details for ID: ${id}`);
 
-            if (!userId) {
-                return c.json({ error: "Unauthorized" }, 401)
-            }
-
-            if (userRole !== 'admin') {
-                const client = await clerkClient()
-                const user = await client.users.getUser(userId)
-                userRole = (user.publicMetadata as { role?: string })?.role
-            }
-
-            if (userRole !== 'admin') {
+            if (userRole !== 'admin'){
                 return c.json({ error: "Admin access required" }, 403)
             }
 

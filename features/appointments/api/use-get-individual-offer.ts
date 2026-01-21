@@ -16,7 +16,9 @@ export const useGetIndividualOffer = (id?: string) => {
             console.log(`[Hook] Firing direct fetch for ID: ${id}`);
 
             // Manually construct the URL and use a standard fetch
-            const response = await fetch(`/api/appointments/offers/monitoring/${id}`);
+            const response = await fetch(`/api/appointments/offers/monitoring/${id}`, {
+                credentials: 'include'
+            });
             // --- END OF NEW FETCH LOGIC ---
 
             if (!response.ok) {

@@ -7,7 +7,6 @@ import {createId} from "@paralleldrive/cuid2";
 import {and, desc, eq, ilike, like, or, sql} from "drizzle-orm";
 import {parseTemplate} from "sucrase/dist/types/parser/traverser/expression";
 import { clerkMiddleware, getAuth } from "@hono/clerk-auth";
-import { getRoleFromClaims } from "../../../utils/get-role";
 
 
 //part of RPC is to create a schema for the validation that is used in the post request
@@ -26,7 +25,7 @@ const app = new Hono()
         async(c) => {
             const auth  = getAuth(c)
             const userId = auth?.userId
-            const userRole = getRoleFromClaims(auth?.sessionClaims as { metadata?: { role?: string }, publicMetadata?: { role?: string } })
+            const userRole = (auth?.sessionClaims?.metadata as {role: string})?.role
             const { q } = c.req.valid('query')
 
             if (!auth?.userId) {
