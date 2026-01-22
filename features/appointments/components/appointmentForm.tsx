@@ -22,10 +22,29 @@ import {
     SelectValue
 } from "@/components/ui/select";
 import {Switch} from "@/components/ui/switch";
-import {useState} from "react";
+import {useState, useRef, useEffect} from "react";
 import {Card, CardContent, CardDescription, CardHeader} from "@/components/ui/card";
 import {useInterpreterCount} from "@/features/appointments/api/use-get-interpreter-count";
 import {SimpleTimePicker} from "@/components/customUi/time-picker-ampm";
+import {Check, ChevronsUpDown} from "lucide-react";
+import {cn} from "@/lib/utils";
+
+// Appointment type options for searchable combobox
+const appointmentTypeOptions = [
+    { label: "Follow Up", value: "Follow-Up" },
+    { label: "Initial", value: "Initial" },
+    { label: "IME/AME", value: "IME/AME" },
+    { label: "Second Opinion", value: "Second-Opinion" },
+    { label: "QME", value: "QME" },
+    { label: "IEP", value: "IEP" },
+    { label: "Conference", value: "Conference" },
+    { label: "Physical Therapy", value: "Physical Therapy" },
+    { label: "Injection", value: "Injection" },
+    { label: "Surgery", value: "Surgery" },
+    { label: "Chiropractor", value: "Chiropractor" },
+    { label: "Acupuncture", value: "Acupuncture" },
+    { label: "Other", value: "Other" },
+];
 
 
 const intervalRegex = /^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$/i;
@@ -90,8 +109,26 @@ export const AppointmentForm = ({
     })
 
     const [isOfferMode, setIsOfferMode] = useState(false)
+    const [appointmentTypeOpen, setAppointmentTypeOpen] = useState(false)
+    const [appointmentTypeSearch, setAppointmentTypeSearch] = useState("")
+    const appointmentTypeInputRef = useRef<HTMLInputElement>(null)
     const facilityId = form.watch('facilityId')
     const interpreterCount = useInterpreterCount(facilityId)
+    
+    // Focus the search input when popover opens
+    useEffect(() => {
+        if (appointmentTypeOpen && appointmentTypeInputRef.current) {
+            // Small delay to ensure popover is rendered
+            setTimeout(() => {
+                appointmentTypeInputRef.current?.focus()
+            }, 0)
+        }
+    }, [appointmentTypeOpen])
+    
+    // Filter appointment types based on search
+    const filteredAppointmentTypes = appointmentTypeOptions.filter((option) =>
+        option.label.toLowerCase().includes(appointmentTypeSearch.toLowerCase())
+    )
 
     const handleSubmit = (values: FormValues) => {
         onSubmit({
@@ -324,33 +361,80 @@ export const AppointmentForm = ({
                            {/*        />*/}
                            {/*    </FormControl>*/}
                            {/*</FormItem>*/}
-                           <div className='flex flex-row gap-x-4 '>
+                           <div className='flex flex-row gap-x-4 items-end'>
                                <FormField
                                    control={form.control}
                                    name="appointmentType"
                                    render={({ field }) => (
-                                       <FormItem>
+                                       <FormItem className="flex flex-col relative overflow-visible">
                                            <FormLabel>Appointment Type</FormLabel>
                                            <FormControl>
-                                               <Select onValueChange={field.onChange} value={field.value ?? ''}>
-                                                   {/* eslint-disable-next-line react/jsx-no-undef */}
-                                                   <SelectTrigger className="w-[180px]">
-                                                       <SelectValue placeholder="Select type" />
-                                                   </SelectTrigger>
-                                                   <SelectContent>
-                                                       <SelectGroup>
-                                                           <SelectLabel>Type</SelectLabel>
-                                                           <SelectItem value="Follow-Up">Follow Up</SelectItem>
-                                                           <SelectItem value="Initial">Initial</SelectItem>
-                                                           <SelectItem value="IME/AME">IME/AME</SelectItem>
-                                                           <SelectItem value="Second-Opinion">Second Opinion</SelectItem>
-                                                           <SelectItem value="QME">QME</SelectItem>
-                                                           <SelectItem value="IEP">IEP</SelectItem>
-                                                           <SelectItem value="Conference">Conference</SelectItem>
-                                                           <SelectItem value="Other">Other</SelectItem>
-                                                       </SelectGroup>
-                                                   </SelectContent>
-                                               </Select>
+                                               <div className="relative overflow-visible">
+                                                   <Button
+                                                       variant="outline"
+                                                       role="combobox"
+                                                       type="button"
+                                                       aria-expanded={appointmentTypeOpen}
+                                                       className={cn(
+                                                           "w-[180px] justify-between font-normal",
+                                                           !field.value && "text-muted-foreground"
+                                                       )}
+                                                       disabled={disabled}
+                                                       onClick={() => setAppointmentTypeOpen(!appointmentTypeOpen)}
+                                                   >
+                                                       {field.value
+                                                           ? appointmentTypeOptions.find(
+                                                               (option) => option.value === field.value
+                                                           )?.label
+                                                           : "Select type..."}
+                                                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                                   </Button>
+                                                   {appointmentTypeOpen && (
+                                                       <div className="absolute bottom-full left-0 z-50 mb-1 w-[200px] rounded-md border bg-background shadow-lg">
+                                                           <div className="flex items-center border-b px-3 py-2">
+                                                               <Input
+                                                                   ref={appointmentTypeInputRef}
+                                                                   placeholder="Search type..."
+                                                                   value={appointmentTypeSearch}
+                                                                   onChange={(e) => setAppointmentTypeSearch(e.target.value)}
+                                                                   className="h-8 border-0 p-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent"
+                                                               />
+                                                           </div>
+                                                           <div className="max-h-[150px] overflow-y-auto p-1">
+                                                               {filteredAppointmentTypes.length === 0 ? (
+                                                                   <div className="py-4 text-center text-sm text-muted-foreground">
+                                                                       No type found.
+                                                                   </div>
+                                                               ) : (
+                                                                   filteredAppointmentTypes.map((option) => (
+                                                                       <div
+                                                                           key={option.value}
+                                                                           className={cn(
+                                                                               "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground",
+                                                                               field.value === option.value && "bg-accent"
+                                                                           )}
+                                                                           onClick={() => {
+                                                                               field.onChange(option.value)
+                                                                               setAppointmentTypeOpen(false)
+                                                                               setAppointmentTypeSearch("")
+                                                                           }}
+                                                                       >
+                                                                           <Check
+                                                                               className={cn(
+                                                                                   "mr-2 h-4 w-4",
+                                                                                   field.value === option.value
+                                                                                       ? "opacity-100"
+                                                                                       : "opacity-0"
+                                                                               )}
+                                                                           />
+                                                                           {option.label}
+                                                                       </div>
+                                                                   ))
+                                                               )}
+                                                           </div>
+                                                       </div>
+                                                   )}
+                                               </div>
                                            </FormControl>
                                        </FormItem>
                                    )}
