@@ -162,50 +162,12 @@ export const columns: ColumnDef<ResponseType>[] = [
     {
         accessorKey: 'isCertified',
         header: 'isCertified',
-    },
-    {
-        accessorKey: "notes",
-        header: "Notes",
-        size: 350,
-        cell: ({ row }) => {
-            const notes = row.getValue("notes") as string;
-
-            if (!notes) return <span>-</span>;
-
-            // Your new facility address handling
-            if (notes.includes('New Facility Address:')) {
-                const parts = notes.split('New Facility Address:');
-                const regularNotes = parts[0].trim();
-                const newAddress = parts[1].trim();
-
-                return (
-                    <div className="space-y-2 whitespace-normal break-words">
-                        {regularNotes && <p>{regularNotes}</p>}
-                        <div className="p-2 bg-yellow-50 border border-yellow-200 rounded-md">
-                            <div className="flex items-center gap-1">
-                                <span className="text-yellow-600">⚠️</span>
-                                <span className="font-semibold text-yellow-800 text-sm">
-                                New Facility Address:
-                            </span>
-                            </div>
-                            <p className="text-yellow-700 text-sm mt-1 break-all">
-                                {newAddress}
-                            </p>
-                        </div>
-                    </div>
-                );
-            }
-            return (
-                <div className="whitespace-normal break-words">
-                    {notes}
-                </div>
-            );
-        }
+        size: 90,
     },
     {
         accessorKey: "nextFollowUpDate",
         header: "Next Follow Up",
-        size: 180,
+        size: 140,
         cell: ({ row }) => {
             const followUpId = row.original.nextFollowUpId;
             const dateValue = row.original.nextFollowUpDate;
@@ -249,6 +211,46 @@ export const columns: ColumnDef<ResponseType>[] = [
             }
         }
     },
+    {
+        accessorKey: "notes",
+        header: "Notes",
+        size: 350,
+        cell: ({ row }) => {
+            const notes = row.getValue("notes") as string;
+
+            if (!notes) return <span>-</span>;
+
+            // Your new facility address handling
+            if (notes.includes('New Facility Address:')) {
+                const parts = notes.split('New Facility Address:');
+                const regularNotes = parts[0].trim();
+                const newAddress = parts[1].trim();
+
+                return (
+                    <div className="space-y-2 whitespace-normal break-words">
+                        {regularNotes && <p>{regularNotes}</p>}
+                        <div className="p-2 bg-yellow-50 border border-yellow-200 rounded-md">
+                            <div className="flex items-center gap-1">
+                                <span className="text-yellow-600">⚠️</span>
+                                <span className="font-semibold text-yellow-800 text-sm">
+                                New Facility Address:
+                            </span>
+                            </div>
+                            <p className="text-yellow-700 text-sm mt-1 break-all">
+                                {newAddress}
+                            </p>
+                        </div>
+                    </div>
+                );
+            }
+            return (
+                <div className="whitespace-normal break-words">
+                    {notes}
+                </div>
+            );
+        }
+    },
+    
 
 ]
 
