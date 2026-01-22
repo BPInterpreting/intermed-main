@@ -4,10 +4,11 @@ import {ColumnDef} from "@tanstack/react-table"
 import {InferResponseType} from "hono";
 import {client} from "@/lib/hono";
 import {Actions} from '@/app/admin/dashboard/appointments/actions';
-import {format, parse} from "date-fns"
+import {format, parse, parseISO, isValid} from "date-fns"
 import {Badge} from "@/components/ui/badge"
 import {Button} from "@/components/ui/button";
-import {ArrowUpDown} from "lucide-react";
+import {ArrowUpDown, CalendarClock} from "lucide-react";
+import Link from "next/link";
 
 // This is a type definition for the data that will be returned from the API part of the GitHub v4.3 doc
 export type ResponseType = InferResponseType<typeof client.api.appointments.$get, 200>["data"][0]
@@ -199,6 +200,53 @@ export const columns: ColumnDef<ResponseType>[] = [
                     {notes}
                 </div>
             );
+        }
+    },
+    {
+        accessorKey: "nextFollowUpDate",
+        header: "Next Follow Up",
+        size: 180,
+        cell: ({ row }) => {
+            const followUpId = row.original.nextFollowUpId;
+            const dateValue = row.original.nextFollowUpDate;
+            const timeValue = row.original.nextFollowUpTime;
+
+            if (!dateValue || !followUpId) {
+                return <span className="text-muted-foreground">-</span>;
+            }
+
+            try {
+                // Parse the date
+                const parsedDate = typeof dateValue === 'string' ? parseISO(dateValue) : new Date(dateValue);
+                const formattedDate = isValid(parsedDate) ? format(parsedDate, "MMM d, yyyy") : '-';
+
+                // Parse the time if available
+                let formattedTime = '';
+                if (timeValue) {
+                    const parsedTime = parse(timeValue as string, "HH:mm:ss", new Date());
+                    if (isValid(parsedTime)) {
+                        formattedTime = format(parsedTime, "h:mm a");
+                    }
+                }
+
+                return (
+                    <Link 
+                        href={`/admin/dashboard/appointments/${followUpId}`}
+                        className="flex items-center gap-2 hover:bg-muted/50 rounded-md p-1 -m-1 transition-colors"
+                    >
+                        <CalendarClock className="h-4 w-4 text-muted-foreground" />
+                        <div className="flex flex-col">
+                            <span className="text-sm font-medium text-primary hover:underline">{formattedDate}</span>
+                            {formattedTime && (
+                                <span className="text-xs text-muted-foreground">{formattedTime}</span>
+                            )}
+                        </div>
+                    </Link>
+                );
+            } catch (e) {
+                console.error("Error parsing follow-up date:", dateValue, e);
+                return <span className="text-muted-foreground">-</span>;
+            }
         }
     },
 

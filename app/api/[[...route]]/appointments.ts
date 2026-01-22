@@ -225,6 +225,37 @@ const app = new Hono()
                 interpreterLastName: interpreter.lastName,
                 createdAt: appointments.createdAt,
                 updatedAt: appointments.updatedAt,
+                // Next follow-up: gets the next future appointment for this patient (submitted as a follow-up)
+                nextFollowUpId: sql<string | null>`(
+                    SELECT a2.id
+                    FROM ${appointments} a2
+                    WHERE a2.patient_id = ${appointments.patientId}
+                      AND a2.id != ${appointments.id}
+                      AND (a2.date > ${appointments.date} 
+                           OR (a2.date = ${appointments.date} AND a2.start_time > ${appointments.startTime}))
+                    ORDER BY a2.date ASC, a2.start_time ASC
+                    LIMIT 1
+                )`,
+                nextFollowUpDate: sql<string | null>`(
+                    SELECT a2.date
+                    FROM ${appointments} a2
+                    WHERE a2.patient_id = ${appointments.patientId}
+                      AND a2.id != ${appointments.id}
+                      AND (a2.date > ${appointments.date} 
+                           OR (a2.date = ${appointments.date} AND a2.start_time > ${appointments.startTime}))
+                    ORDER BY a2.date ASC, a2.start_time ASC
+                    LIMIT 1
+                )`,
+                nextFollowUpTime: sql<string | null>`(
+                    SELECT a2.start_time
+                    FROM ${appointments} a2
+                    WHERE a2.patient_id = ${appointments.patientId}
+                      AND a2.id != ${appointments.id}
+                      AND (a2.date > ${appointments.date} 
+                           OR (a2.date = ${appointments.date} AND a2.start_time > ${appointments.startTime}))
+                    ORDER BY a2.date ASC, a2.start_time ASC
+                    LIMIT 1
+                )`,
                 // interpreterSpecialty: interpreter.specialty,
                 // interpreterCoverageArea: interpreter.coverageArea,
                 // interpreterTargetLanguages: interpreter.targetLanguages
