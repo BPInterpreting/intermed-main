@@ -18,6 +18,13 @@ const barlow = Barlow({
 export const metadata: Metadata = {
   title: "InterpreFi - Interpreter Management System",
   description: "Streamline interpreter bookings for insurance companies with our comprehensive management platform",
+  icons: {
+    icon: [
+      { url: "/favicon.png", type: "image/png" },
+    ],
+    shortcut: "/favicon.png",
+    apple: "/favicon.png",
+  },
 };
 
 export default function RootLayout({
