@@ -8,7 +8,6 @@ import {EditFacilityDialog} from "@/features/facilities/components/edit-facility
 import {NewAppointmentDialog} from "@/features/appointments/components/new-appointment-dialog";
 import {EditAppointmentDialog} from "@/features/appointments/components/edit-appointment-dialog";
 import {EditInterpreterDialog} from "@/features/interpreters/components/edit-interpreter-dialog";
-import {EditFollowUpRequestDialog} from "@/features/followUpRequests/components/edit-follow-up-request-dialog";
 
 
 export const DialogProvider = ( ) => {
@@ -29,7 +28,6 @@ export const DialogProvider = ( ) => {
 
             <EditInterpreterDialog />
 
-            <EditFollowUpRequestDialog />
 
         </>
     )

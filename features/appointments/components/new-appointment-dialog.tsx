@@ -23,13 +23,6 @@ export const NewAppointmentDialog = () => {
 
     // facilityQuery is used to load the facilities from the database
     const facilityQuery = useGetFacilities()
-    // const facilityMutation = useCreateFollowUpRequest()
-    //used to create the facility from the dropdown input field
-    // const onCreateFacility = (name: string) => {
-    //     facilityMutation.mutate({
-    //         name
-    //     })
-    // }
     const facilityOptions = (facilityQuery.data ?? []).map(facility => ({
         label: facility.name,
         value: facility.id
