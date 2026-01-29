@@ -13,6 +13,7 @@ import {
 import {useConfirm} from "@/hooks/use-confirm";
 import {useUpdateAppointment} from "@/features/appointments/hooks/use-update-appointment";
 import {useDeleteAppointment} from "@/features/appointments/api/use-delete-appointment";
+import Link from "next/link";
 
 type Props = {
     id: string;
@@ -61,8 +62,10 @@ export const Actions = ({id}: Props) => {
                     </DropdownMenuItem>
                     <DropdownMenuSeparator/>
                     <DropdownMenuItem>
-                        <Eye className="size-4 mr-2" />
-                        Details
+                        <Link href={`/admin/dashboard/appointments/${id}`} className="flex items-center">
+                            <Eye className="size-4 mr-2" />
+                            Details
+                        </Link>
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>

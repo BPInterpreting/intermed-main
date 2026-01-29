@@ -9,6 +9,11 @@ import facilities from "@/app/api/[[...route]]/facilities";
 import appointments from "@/app/api/[[...route]]/appointments";
 import interpreters from "@/app/api/[[...route]]/interpreters";
 import notifications from "@/app/api/[[...route]]/notifications";
+import invoices from './invoices';
+import payouts from './payouts';
+import payers from './payers';
+import billing from './billing';
+
 
 // export const runtime = 'edge';
 //initialize the new hono api instance where base is out /api route
@@ -42,6 +47,10 @@ const route = app
     .route('/appointments', appointments)
     .route('/interpreters', interpreters)
     .route('/notifications', notifications)
+    .route('/invoices', invoices)
+    .route('/payouts', payouts)
+    .route('/payers', payers)
+    .route('/billing', billing)
 
 export const GET = handle(app)
 export const POST = handle(app)

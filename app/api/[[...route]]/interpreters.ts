@@ -1,11 +1,16 @@
 
 import { Hono } from 'hono'
 import { db } from '@/db/drizzle'
-import {insertInterpreterSchema, interpreter, patient} from "@/db/schema";
+import {
+    insertInterpreterSchema, 
+    interpreter, 
+    interpreterRates,          
+    insertInterpreterRateSchema
+} from "@/db/schema";
 import { z } from 'zod'
 import { zValidator } from '@hono/zod-validator'
 import {createId} from "@paralleldrive/cuid2";
-import {and, eq} from "drizzle-orm";
+import {and, eq, isNull, desc} from "drizzle-orm";
 import {clerkMiddleware, getAuth} from "@hono/clerk-auth";
 import {clerkClient} from '@clerk/nextjs/server'
 
@@ -358,6 +363,185 @@ const app = new Hono()
             return c.json({ data })
         }
     )
+
+    // ========================================================================
+    // GET CURRENT RATE FOR INTERPRETER
+    // ========================================================================
+    .get(
+        '/:id/rates',
+        clerkMiddleware(),
+        zValidator('param', z.object({
+            id: z.string()
+        })),
+        async (c) => {
+            const auth = getAuth(c)
+            const userRole = (auth?.sessionClaims?.metadata as { role: string })?.role
+            const { id } = c.req.valid('param')
+
+            if (!auth?.userId) {
+                return c.json({ error: "Unauthorized" }, 401)
+            }
+
+            // Admins can see any interpreter's rate
+            // Interpreters can only see their own
+            if (userRole !== 'admin') {
+                const [currentInterpreter] = await db
+                    .select({ id: interpreter.id })
+                    .from(interpreter)
+                    .where(eq(interpreter.clerkUserId, auth.userId))
+                    .limit(1)
+
+                if (!currentInterpreter || currentInterpreter.id !== id) {
+                    return c.json({ error: "Unauthorized" }, 403)
+                }
+            }
+
+            // Get current rate (where endDate is null)
+            const [currentRate] = await db
+                .select()
+                .from(interpreterRates)
+                .where(
+                    and(
+                        eq(interpreterRates.interpreterId, id),
+                        isNull(interpreterRates.endDate)
+                    )
+                )
+                .limit(1)
+
+            if (!currentRate) {
+                return c.json({ 
+                    data: null,
+                    message: "No rate configured for this interpreter" 
+                })
+            }
+
+            return c.json({ data: currentRate })
+        }
+    )
+
+    // ========================================================================
+    // GET RATE HISTORY FOR INTERPRETER
+    // ========================================================================
+    .get(
+        '/:id/rates/history',
+        clerkMiddleware(),
+        zValidator('param', z.object({
+            id: z.string()
+        })),
+        async (c) => {
+            const auth = getAuth(c)
+            const userRole = (auth?.sessionClaims?.metadata as { role: string })?.role
+            const { id } = c.req.valid('param')
+
+            if (!auth?.userId) {
+                return c.json({ error: "Unauthorized" }, 401)
+            }
+
+            if (userRole !== 'admin') {
+                return c.json({ error: "Admin access required" }, 403)
+            }
+
+            // Get all rates ordered by effective date (newest first)
+            const data = await db
+                .select()
+                .from(interpreterRates)
+                .where(eq(interpreterRates.interpreterId, id))
+                .orderBy(desc(interpreterRates.effectiveDate))
+
+            return c.json({ data })
+        }
+    )
+
+    // ========================================================================
+    // CREATE NEW RATE FOR INTERPRETER
+    // ========================================================================
+    .post(
+        '/:id/rates',
+        clerkMiddleware(),
+        zValidator('param', z.object({
+            id: z.string()
+        })),
+        zValidator(
+            'json',
+            insertInterpreterRateSchema.omit({
+                id: true,
+                interpreterId: true,
+                endDate: true,  // New rates don't have an end date
+                createdAt: true,
+                updatedAt: true,
+            })
+        ),
+        async (c) => {
+            const auth = getAuth(c)
+            const userRole = (auth?.sessionClaims?.metadata as { role: string })?.role
+            const { id } = c.req.valid('param')
+            const values = c.req.valid('json')
+
+            if (!auth?.userId) {
+                return c.json({ error: "Unauthorized" }, 401)
+            }
+
+            if (userRole !== 'admin') {
+                return c.json({ error: "Admin access required" }, 403)
+            }
+
+            // Check if interpreter exists
+            const [existingInterpreter] = await db
+                .select({ id: interpreter.id })
+                .from(interpreter)
+                .where(eq(interpreter.id, id))
+                .limit(1)
+
+            if (!existingInterpreter) {
+                return c.json({ error: "Interpreter not found" }, 404)
+            }
+
+            // Use a transaction to close old rate and create new one
+            const result = await db.transaction(async (tx) => {
+                // Close any existing current rate (set endDate to day before new effectiveDate)
+                const [oldRate] = await tx
+                    .select()
+                    .from(interpreterRates)
+                    .where(
+                        and(
+                            eq(interpreterRates.interpreterId, id),
+                            isNull(interpreterRates.endDate)
+                        )
+                    )
+                    .limit(1)
+
+                if (oldRate) {
+                    // Set end date to the day before the new rate starts
+                    const endDate = new Date(values.effectiveDate)
+                    endDate.setDate(endDate.getDate() - 1)
+
+                    await tx
+                        .update(interpreterRates)
+                        .set({ endDate: endDate })
+                        .where(eq(interpreterRates.id, oldRate.id))
+
+                    console.log(`[Interpreters] Closed old rate ${oldRate.id} with end date ${endDate.toISOString()}`)
+                }
+
+                // Create new rate
+                const [newRate] = await tx
+                    .insert(interpreterRates)
+                    .values({
+                        id: createId(),
+                        interpreterId: id,
+                        ...values,
+                    })
+                    .returning()
+
+                return newRate
+            })
+
+            console.log(`[Interpreters] Created new rate for interpreter ${id}: $${values.hourlyRate}/hr`)
+
+            return c.json({ data: result })
+        }
+    )
+
 
 
 
