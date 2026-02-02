@@ -536,13 +536,106 @@ const app = new Hono()
                 return newRate
             })
 
-            console.log(`[Interpreters] Created new rate for interpreter ${id}: $${values.hourlyRate}/hr`)
+            console.log(`[Interpreters] Created new rate for interpreter ${id}: $${values.certifiedHourlyRate}/hr`)
 
             return c.json({ data: result })
         }
     )
+    // ========================================================================
+    // UPDATE RATE
+    // ========================================================================
+    .patch(
+        '/:id/rates/:rateId',
+        clerkMiddleware(),
+        zValidator('param', z.object({
+            id: z.string(),
+            rateId: z.string()
+        })),
+        zValidator(
+            'json',
+            insertInterpreterRateSchema.omit({
+                id: true,
+                interpreterId: true,
+                endDate: true,
+                createdAt: true,
+                updatedAt: true,
+            }).partial()
+        ),
+        async (c) => {
+            const auth = getAuth(c)
+            const userRole = (auth?.sessionClaims?.metadata as { role: string })?.role
+            const { id, rateId } = c.req.valid('param')
+            const values = c.req.valid('json')
 
+            if (!auth?.userId) {
+                return c.json({ error: "Unauthorized" }, 401)
+            }
 
+            if (userRole !== 'admin') {
+                return c.json({ error: "Admin access required" }, 403)
+            }
 
+            const [data] = await db
+                .update(interpreterRates)
+                .set(values)
+                .where(
+                    and(
+                        eq(interpreterRates.id, rateId),
+                        eq(interpreterRates.interpreterId, id)
+                    )
+                )
+                .returning()
 
+            if (!data) {
+                return c.json({ error: "Rate not found" }, 404)
+            }
+
+            console.log(`[Interpreters] Updated rate ${rateId} for interpreter ${id}`)
+
+            return c.json({ data })
+        }
+    )
+
+    // ========================================================================
+    // DELETE RATE
+    // ========================================================================
+    .delete(
+        '/:id/rates/:rateId',
+        clerkMiddleware(),
+        zValidator('param', z.object({
+            id: z.string(),
+            rateId: z.string()
+        })),
+        async (c) => {
+            const auth = getAuth(c)
+            const userRole = (auth?.sessionClaims?.metadata as { role: string })?.role
+            const { id, rateId } = c.req.valid('param')
+
+            if (!auth?.userId) {
+                return c.json({ error: "Unauthorized" }, 401)
+            }
+
+            if (userRole !== 'admin') {
+                return c.json({ error: "Admin access required" }, 403)
+            }
+
+            const [data] = await db
+                .delete(interpreterRates)
+                .where(
+                    and(
+                        eq(interpreterRates.id, rateId),
+                        eq(interpreterRates.interpreterId, id)
+                    )
+                )
+                .returning()
+
+            if (!data) {
+                return c.json({ error: "Rate not found" }, 404)
+            }
+
+            console.log(`[Interpreters] Deleted rate ${rateId} for interpreter ${id}`)
+
+            return c.json({ data })
+        }
+    )
 export default app

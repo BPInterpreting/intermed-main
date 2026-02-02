@@ -64,6 +64,7 @@ export const interpreter =pgTable("interpreter", {
     email: varchar("email").notNull(),
     phoneNumber: varchar("phoneNumber").notNull(),
     address: text("address"),
+    paymentFrequency: varchar("payment_frequency", { length: 20 }).default("monthly"),
     longitude: numeric("longitude"),
     latitude: numeric("latitude"),
     isCertified: boolean('is_certified').default(false),
@@ -231,14 +232,17 @@ export const payerLanguageRates = pgTable("payer_language_rates", {
 export const interpreterRates = pgTable("interpreter_rates", {
     id: text("id").primaryKey(),
     interpreterId: text("interpreter_id").references(() => interpreter.id, { onDelete: "cascade" }).notNull(),
-    hourlyRate: numeric("hourly_rate", { precision: 10, scale: 2 }).notNull(),     // e.g., $55.00
-    mileageRate: numeric("mileage_rate", { precision: 10, scale: 2 }).default("0.00"), // e.g., $0.56
-    acceptsNoMileage: boolean("accepts_no_mileage").default(false).notNull(),
+    certifiedHourlyRate: numeric("certified_hourly_rate", { precision: 10, scale: 2 }).notNull(),
+    qualifiedHourlyRate: numeric("qualified_hourly_rate", { precision: 10, scale: 2 }),
     minimumHours: numeric("minimum_hours", { precision: 4, scale: 2 }).default("2.00"),
-    lateCancelFee: numeric("late_cancel_fee", { precision: 10, scale: 2 }),         // e.g., $80.00
-    noShowFee: numeric("no_show_fee", { precision: 10, scale: 2 }),                 // e.g., $80.00
+    mileageRate: numeric("mileage_rate", { precision: 10, scale: 2 }).default("0.00"),
+    acceptsNoMileage: boolean("accepts_no_mileage").default(false).notNull(),
+    certifiedLateCancelFee: numeric("certified_late_cancel_fee", { precision: 10, scale: 2 }),
+    qualifiedLateCancelFee: numeric("qualified_late_cancel_fee", { precision: 10, scale: 2 }),
+    certifiedNoShowFee: numeric("certified_no_show_fee", { precision: 10, scale: 2 }),
+    qualifiedNoShowFee: numeric("qualified_no_show_fee", { precision: 10, scale: 2 }),
     effectiveDate: timestamp("effective_date", { mode: "date" }).notNull(),
-    endDate: timestamp("end_date", { mode: "date" }),             // null = current rate
+    endDate: timestamp("end_date", { mode: "date" }),
     notes: text("notes"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow().$onUpdate(() => new Date()),
@@ -300,6 +304,7 @@ export const payouts = pgTable("payouts", {
     paymentMethod: varchar("payment_method"),                     // ach, check, manual
     paymentReference: varchar("payment_reference"),               // check #, transaction ID
     notes: text("notes"),
+    processedAt: timestamp('processed_at'),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow().$onUpdate(() => new Date()),
 })

@@ -36,6 +36,45 @@ async function generatePayoutNumber(): Promise<string> {
     return `${prefix}${nextNumber.toString().padStart(4, '0')}`
 }
 
+// Helper to parse projected duration strings like "5h", "45m", "1h30m"
+function parseProjectedDuration(duration: string): number | null {
+    if (!duration) return null
+
+    const trimmed = duration.trim().toLowerCase()
+
+    // Check for "Xh Ym" or "XhYm" format
+    const hoursMinutesMatch = trimmed.match(/(\d+(?:\.\d+)?)\s*h\s*(\d+)\s*m?/)
+    if (hoursMinutesMatch) {
+        const hours = parseFloat(hoursMinutesMatch[1])
+        const mins = parseInt(hoursMinutesMatch[2])
+        return (hours * 60) + mins
+    }
+
+    // Check for "Xh" format
+    const hoursMatch = trimmed.match(/^(\d+(?:\.\d+)?)\s*h$/)
+    if (hoursMatch) {
+        return parseFloat(hoursMatch[1]) * 60
+    }
+
+    // Check for "Xm" format
+    const minutesMatch = trimmed.match(/^(\d+)\s*m$/)
+    if (minutesMatch) {
+        return parseInt(minutesMatch[1])
+    }
+
+    // Plain number - assume hours if small, minutes if large
+    const plainNumber = parseFloat(trimmed)
+    if (!isNaN(plainNumber)) {
+        if (plainNumber > 10) {
+            return plainNumber // Assume minutes
+        } else {
+            return plainNumber * 60 // Assume hours
+        }
+    }
+
+    return null
+}
+
 const app = new Hono()
 
     // ========================================================================
@@ -155,7 +194,6 @@ const app = new Hono()
                 return c.json({ error: "Unauthorized" }, 401)
             }
 
-            // Admins can see any payout, interpreters can only see their own
             let payout
 
             if (userRole === 'admin') {
@@ -186,7 +224,6 @@ const app = new Hono()
                     .where(eq(payouts.id, id))
                     .limit(1)
             } else {
-                // Interpreter - verify they own this payout
                 const [currentInterpreter] = await db
                     .select({ id: interpreter.id })
                     .from(interpreter)
@@ -234,7 +271,6 @@ const app = new Hono()
                 return c.json({ error: "Payout not found" }, 404)
             }
 
-            // Get line items
             const lineItems = await db
                 .select({
                     id: payoutLineItems.id,
@@ -297,7 +333,6 @@ const app = new Hono()
                 return c.json({ error: "Admin access required" }, 403)
             }
 
-            // Get all completed appointments in date range that haven't been paid out
             const payableAppointments = await db
                 .select({
                     id: appointments.id,
@@ -306,6 +341,7 @@ const app = new Hono()
                     status: appointments.status,
                     interpreterId: appointments.interpreterId,
                     language: appointments.language,
+                    isCertified: appointments.isCertified,
                     actualDurationMinutes: appointments.actualDurationMinutes,
                     actualMiles: appointments.actualMiles,
                     mileageApproved: appointments.mileageApproved,
@@ -333,7 +369,6 @@ const app = new Hono()
                 }, 400)
             }
 
-            // Group appointments by interpreter
             const appointmentsByInterpreter = new Map<string, typeof payableAppointments>()
 
             for (const appt of payableAppointments) {
@@ -344,11 +379,9 @@ const app = new Hono()
                 appointmentsByInterpreter.set(appt.interpreterId, existing)
             }
 
-            // Generate payout for each interpreter
             const generatedPayouts: { interpreterId: string; payoutNumber: string; total: string; lineItemCount: number }[] = []
 
             for (const [interpreterId, appts] of appointmentsByInterpreter) {
-                // Get interpreter's current rate
                 const [currentRate] = await db
                     .select()
                     .from(interpreterRates)
@@ -365,7 +398,6 @@ const app = new Hono()
                     continue
                 }
 
-                // Calculate line items
                 const lineItemsData: {
                     id: string
                     appointmentId: string
@@ -385,23 +417,34 @@ const app = new Hono()
                 let subtotal = 0
 
                 for (const appt of appts) {
-                    const hourlyRate = parseFloat(currentRate.hourlyRate)
+                    // Rate selection: Certified vs Qualified
+                    const isCertifiedAppt = appt.isCertified ?? false
+                    
+                    // Use certified rate by default
+                    // If it's a qualified appointment AND qualifiedHourlyRate exists, use that
+                    let hourlyRate = parseFloat(currentRate.certifiedHourlyRate)
+                    
+                    if (!isCertifiedAppt && currentRate.qualifiedHourlyRate) {
+                        hourlyRate = parseFloat(currentRate.qualifiedHourlyRate)
+                    }
+                    
                     const minimumHours = parseFloat(currentRate.minimumHours || '2')
 
-                    // Calculate service hours
                     let serviceHours = minimumHours
-                    if (appt.actualDurationMinutes) {
+
+                    if (appt.actualDurationMinutes && appt.actualDurationMinutes > 0) {
+                        // Use actual duration (calculated from endTime - startTime)
                         serviceHours = Math.max(appt.actualDurationMinutes / 60, minimumHours)
                     } else if (appt.projectedDuration) {
-                        const parsed = parseFloat(appt.projectedDuration)
-                        if (!isNaN(parsed)) {
-                            serviceHours = Math.max(parsed, minimumHours)
+                        // Parse projected duration strings like "5h", "45m", "1h30m"
+                        const parsedMinutes = parseProjectedDuration(appt.projectedDuration)
+                        if (parsedMinutes && parsedMinutes > 0) {
+                            serviceHours = Math.max(parsedMinutes / 60, minimumHours)
                         }
                     }
 
                     const serviceAmount = serviceHours * hourlyRate
 
-                    // Calculate mileage
                     let mileage = 0
                     let mileageRate = 0
                     let mileageAmount = 0
@@ -412,26 +455,46 @@ const app = new Hono()
                         mileageAmount = mileage * mileageRate
                     }
 
-                    // Handle adjustments (no-show, late cancel)
                     let adjustmentType: string | null = null
                     let adjustmentAmount = 0
 
                     if (appt.status === 'No Show') {
                         adjustmentType = 'no_show'
-                        adjustmentAmount = parseFloat(currentRate.noShowFee || '0')
+                        // Use certified or qualified no show fee based on appointment type
+                        if (isCertifiedAppt) {
+                            adjustmentAmount = parseFloat(currentRate.certifiedNoShowFee || '0')
+                        } else {
+                            adjustmentAmount = parseFloat(currentRate.qualifiedNoShowFee || '0')
+                        }
                     } else if (appt.status === 'Late CX') {
                         adjustmentType = 'late_cancel'
-                        adjustmentAmount = parseFloat(currentRate.lateCancelFee || '0')
+                        // Use certified or qualified late cancel fee based on appointment type
+                        if (isCertifiedAppt) {
+                            adjustmentAmount = parseFloat(currentRate.certifiedLateCancelFee || '0')
+                        } else {
+                            adjustmentAmount = parseFloat(currentRate.qualifiedLateCancelFee || '0')
+                        }
+                        // Late cancel = no mileage (interpreter never went)
+                        mileage = 0
+                        mileageRate = 0
+                        mileageAmount = 0
                     }
 
                     // Calculate line total
-                    let lineTotal = serviceAmount + mileageAmount
-                    if (adjustmentType) {
-                        // For no-show/late cancel, interpreter gets flat fee
+                    let lineTotal: number
+                    if (adjustmentType === 'no_show') {
+                        // No Show: Fee + Mileage (interpreter showed up)
+                        lineTotal = adjustmentAmount + mileageAmount
+                    } else if (adjustmentType === 'late_cancel') {
+                        // Late Cancel: Fee only (interpreter never went)
                         lineTotal = adjustmentAmount
+                    } else {
+                        // Normal appointment: Service + Mileage
+                        lineTotal = serviceAmount + mileageAmount
                     }
 
-                    const description = `${appt.date.toLocaleDateString()} - ${appt.patientFirstName} ${appt.patientLastName} at ${appt.facilityName}${adjustmentType ? ` (${adjustmentType.replace('_', ' ').toUpperCase()})` : ''}`
+                    const apptType = isCertifiedAppt ? 'Certified' : 'Qualified'
+                    const description = `${appt.date.toLocaleDateString()} - ${appt.patientFirstName} ${appt.patientLastName} at ${appt.facilityName} (${apptType})${adjustmentType ? ` - ${adjustmentType.replace('_', ' ').toUpperCase()}` : ''}`
 
                     lineItemsData.push({
                         id: createId(),
@@ -452,7 +515,6 @@ const app = new Hono()
                     subtotal += lineTotal
                 }
 
-                // Create payout in transaction
                 await db.transaction(async (tx) => {
                     const payoutNumber = await generatePayoutNumber()
 
@@ -472,7 +534,6 @@ const app = new Hono()
                         })
                         .returning()
 
-                    // Create line items
                     const lineItemsWithPayoutId = lineItemsData.map(item => ({
                         ...item,
                         payoutId: newPayout.id,
@@ -480,7 +541,6 @@ const app = new Hono()
 
                     await tx.insert(payoutLineItems).values(lineItemsWithPayoutId)
 
-                    // Update appointments payout status
                     for (const appt of appts) {
                         await tx
                             .update(appointments)
@@ -540,7 +600,6 @@ const app = new Hono()
 
             const updateData: Record<string, unknown> = { ...values }
 
-            // Recalculate total if adjustments changed
             if (values.adjustments !== undefined) {
                 const [currentPayout] = await db
                     .select({ subtotal: payouts.subtotal })
@@ -616,7 +675,6 @@ const app = new Hono()
                 return c.json({ error: "Payout not found" }, 404)
             }
 
-            // Update appointments payout status
             const lineItems = await db
                 .select({ appointmentId: payoutLineItems.appointmentId })
                 .from(payoutLineItems)
@@ -679,7 +737,6 @@ const app = new Hono()
                 .where(conditions.length > 0 ? and(...conditions) : undefined)
                 .orderBy(asc(interpreter.lastName))
 
-            // Build CSV for bank upload
             const headers = [
                 'Payout Number',
                 'Interpreter Name',
@@ -736,7 +793,6 @@ const app = new Hono()
                 return c.json({ error: "Admin access required" }, 403)
             }
 
-            // Get payout
             const [payout] = await db
                 .select({
                     payoutNumber: payouts.payoutNumber,
@@ -754,7 +810,6 @@ const app = new Hono()
                 return c.json({ error: "Payout not found" }, 404)
             }
 
-            // Get line items
             const lineItems = await db
                 .select({
                     description: payoutLineItems.description,
@@ -773,7 +828,6 @@ const app = new Hono()
                 .where(eq(payoutLineItems.payoutId, id))
                 .orderBy(asc(payoutLineItems.serviceDate))
 
-            // Build CSV
             const headers = [
                 'Service Date',
                 'Description',

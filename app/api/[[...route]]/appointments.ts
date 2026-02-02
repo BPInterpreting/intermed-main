@@ -209,6 +209,7 @@ const app = new Hono()
                 projectedEndTime: appointments.projectedEndTime,
                 duration: appointments.duration,
                 projectedDuration: appointments.projectedDuration,
+                actualDurationMinutes: appointments.actualDurationMinutes,
                 appointmentType: appointments.appointmentType,
                 status: appointments.status,
                 isCertified: appointments.isCertified,
@@ -604,6 +605,7 @@ const app = new Hono()
                     endTime: appointments.endTime,
                     projectedEndTime: appointments.projectedEndTime,
                     duration: appointments.duration,
+                    actualDurationMinutes: appointments.actualDurationMinutes,
                     projectedDuration: appointments.projectedDuration,
                     appointmentType: appointments.appointmentType,
                     notes: appointments.notes,
@@ -1073,6 +1075,7 @@ const app = new Hono()
         zValidator("json", insertAppointmentSchema.omit({
             id: true,
             duration: true,
+            actualDurationMinutes: true,  // Added - we calculate this, not the client
             bookingId: true,
             createdAt: true,
             updatedAt: true,
@@ -1081,11 +1084,11 @@ const app = new Hono()
             const { id } = c.req.valid('param')
             const values = c.req.valid('json')
             const auth = getAuth(c)
-
+    
             if (!id) {
                 return c.json({ error: "Invalid id" }, 400)
             }
-
+    
             try {
                 // Get the BEFORE state of appointment for comparison
                 const [beforeUpdate] = await db
@@ -1110,49 +1113,73 @@ const app = new Hono()
                     .innerJoin(patient, eq(appointments.patientId, patient.id))
                     .where(eq(appointments.id, id))
                     .limit(1);
-
+    
                 if (!beforeUpdate) {
                     return c.json({ error: "Appointment not found" }, 404)
                 }
-
+    
+                // Calculate actual duration if endTime is provided
+                const updateValues: Record<string, unknown> = { ...values }
+    
+                if (values.endTime) {
+                    // Use startTime from request or from existing appointment
+                    const startTime = values.startTime || beforeUpdate.startTime
+    
+                    if (startTime) {
+                        // Parse times and calculate duration in minutes
+                        const start = new Date(`1970-01-01T${startTime}`)
+                        const end = new Date(`1970-01-01T${values.endTime}`)
+                        let durationMinutes = Math.round((end.getTime() - start.getTime()) / (1000 * 60))
+    
+                        // Handle overnight appointments (end time is next day)
+                        if (durationMinutes < 0) {
+                            durationMinutes = durationMinutes + 1440 // Add 24 hours in minutes
+                        }
+    
+                        updateValues.actualDurationMinutes = durationMinutes
+    
+                        console.log(`[Appointments] Calculated duration: ${durationMinutes} minutes (${(durationMinutes / 60).toFixed(2)} hours)`)
+                    }
+                }
+    
                 const appointmentsToUpdate = db.$with("appointments_to_update").as(
                     db.select({ id: appointments.id }).from(appointments)
                         .innerJoin(patient, eq(appointments.patientId, patient.id))
                         .where(and(eq(appointments.id, id)))
                 )
-
-                // Update the appointment
+    
+                // Update the appointment with calculated duration
                 const [data] = await db
                     .with(appointmentsToUpdate)
                     .update(appointments)
-                    .set(values)
+                    .set(updateValues)
                     .where(
                         inArray(appointments.id, sql`(select id from ${appointmentsToUpdate})`)
                     )
                     .returning()
-
+    
                 if (!data) {
                     return c.json({ error: "Appointment not found" }, 404)
                 }
-
+    
                 const statusesToIgnore = [
                     'Pending Confirmation',
                     'No Show',
                     'Late CX',
                     'Pending Authorization'
                 ]
-
-
+    
+    
                 //checks if that status changed
                 if (values.status && values.status !== beforeUpdate.status && !statusesToIgnore.includes(values.status)) {
                     const { publishAdminNotification } = await import('@/lib/ably');
-
+    
                     //readable messages for the toast notification
                     const userName = beforeUpdate.interpreterFirstName
                     const bookingId = beforeUpdate.bookingId
                     const newStatus = values.status
                     let notificationMessage = ''
-
+    
                     switch (newStatus) {
                         case "Confirmed":
                             notificationMessage = `${userName} confirmed appointment #${bookingId}`
@@ -1163,9 +1190,9 @@ const app = new Hono()
                         case "Interpreter Requested":
                             notificationMessage = `${userName} has requested a new follow up from appointment #${bookingId}`
                     }
-
+    
                     await createAdminNotification(notificationMessage, data.id)
-
+    
                     // Publish status change notification
                     await publishAdminNotification('appointment-status-changed', {
                         message: notificationMessage,
@@ -1178,23 +1205,23 @@ const app = new Hono()
                             `${beforeUpdate.interpreterFirstName} ${beforeUpdate.interpreterLastName}` :
                             null
                     });
-
+    
                     console.log(`[Appointments] Status changed from ${beforeUpdate.status} to ${values.status}`);
                 }
-
+    
                 console.log(`[Appointments] Updated appointment ${data.id}`);
-
+    
                 // Interpreter was REMOVED (reassigned to someone else or unassigned)
                 if (beforeUpdate.interpreterId &&
                     values.interpreterId !== undefined &&
                     values.interpreterId !== beforeUpdate.interpreterId) {
-
+    
                     console.log(`[Appointments] Interpreter changed from ${beforeUpdate.interpreterId} to ${values.interpreterId}`);
                     console.log(`[Appointments] Sending removal notification to previous interpreter: ${beforeUpdate.interpreterId}`);
-
+    
                     // Send "removed" notification to the OLD interpreter
                     const { sendNotificationtoInterpreter, createAppointmentNotification } = await import('@/lib/notification-service')
-
+    
                     const removalNotificationContent = createAppointmentNotification('removed', {
                         id: beforeUpdate.id,
                         date: beforeUpdate.date,
@@ -1209,7 +1236,7 @@ const app = new Hono()
                             lastName: beforeUpdate.patientLastName
                         }
                     });
-
+    
                     const removalResult = await sendNotificationtoInterpreter(
                         beforeUpdate.interpreterId,
                         {
@@ -1218,17 +1245,17 @@ const app = new Hono()
                             ...removalNotificationContent
                         }
                     );
-
+    
                     if (removalResult.success) {
                         console.log(`[Appointments] Removal notification sent to previous interpreter ${beforeUpdate.interpreterId}`);
                     } else {
                         console.error(`[Appointments] Failed to send removal notification:`, removalResult.error);
                     }
-
+    
                     // If there's a NEW interpreter, send them an assignment notification
                     if (values.interpreterId) {
                         console.log(`[Appointments] Sending assignment notification to new interpreter: ${values.interpreterId}`);
-
+    
                         // Get updated appointment details for new interpreter
                         const [updatedAppointmentDetails] = await db
                             .select({
@@ -1246,7 +1273,7 @@ const app = new Hono()
                             .innerJoin(patient, eq(appointments.patientId, patient.id))
                             .where(eq(appointments.id, data.id))
                             .limit(1);
-
+    
                         if (updatedAppointmentDetails) {
                             const assignmentNotificationContent = createAppointmentNotification('assigned', {
                                 id: updatedAppointmentDetails.id,
@@ -1262,7 +1289,7 @@ const app = new Hono()
                                     lastName: updatedAppointmentDetails.patientLastName
                                 }
                             });
-
+    
                             const assignmentResult = await sendNotificationtoInterpreter(
                                 values.interpreterId,
                                 {
@@ -1271,7 +1298,7 @@ const app = new Hono()
                                     ...assignmentNotificationContent
                                 }
                             );
-
+    
                             if (assignmentResult.success) {
                                 console.log(`[Appointments] Assignment notification sent to new interpreter ${values.interpreterId}`);
                             } else {
@@ -1286,10 +1313,10 @@ const app = new Hono()
                         (values.date && values.date !== beforeUpdate.date) ||
                         (values.startTime && values.startTime !== beforeUpdate.startTime)
                     );
-
+    
                     if (importantFieldsChanged) {
                         console.log(`[Appointments] Important fields changed, sending update notification to interpreter: ${data.interpreterId}`);
-
+    
                         const [updatedAppointmentDetails] = await db
                             .select({
                                 id: appointments.id,
@@ -1306,10 +1333,10 @@ const app = new Hono()
                             .innerJoin(patient, eq(appointments.patientId, patient.id))
                             .where(eq(appointments.id, data.id))
                             .limit(1);
-
+    
                         if (updatedAppointmentDetails) {
                             const { sendNotificationtoInterpreter, createAppointmentNotification } = await import('@/lib/notification-service')
-
+    
                             const notificationContent = createAppointmentNotification('updated', {
                                 id: updatedAppointmentDetails.id,
                                 date: updatedAppointmentDetails.date,
@@ -1324,7 +1351,7 @@ const app = new Hono()
                                     lastName: updatedAppointmentDetails.patientLastName
                                 }
                             });
-
+    
                             const notificationResult = await sendNotificationtoInterpreter(
                                 data.interpreterId,
                                 {
@@ -1333,7 +1360,7 @@ const app = new Hono()
                                     ...notificationContent
                                 }
                             );
-
+    
                             if (notificationResult.success) {
                                 console.log(`[Appointments] Update notification sent successfully to interpreter ${data.interpreterId}`);
                             } else {
@@ -1342,9 +1369,9 @@ const app = new Hono()
                         }
                     }
                 }
-
+    
                 return c.json({ data })
-
+    
             } catch (error) {
                 console.error(`[Appointments] Error updating appointment:`, error);
                 return c.json({ error: "Failed to update appointment" }, 500);

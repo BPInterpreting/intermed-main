@@ -42,6 +42,75 @@ const formatTime = (timeString: string | null | undefined) => {
     }
 };
 
+// Helper to parse projected duration strings like "5h", "45m", "1h30m"
+const parseProjectedDuration = (duration: string): number | null => {
+    if (!duration) return null
+
+    const trimmed = duration.trim().toLowerCase()
+
+    // Check for "Xh Ym" or "XhYm" format
+    const hoursMinutesMatch = trimmed.match(/(\d+(?:\.\d+)?)\s*h\s*(\d+)\s*m?/)
+    if (hoursMinutesMatch) {
+        const hours = parseFloat(hoursMinutesMatch[1])
+        const mins = parseInt(hoursMinutesMatch[2])
+        return (hours * 60) + mins
+    }
+
+    // Check for "Xh" format
+    const hoursMatch = trimmed.match(/^(\d+(?:\.\d+)?)\s*h$/)
+    if (hoursMatch) {
+        return parseFloat(hoursMatch[1]) * 60
+    }
+
+    // Check for "Xm" format
+    const minutesMatch = trimmed.match(/^(\d+)\s*m$/)
+    if (minutesMatch) {
+        return parseInt(minutesMatch[1])
+    }
+
+    // Plain number - assume hours if small, minutes if large
+    const plainNumber = parseFloat(trimmed)
+    if (!isNaN(plainNumber)) {
+        if (plainNumber > 10) {
+            return plainNumber
+        } else {
+            return plainNumber * 60
+        }
+    }
+
+    return null
+}
+
+// Helper to format duration
+const formatDuration = (
+    actualDuration: number | null | undefined, 
+    projectedDuration: string | null | undefined
+) => {
+    let minutes: number | null = null
+
+    // Prefer actual duration if available and valid
+    if (actualDuration && actualDuration > 0) {
+        minutes = actualDuration
+    } else if (projectedDuration) {
+        minutes = parseProjectedDuration(projectedDuration)
+    }
+
+    if (minutes === null || minutes <= 0) {
+        return 'N/A'
+    }
+
+    const hours = Math.floor(minutes / 60)
+    const mins = Math.round(minutes % 60)
+
+    if (hours === 0) {
+        return `${mins}m`
+    } else if (mins === 0) {
+        return `${hours}h`
+    } else {
+        return `${hours}h ${mins}m`
+    }
+}
+
 const AppointmentClient = () => {
     const params = useParams();
     const appointmentId = params.appointmentId as string;
@@ -209,6 +278,15 @@ const AppointmentClient = () => {
                                 <div className={'flex flex-col'}>
                                     <span className="text-sm text-muted-foreground">Time</span>
                                     <span className="font-medium">{`${formatTime(appointment?.startTime)} - ${formatTime(appointment?.endTime)}`}</span>
+                                </div>
+                            </div>
+                            <div className={'flex flex-row items-center space-x-4'}>
+                                <div className="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center">
+                                    <Clock className="h-5 w-5 text-muted-foreground" />
+                                </div>
+                                <div className={'flex flex-col'}>
+                                    <span className="text-sm text-muted-foreground">Duration</span>
+                                    <span className="font-medium">{formatDuration(appointment?.actualDurationMinutes, appointment?.projectedDuration)}</span>
                                 </div>
                             </div>
                             <div className={'flex flex-row items-center space-x-4'}>

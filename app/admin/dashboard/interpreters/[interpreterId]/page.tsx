@@ -2,10 +2,13 @@
 
 import {Button} from "@/components/ui/button";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
-import {CalendarIcon, DollarSign, Mail, MapPinHouse, Phone, Printer, User} from "lucide-react";
+import {CalendarIcon, DollarSign, Mail, MapPinHouse, Phone, Printer, User, Plus, Edit} from "lucide-react";
 import {Separator} from "@/components/ui/separator";
 import {useParams} from "next/navigation";
 import {useGetIndividualInterpreter} from "@/features/interpreters/api/use-get-individual-interpreter";
+import { useGetInterpreterRateHistory } from "@/features/interpreters/api/use-get-interpreter-rate-history"; 
+import {useNewInterpreterRate} from "@/features/interpreters/hooks/use-new-interpreter-rate";
+import {useOpenInterpreterRate} from "@/features/interpreters/hooks/use-open-interpreter-rate";
 import {client} from "@/lib/hono";
 import {InferResponseType} from "hono";
 import {DataTable} from "@/components/ui/data-table";
@@ -20,11 +23,21 @@ import {
     Breadcrumb,
     BreadcrumbItem,
     BreadcrumbLink,
-    BreadcrumbList, BreadcrumbPage,
+    BreadcrumbList, 
+    BreadcrumbPage,
     BreadcrumbSeparator
 } from "@/components/ui/breadcrumb";
 import {SupportedFilters} from "@/components/ui/data-table-toolbar";
 import {useUpdateInterpreter} from "@/features/interpreters/hooks/use-update-interpreter";
+import {Badge} from "@/components/ui/badge";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
 
 export type ResponseType = InferResponseType<typeof client.api.interpreters.$get, 200>['data'][0]
 
@@ -35,16 +48,24 @@ const InterpreterClient = () => {
     const interpreter = interpreterQuery.data as ResponseType | undefined
     const {onOpen} = useUpdateInterpreter()
 
+    // Rates
+    const ratesQuery = useGetInterpreterRateHistory(interpreterId)
+    const rates = ratesQuery.data || []
+    const newRateDialog = useNewInterpreterRate()
+    const openRateDialog = useOpenInterpreterRate()
+
+    // Find current rate (no end date)
+    const currentRate = Array.isArray(rates) ? rates.find(r => !r.endDate) : null
+
     const appointmentsQuery = useGetAppointments(interpreterId)
     const appointments = appointmentsQuery.data || []
 
     const [date, setDate] = useState<Date>(new Date());
-    // const [dates, setDates] = useState<{ start: Date; end: Date }>({ start: new Date(), end: new Date() });
 
     const interpreterPageTableFilter: SupportedFilters[] = ['globalSearch']
 
     const filteredAppointments = useMemo(() => {
-        if (!date) return appointments; // If no month selected, show all
+        if (!date) return appointments;
 
         const monthStart = startOfMonth(date);
         const monthEnd = endOfMonth(date);
@@ -63,7 +84,6 @@ const InterpreterClient = () => {
     const handlePrint = () => {
         const printWindow = window.open('', '_blank');
 
-        // Helper function to format time
         const formatTime = (timeString: string | null) => {
             if (!timeString) return 'N/A';
             try {
@@ -74,7 +94,6 @@ const InterpreterClient = () => {
             }
         };
 
-        // Build table rows with end time included
         const appointmentRows = filteredAppointments.map(apt => `
             <tr>
                 <td style="border: 1px solid #ddd; padding: 8px;">${format(parseISO(apt.date), 'PP')}</td>
@@ -169,6 +188,7 @@ const InterpreterClient = () => {
                         <Button onClick={() => onOpen(interpreterId)} variant="default">Edit</Button>
                     </div>
                 </div>
+
                 {/* Main Content Area - 2 column layout */}
                 <div className='grid gap-4 grid-cols-1 lg:grid-cols-3'>
                     {/* Left Column - 1/3 of the space */}
@@ -176,9 +196,7 @@ const InterpreterClient = () => {
                         {/* Details Card */}
                         <Card>
                             <CardHeader>
-                                <CardTitle>
-                                    Interpreter Details
-                                </CardTitle>
+                                <CardTitle>Interpreter Details</CardTitle>
                             </CardHeader>
                             <CardContent className={'space-y-2'}>
                                 <div className="flex justify-between py-2">
@@ -201,7 +219,6 @@ const InterpreterClient = () => {
                                                     {interpreter?.isCertified ? "Certified" : "Qualified"}
                                                 </span>
                                             </div>
-
                                         </div>
                                     </div>
                                     <div>
@@ -213,7 +230,6 @@ const InterpreterClient = () => {
                                                 <span className="text-sm text-muted-foreground">Email</span>
                                                 <span className="font-medium">{interpreter?.email}</span>
                                             </div>
-
                                         </div>
                                     </div>
                                     <div>
@@ -225,22 +241,8 @@ const InterpreterClient = () => {
                                                 <span className="text-sm text-muted-foreground">Phone</span>
                                                 <span className="font-medium">{interpreter?.phoneNumber}</span>
                                             </div>
-
                                         </div>
                                     </div>
-                                    {/*<div>*/}
-                                    {/*    <div className={'flex flex-row items-center space-x-2'}>*/}
-                                    {/*        <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center" >*/}
-                                    {/*            <DollarSign height={30} width={30} />*/}
-                                    {/*        </div>*/}
-                                    {/*        <div className={'flex flex-col '}>*/}
-                                    {/*            <span className="text-sm text-muted-foreground">Rates</span>*/}
-                                    {/*            <span className="font-medium">Minimum - $60/hr 2hr</span>*/}
-                                    {/*            <span className="font-medium">Late Cancellation - $120</span>*/}
-                                    {/*            <span className="font-medium">No Show - $120 + Mileage</span>*/}
-                                    {/*        </div>*/}
-                                    {/*    </div>*/}
-                                    {/*</div>*/}
                                     <div>
                                         <div className={'flex flex-row items-center space-x-2'}>
                                             <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center" >
@@ -250,16 +252,160 @@ const InterpreterClient = () => {
                                                 <span className="text-sm text-muted-foreground">Billing Address</span>
                                                 <span className="font-medium">{interpreter?.address}</span>
                                             </div>
-
                                         </div>
                                     </div>
                                 </div>
                             </CardContent>
                         </Card>
+
+                        {/* Current Rate Card */}
+                        <Card>
+                        <CardHeader className="pb-3 flex flex-row justify-between items-center">
+                                <CardTitle>Current Rate</CardTitle>
+                                {currentRate ? (
+                                    <div className="flex gap-2">
+                                        <Button 
+                                            size="sm" 
+                                            variant="outline"
+                                            onClick={() => openRateDialog.onOpen(interpreterId, currentRate.id)}
+                                        >
+                                            <Edit className="size-4 mr-2" />
+                                            Edit
+                                        </Button>
+                                        <Button 
+                                            size="sm"
+                                            onClick={() => newRateDialog.onOpen(interpreterId)}
+                                        >
+                                            <Plus className="size-4 mr-2" />
+                                            New Rate
+                                        </Button>
+                                    </div>
+                                ) : (
+                                    <Button 
+                                        size="sm"
+                                        onClick={() => newRateDialog.onOpen(interpreterId)}
+                                    >
+                                        <Plus className="size-4 mr-2" />
+                                        Add Rate
+                                    </Button>
+                                )}
+                            </CardHeader>
+                            <CardContent>
+                                {currentRate ? (
+                                    <div className="space-y-3">
+                                        <div className="flex justify-between">
+                                            <span className="text-muted-foreground">Certified Rate</span>
+                                            <span className="font-bold text-green-600">
+                                                ${parseFloat(currentRate.certifiedHourlyRate).toFixed(2)}/hr
+                                            </span>
+                                        </div>
+                                        <Separator />
+                                        <div className="flex justify-between">
+                                            <span className="text-muted-foreground">Qualified Rate</span>
+                                            <span className="font-medium">
+                                                {currentRate.qualifiedHourlyRate 
+                                                    ? `$${parseFloat(currentRate.qualifiedHourlyRate).toFixed(2)}/hr`
+                                                    : <span className="text-muted-foreground italic text-sm">Same as certified</span>
+                                                }
+                                            </span>
+                                        </div>
+                                        <Separator />
+                                        <div className="flex justify-between">
+                                            <span className="text-muted-foreground">Minimum Hours</span>
+                                            <span>{currentRate.minimumHours || '2.00'} hrs</span>
+                                        </div>
+                                        <Separator />
+                                        <div className="flex justify-between">
+                                            <span className="text-muted-foreground">Mileage Rate</span>
+                                            <span>${parseFloat(currentRate.mileageRate || '0').toFixed(2)}/mi</span>
+                                        </div>
+                                        <Separator />
+                                        <div className="flex justify-between">
+                                            <span className="text-muted-foreground">Accepts No Mileage</span>
+                                            <Badge variant={currentRate.acceptsNoMileage ? "default" : "secondary"}>
+                                                {currentRate.acceptsNoMileage ? "Yes" : "No"}
+                                            </Badge>
+                                        </div>
+                                        <Separator />
+                                        <div className="flex justify-between">
+                                            <span className="text-muted-foreground">Late Cancel (Cert/Qual)</span>
+                                            <span>
+                                                ${parseFloat(currentRate.certifiedLateCancelFee || '0').toFixed(2)} / ${parseFloat(currentRate.qualifiedLateCancelFee || '0').toFixed(2)}
+                                            </span>
+                                        </div>
+                                        <Separator />
+                                        <div className="flex justify-between">
+                                            <span className="text-muted-foreground">No Show (Cert/Qual)</span>
+                                            <span>
+                                                ${parseFloat(currentRate.certifiedNoShowFee || '0').toFixed(2)} / ${parseFloat(currentRate.qualifiedNoShowFee || '0').toFixed(2)}
+                                            </span>
+                                        </div>
+                                        <Separator />
+                                        <div className="flex justify-between">
+                                            <span className="text-muted-foreground">Effective Since</span>
+                                            <span>{format(new Date(currentRate.effectiveDate), 'PPP')}</span>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-4 text-muted-foreground">
+                                        <DollarSign className="size-8 mx-auto mb-2 opacity-50" />
+                                        <p>No rate configured</p>
+                                        <p className="text-sm">Add a rate to enable payout generation.</p>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+
+                        {/* Rate History Card */}
+                        {Array.isArray(rates) && rates.length > 1 && (
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Rate History</CardTitle>
+                                    <CardDescription>Previous rate configurations</CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Effective</TableHead>
+                                                <TableHead>Certified</TableHead>
+                                                <TableHead>Status</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {rates.map((rate) => (
+                                                <TableRow 
+                                                    key={rate.id}
+                                                    className="cursor-pointer hover:bg-muted/50"
+                                                    onClick={() => openRateDialog.onOpen(interpreterId, rate.id)}
+                                                >
+                                                    <TableCell className="text-sm">
+                                                        {format(new Date(rate.effectiveDate), "MMM d, yyyy")}
+                                                    </TableCell>
+                                                    <TableCell className="font-medium">
+                                                        ${parseFloat(rate.certifiedHourlyRate).toFixed(2)}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {!rate.endDate ? (
+                                                            <Badge variant="default">Current</Badge>
+                                                        ) : (
+                                                            <span className="text-muted-foreground text-sm">
+                                                                Ended {format(new Date(rate.endDate), "MMM d")}
+                                                            </span>
+                                                        )}
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </CardContent>
+                            </Card>
+                        )}
                     </div>
-                {/*Right column - 2/3 of space focus more on data table and bigger graphs*/}
+
+                    {/* Right column - 2/3 of space */}
                     <div className={'lg:col-span-2 space-y-1'}>
-                        {/* Card for Sats such as total appointments */}
+                        {/* Stats Card */}
                         <Card>
                             <CardContent className="flex flex-row justify-between items-center p-2">
                                 <div>
@@ -268,12 +414,13 @@ const InterpreterClient = () => {
                                 </div>
                             </CardContent>
                         </Card>
-                        {/*Card for the Data Table*/}
+
+                        {/* Appointments Card */}
                         <Card>
                             <CardHeader className='pb-4 flex flex-row justify-between'>
                                 <div>
                                     <CardTitle>Appointments</CardTitle>
-                                    <CardDescription> Recent and Upcoming Appointments </CardDescription>
+                                    <CardDescription>Recent and Upcoming Appointments</CardDescription>
                                 </div>
                                 <div>
                                     <Button
@@ -302,16 +449,12 @@ const InterpreterClient = () => {
                                         </Popover>
                                     </div>
                                 </div>
-                            {/*    data Table goes here */}
                                 <DataTable columns={columns} data={filteredAppointments} enabledFilters={interpreterPageTableFilter} />
                             </CardContent>
                         </Card>
-
                     </div>
-
                 </div>
             </div>
-
         </>
     );
 }

@@ -36,9 +36,10 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import {TbBuildingHospital} from "react-icons/tb";
+import {TbBuildingHospital, TbFileInvoice, TbInvoice} from "react-icons/tb";
 import {useNewAppointment} from "@/features/appointments/hooks/use-new-appointments";
 import {Collapsible} from "@radix-ui/react-collapsible";
+import { FaDollarSign, FaFileInvoiceDollar } from "react-icons/fa6"
 
 const data = {
     user: {
@@ -81,6 +82,29 @@ const data = {
             title: "Interpreters",
             url: "/admin/dashboard/interpreters",
             icon: IconUsers,
+        },
+        {
+            title: "Billing",
+            // url: "/admin/dashboard/appointments",
+            icon: FaFileInvoiceDollar,
+            items: [
+                {
+                    title: 'Overview',
+                    url: "/admin/dashboard/billing",
+                },
+                {
+                    title: 'Payers',
+                    url: "/admin/dashboard/payers",
+                },
+                {
+                    title: 'Invoices',
+                    url: "/admin/dashboard/invoices",
+                },
+                {
+                    title: 'Payouts',
+                    url: "/admin/dashboard/payouts",
+                },
+            ]
         },
     ],
     navClouds: [

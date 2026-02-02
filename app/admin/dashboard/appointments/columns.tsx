@@ -1,4 +1,4 @@
- "use client"
+"use client"
 
 import {ColumnDef} from "@tanstack/react-table"
 import {InferResponseType} from "hono";
@@ -11,6 +11,45 @@ import {ArrowUpDown} from "lucide-react";
 
 // This is a type definition for the data that will be returned from the API part of the GitHub v4.3 doc
 export type ResponseType = InferResponseType<typeof client.api.appointments.$get, 200>["data"][0]
+
+// Helper to parse projected duration strings like "5h", "45m", "1h30m"
+const parseProjectedDuration = (duration: string): number | null => {
+    if (!duration) return null
+
+    const trimmed = duration.trim().toLowerCase()
+
+    // Check for "Xh Ym" or "XhYm" format
+    const hoursMinutesMatch = trimmed.match(/(\d+(?:\.\d+)?)\s*h\s*(\d+)\s*m?/)
+    if (hoursMinutesMatch) {
+        const hours = parseFloat(hoursMinutesMatch[1])
+        const mins = parseInt(hoursMinutesMatch[2])
+        return (hours * 60) + mins
+    }
+
+    // Check for "Xh" format
+    const hoursMatch = trimmed.match(/^(\d+(?:\.\d+)?)\s*h$/)
+    if (hoursMatch) {
+        return parseFloat(hoursMatch[1]) * 60
+    }
+
+    // Check for "Xm" format
+    const minutesMatch = trimmed.match(/^(\d+)\s*m$/)
+    if (minutesMatch) {
+        return parseInt(minutesMatch[1])
+    }
+
+    // Plain number - assume hours if small, minutes if large
+    const plainNumber = parseFloat(trimmed)
+    if (!isNaN(plainNumber)) {
+        if (plainNumber > 10) {
+            return plainNumber // Assume minutes
+        } else {
+            return plainNumber * 60 // Assume hours
+        }
+    }
+
+    return null
+}
 
 export const columns: ColumnDef<ResponseType>[] = [
     {
@@ -175,6 +214,43 @@ export const columns: ColumnDef<ResponseType>[] = [
         }
     },
     {
+        accessorKey: "actualDurationMinutes",
+        header: "Duration",
+        size: 100,
+        cell: ({ row }) => {
+            const actualDuration = row.original.actualDurationMinutes as number | null
+            const projectedDuration = row.original.projectedDuration as string | null
+
+            let minutes: number | null = null
+
+            // Prefer actual duration if available and valid (positive)
+            if (actualDuration && actualDuration > 0) {
+                minutes = actualDuration
+            } else if (projectedDuration) {
+                // Parse projected duration strings like "5h", "45m", "1h30m"
+                minutes = parseProjectedDuration(projectedDuration)
+            }
+
+            if (minutes === null || minutes <= 0) {
+                return <span className="text-muted-foreground">-</span>
+            }
+
+            const hours = Math.floor(minutes / 60)
+            const mins = Math.round(minutes % 60)
+
+            let display: string
+            if (hours === 0) {
+                display = `${mins}m`
+            } else if (mins === 0) {
+                display = `${hours}h`
+            } else {
+                display = `${hours}h ${mins}m`
+            }
+
+            return <span>{display}</span>
+        }
+    },
+    {
         // This combines first and last name for display and allows filtering on the full name
         accessorFn: (row) => `${row.interpreterFirstName || ''} ${row.interpreterLastName || ''}`.trim(),
         id: "interpreter", // This ID MUST match the filter key in the toolbar
@@ -251,4 +327,3 @@ export const columns: ColumnDef<ResponseType>[] = [
     },
 
 ]
-

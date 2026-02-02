@@ -1,0 +1,1 @@
+ALTER TABLE "interpreter" ADD COLUMN "payment_frequency" varchar(20) DEFAULT 'monthly';
