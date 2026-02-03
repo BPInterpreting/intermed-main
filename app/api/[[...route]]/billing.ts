@@ -452,11 +452,10 @@ const app = new Hono()
                     .limit(1)
 
                 if (currentRate) {
-                    interpRate.hourlyRate = parseFloat(currentRate.hourlyRate)
+                    interpRate.hourlyRate = parseFloat(currentRate.certifiedHourlyRate)
                     interpRate.mileageRate = parseFloat(currentRate.mileageRate || '0')
                     interpRate.minimumHours = parseFloat(currentRate.minimumHours || '2')
-                    interpRate.lateCancelFee = parseFloat(currentRate.lateCancelFee || '0')
-                    interpRate.noShowFee = parseFloat(currentRate.noShowFee || '0')
+                    interpRate.lateCancelFee = parseFloat(currentRate.certifiedLateCancelFee || '0')
                 } else {
                     billing.warnings.push('No rate configured for interpreter')
                 }
