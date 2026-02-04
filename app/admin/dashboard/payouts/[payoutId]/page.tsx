@@ -8,7 +8,7 @@ import { useParams } from "next/navigation";
 import { useGetPayout } from "@/features/payouts/api/use-get-payout";
 import { useMarkPayoutPaidDialog } from "@/features/payouts/hooks/use-mark-payout-paid-dialog";
 import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
+import { format, parse } from "date-fns";
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -26,6 +26,84 @@ import {
     TableRow,
     TableFooter,
 } from "@/components/ui/table";
+
+// Helper to parse projected duration strings like "5h", "45m", "1h30m"
+const parseProjectedDuration = (duration: string): number | null => {
+    if (!duration) return null
+
+    const trimmed = duration.trim().toLowerCase()
+
+    const hoursMinutesMatch = trimmed.match(/(\d+(?:\.\d+)?)\s*h\s*(\d+)\s*m?/)
+    if (hoursMinutesMatch) {
+        const hours = parseFloat(hoursMinutesMatch[1])
+        const mins = parseInt(hoursMinutesMatch[2])
+        return (hours * 60) + mins
+    }
+
+    const hoursMatch = trimmed.match(/^(\d+(?:\.\d+)?)\s*h$/)
+    if (hoursMatch) {
+        return parseFloat(hoursMatch[1]) * 60
+    }
+
+    const minutesMatch = trimmed.match(/^(\d+)\s*m$/)
+    if (minutesMatch) {
+        return parseInt(minutesMatch[1])
+    }
+
+    const plainNumber = parseFloat(trimmed)
+    if (!isNaN(plainNumber)) {
+        if (plainNumber > 10) {
+            return plainNumber
+        } else {
+            return plainNumber * 60
+        }
+    }
+
+    return null
+}
+
+// Helper to format duration display
+const formatDuration = (
+    actualDuration: number | null | undefined,
+    projectedDuration: string | null | undefined
+) => {
+    let minutes: number | null = null
+
+    if (actualDuration && actualDuration > 0) {
+        minutes = actualDuration
+    } else if (projectedDuration) {
+        minutes = parseProjectedDuration(projectedDuration)
+    }
+
+    if (minutes === null || minutes <= 0) {
+        return '-'
+    }
+
+    const hours = Math.floor(minutes / 60)
+    const mins = Math.round(minutes % 60)
+
+    if (hours === 0) return `${mins}m`
+    if (mins === 0) return `${hours}h`
+    return `${hours}h ${mins}m`
+}
+
+// Helper to format time strings
+const formatTime = (timeString: string | null | undefined) => {
+    if (!timeString) return 'N/A'
+    try {
+        const parsedTime = parse(timeString, "HH:mm:ss", new Date())
+        return format(parsedTime, "hh:mm a")
+    } catch {
+        return timeString
+    }
+}
+
+// Status badge config for appointment statuses
+const appointmentStatusConfig: Record<string, { label: string; variant: "default" | "secondary" | "outline" | "destructive" }> = {
+    "Closed": { label: "Closed", variant: "default" },
+    "No Show": { label: "No Show", variant: "destructive" },
+    "Late CX": { label: "Late CX", variant: "destructive" },
+}
 
 const PayoutDetailPage = () => {
     const params = useParams();
@@ -274,66 +352,97 @@ const PayoutDetailPage = () => {
                             </CardHeader>
                             <CardContent>
                                 {lineItems.length > 0 ? (
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead>Date</TableHead>
-                                                <TableHead>Description</TableHead>
-                                                <TableHead className="text-right">Hours</TableHead>
-                                                <TableHead className="text-right">Rate</TableHead>
-                                                <TableHead className="text-right">Miles</TableHead>
-                                                <TableHead className="text-right">Total</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {lineItems.map((item) => {
-                                                const hours = parseFloat(item.serviceHours || "0")
-                                                const rate = parseFloat(item.serviceRate || "0")
-                                                const miles = parseFloat(item.mileage || "0")
-                                                const lineTotal = parseFloat(item.lineTotal || "0")
-                                                
-                                                return (
-                                                    <TableRow key={item.id}>
-                                                        <TableCell>
-                                                            {item.serviceDate 
-                                                                ? format(new Date(item.serviceDate), "MMM d")
-                                                                : "-"}
-                                                        </TableCell>
-                                                        <TableCell className="max-w-[200px]">
-                                                            <div className="truncate">{item.description}</div>
-                                                            {item.adjustmentType && (
-                                                                <Badge variant="secondary" className="mt-1">
-                                                                    {item.adjustmentType.replace("_", " ").toUpperCase()}
+                                    <div className="overflow-x-auto">
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow>
+                                                    <TableHead>Date</TableHead>
+                                                    <TableHead>Status</TableHead>
+                                                    <TableHead>Patient</TableHead>
+                                                    <TableHead>Facility</TableHead>
+                                                    <TableHead>Start</TableHead>
+                                                    <TableHead>End</TableHead>
+                                                    <TableHead>Duration</TableHead>
+                                                    <TableHead className="text-right">Hours</TableHead>
+                                                    <TableHead className="text-right">Rate</TableHead>
+                                                    <TableHead className="text-right">Miles</TableHead>
+                                                    <TableHead className="text-right">Total</TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {lineItems.map((item) => {
+                                                    const hours = parseFloat(item.serviceHours || "0")
+                                                    const rate = parseFloat(item.serviceRate || "0")
+                                                    const miles = parseFloat(item.mileage || "0")
+                                                    const lineTotal = parseFloat(item.lineTotal || "0")
+
+                                                    const statusConf = (item.appointmentStatus && appointmentStatusConfig[item.appointmentStatus]) || { 
+                                                        label: item.appointmentStatus || "-", 
+                                                        variant: "outline" as const 
+                                                    }
+                                                    
+                                                    return (
+                                                        <TableRow key={item.id}>
+                                                            <TableCell className="whitespace-nowrap">
+                                                                {item.serviceDate 
+                                                                    ? format(new Date(item.serviceDate), "MMM d")
+                                                                    : "-"}
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <Badge variant={statusConf.variant} className="whitespace-nowrap">
+                                                                    {statusConf.label}
                                                                 </Badge>
-                                                            )}
-                                                        </TableCell>
-                                                        <TableCell className="text-right">
-                                                            {item.adjustmentType ? "-" : hours.toFixed(1)}
-                                                        </TableCell>
-                                                        <TableCell className="text-right">
-                                                            {item.adjustmentType ? "-" : `$${rate.toFixed(2)}`}
-                                                        </TableCell>
-                                                        <TableCell className="text-right">
-                                                            {miles > 0 ? miles.toFixed(0) : "-"}
-                                                        </TableCell>
-                                                        <TableCell className="text-right font-medium">
-                                                            ${lineTotal.toFixed(2)}
-                                                        </TableCell>
-                                                    </TableRow>
-                                                )
-                                            })}
-                                        </TableBody>
-                                        <TableFooter>
-                                            <TableRow>
-                                                <TableCell colSpan={5} className="text-right font-medium">
-                                                    Total
-                                                </TableCell>
-                                                <TableCell className="text-right font-bold">
-                                                    ${total.toFixed(2)}
-                                                </TableCell>
-                                            </TableRow>
-                                        </TableFooter>
-                                    </Table>
+                                                                {item.adjustmentType && (
+                                                                    <Badge variant="secondary" className="mt-1 whitespace-nowrap">
+                                                                        {item.adjustmentType.replace("_", " ").toUpperCase()}
+                                                                    </Badge>
+                                                                )}
+                                                            </TableCell>
+                                                            <TableCell className="whitespace-nowrap">
+                                                                {item.patientName || "-"}
+                                                            </TableCell>
+                                                            <TableCell className="max-w-[150px]">
+                                                                <div className="truncate">
+                                                                    {item.facilityName || "-"}
+                                                                </div>
+                                                            </TableCell>
+                                                            <TableCell className="whitespace-nowrap">
+                                                                {formatTime(item.startTime)}
+                                                            </TableCell>
+                                                            <TableCell className="whitespace-nowrap">
+                                                                {formatTime(item.endTime)}
+                                                            </TableCell>
+                                                            <TableCell className="whitespace-nowrap">
+                                                                {formatDuration(item.actualDurationMinutes, item.projectedDuration)}
+                                                            </TableCell>
+                                                            <TableCell className="text-right">
+                                                                {item.adjustmentType ? "-" : hours.toFixed(1)}
+                                                            </TableCell>
+                                                            <TableCell className="text-right">
+                                                                {item.adjustmentType ? "-" : `$${rate.toFixed(2)}`}
+                                                            </TableCell>
+                                                            <TableCell className="text-right">
+                                                                {miles > 0 ? miles.toFixed(0) : "-"}
+                                                            </TableCell>
+                                                            <TableCell className="text-right font-medium">
+                                                                ${lineTotal.toFixed(2)}
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    )
+                                                })}
+                                            </TableBody>
+                                            <TableFooter>
+                                                <TableRow>
+                                                    <TableCell colSpan={10} className="text-right font-medium">
+                                                        Total
+                                                    </TableCell>
+                                                    <TableCell className="text-right font-bold">
+                                                        ${total.toFixed(2)}
+                                                    </TableCell>
+                                                </TableRow>
+                                            </TableFooter>
+                                        </Table>
+                                    </div>
                                 ) : (
                                     <div className="text-center py-8 text-muted-foreground">
                                         <p>No line items found.</p>

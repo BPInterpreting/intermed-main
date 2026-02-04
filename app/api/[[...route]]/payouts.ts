@@ -289,6 +289,11 @@ const app = new Hono()
                     lineTotal: payoutLineItems.lineTotal,
                     patientName: sql<string>`${patient.firstName} || ' ' || ${patient.lastName}`,
                     facilityName: facilities.name,
+                    appointmentStatus: appointments.status,
+                    startTime: appointments.startTime,
+                    endTime: appointments.endTime,
+                    actualDurationMinutes: appointments.actualDurationMinutes,
+                    projectedDuration: appointments.projectedDuration,
                 })
                 .from(payoutLineItems)
                 .leftJoin(appointments, eq(payoutLineItems.appointmentId, appointments.id))
@@ -301,6 +306,356 @@ const app = new Hono()
                 data: {
                     ...payout,
                     lineItems
+                }
+            })
+        }
+    )
+    // ========================================================================
+    // PREVIEW PAYOUTS FOR DATE RANGE (Dry Run - No Data Created)
+    // ========================================================================
+    // ========================================================================
+    // PREVIEW PAYOUTS FOR DATE RANGE (Dry Run - No Data Created)
+    // ========================================================================
+    .post(
+        '/preview',
+        clerkMiddleware(),
+        zValidator(
+            'json',
+            z.object({
+                periodStart: z.coerce.date(),
+                periodEnd: z.coerce.date(),
+            })
+        ),
+        async (c) => {
+            const auth = getAuth(c)
+            const userRole = (auth?.sessionClaims?.metadata as { role: string })?.role
+            const values = c.req.valid('json')
+
+            if (!auth?.userId) {
+                return c.json({ error: "Unauthorized" }, 401)
+            }
+
+            if (userRole !== 'admin') {
+                return c.json({ error: "Admin access required" }, 403)
+            }
+
+            // Get all payable appointments (same query as generate but read-only)
+            const payableAppointments = await db
+                .select({
+                    id: appointments.id,
+                    bookingId: appointments.bookingId,
+                    date: appointments.date,
+                    status: appointments.status,
+                    interpreterId: appointments.interpreterId,
+                    isCertified: appointments.isCertified,
+                    actualDurationMinutes: appointments.actualDurationMinutes,
+                    projectedDuration: appointments.projectedDuration,
+                    startTime: appointments.startTime,
+                    endTime: appointments.endTime,
+                    actualMiles: appointments.actualMiles,
+                    mileageApproved: appointments.mileageApproved,
+                    patientFirstName: patient.firstName,
+                    patientLastName: patient.lastName,
+                    facilityName: facilities.name,
+                })
+                .from(appointments)
+                .leftJoin(patient, eq(appointments.patientId, patient.id))
+                .leftJoin(facilities, eq(appointments.facilityId, facilities.id))
+                .where(
+                    and(
+                        gte(appointments.date, values.periodStart),
+                        lte(appointments.date, values.periodEnd),
+                        eq(appointments.payoutStatus, 'pending'),
+                        sql`${appointments.interpreterId} IS NOT NULL`,
+                        sql`${appointments.status} IN ('Closed', 'No Show', 'Late CX')`
+                    )
+                )
+                .orderBy(asc(appointments.interpreterId), asc(appointments.date))
+
+            // Check for unclosed past appointments in the same period (for warnings)
+            // Include status and interpreter info for detailed breakdown
+            const unclosedPastAppointments = await db
+                .select({
+                    id: appointments.id,
+                    bookingId: appointments.bookingId,
+                    date: appointments.date,
+                    status: appointments.status,
+                    interpreterId: appointments.interpreterId,
+                    interpreterFirstName: interpreter.firstName,
+                    interpreterLastName: interpreter.lastName,
+                    patientFirstName: patient.firstName,
+                    patientLastName: patient.lastName,
+                    facilityName: facilities.name,
+                })
+                .from(appointments)
+                .leftJoin(interpreter, eq(appointments.interpreterId, interpreter.id))
+                .leftJoin(patient, eq(appointments.patientId, patient.id))
+                .leftJoin(facilities, eq(appointments.facilityId, facilities.id))
+                .where(
+                    and(
+                        gte(appointments.date, values.periodStart),
+                        lte(appointments.date, values.periodEnd),
+                        sql`${appointments.interpreterId} IS NOT NULL`,
+                        sql`${appointments.status} NOT IN ('Closed', 'No Show', 'Late CX', 'Cancelled')`,
+                        lte(appointments.date, new Date())
+                    )
+                )
+                .orderBy(asc(appointments.date))
+
+            // Build unclosed breakdown by status
+            const unclosedByStatus: Record<string, number> = {}
+            for (const appt of unclosedPastAppointments) {
+                const status = appt.status || 'Unknown'
+                unclosedByStatus[status] = (unclosedByStatus[status] || 0) + 1
+            }
+
+            // Format unclosed appointments for frontend
+            const unclosedDetails = unclosedPastAppointments.map(appt => ({
+                id: appt.id,
+                bookingId: appt.bookingId,
+                date: appt.date,
+                status: appt.status,
+                interpreterName: appt.interpreterFirstName && appt.interpreterLastName
+                    ? `${appt.interpreterFirstName} ${appt.interpreterLastName}`
+                    : 'Unassigned',
+                patientName: appt.patientFirstName && appt.patientLastName
+                    ? `${appt.patientFirstName} ${appt.patientLastName}`
+                    : 'Unknown',
+                facilityName: appt.facilityName || 'Unknown',
+            }))
+
+            // Group by interpreter
+            const appointmentsByInterpreter = new Map<string, typeof payableAppointments>()
+            for (const appt of payableAppointments) {
+                if (!appt.interpreterId) continue
+                const existing = appointmentsByInterpreter.get(appt.interpreterId) || []
+                existing.push(appt)
+                appointmentsByInterpreter.set(appt.interpreterId, existing)
+            }
+
+            // Build preview data per interpreter with individual appointment details
+            const interpreterPreviews: {
+                interpreterId: string
+                interpreterName: string
+                appointmentCount: number
+                estimatedHours: number
+                estimatedTotal: number
+                rate: number
+                isCertified: boolean
+                appointments: {
+                    id: string
+                    bookingId: number | null
+                    date: Date
+                    status: string | null
+                    patientName: string
+                    facilityName: string
+                    startTime: string | null
+                    endTime: string | null
+                    serviceHours: number
+                    hourlyRate: number
+                    mileage: number
+                    mileageRate: number
+                    adjustmentType: string | null
+                    adjustmentAmount: number
+                    lineTotal: number
+                    isCertified: boolean
+                    durationSource: string
+                }[]
+            }[] = []
+
+            const skippedInterpreters: { 
+                name: string
+                reason: string
+                appointmentCount: number
+                appointments: {
+                    id: string
+                    bookingId: number | null
+                    date: Date
+                    status: string | null
+                    patientName: string
+                    facilityName: string
+                }[]
+            }[] = []
+
+            const warnings: { type: string; message: string; count?: number }[] = []
+
+            let noEndTimeCount = 0
+
+            for (const [interpreterId, appts] of appointmentsByInterpreter) {
+                // Get interpreter name
+                const [interp] = await db
+                    .select({ 
+                        firstName: interpreter.firstName, 
+                        lastName: interpreter.lastName 
+                    })
+                    .from(interpreter)
+                    .where(eq(interpreter.id, interpreterId))
+                    .limit(1)
+
+                const interpName = interp 
+                    ? `${interp.firstName} ${interp.lastName}` 
+                    : `Unknown (${interpreterId})`
+
+                // Get current rate
+                const [currentRate] = await db
+                    .select()
+                    .from(interpreterRates)
+                    .where(
+                        and(
+                            eq(interpreterRates.interpreterId, interpreterId),
+                            isNull(interpreterRates.endDate)
+                        )
+                    )
+                    .limit(1)
+
+                if (!currentRate) {
+                    skippedInterpreters.push({
+                        name: interpName,
+                        reason: 'No rate configured',
+                        appointmentCount: appts.length,
+                        appointments: appts.map(appt => ({
+                            id: appt.id,
+                            bookingId: appt.bookingId,
+                            date: appt.date,
+                            status: appt.status,
+                            patientName: `${appt.patientFirstName || ''} ${appt.patientLastName || ''}`.trim() || 'Unknown',
+                            facilityName: appt.facilityName || 'Unknown',
+                        }))
+                    })
+                    continue
+                }
+
+                let totalHours = 0
+                let totalAmount = 0
+                const apptDetails: typeof interpreterPreviews[0]['appointments'] = []
+
+                for (const appt of appts) {
+                    const isCertifiedAppt = appt.isCertified ?? false
+                    let hourlyRate = parseFloat(currentRate.certifiedHourlyRate)
+                    
+                    if (!isCertifiedAppt && currentRate.qualifiedHourlyRate) {
+                        hourlyRate = parseFloat(currentRate.qualifiedHourlyRate)
+                    }
+
+                    const minimumHours = parseFloat(currentRate.minimumHours || '2')
+                    let serviceHours = minimumHours
+                    let durationSource = 'minimum'
+
+                    if (appt.actualDurationMinutes && appt.actualDurationMinutes > 0) {
+                        serviceHours = Math.max(appt.actualDurationMinutes / 60, minimumHours)
+                        durationSource = appt.actualDurationMinutes / 60 < minimumHours ? 'minimum (actual below min)' : 'actual'
+                    } else if (appt.projectedDuration) {
+                        const parsedMinutes = parseProjectedDuration(appt.projectedDuration)
+                        if (parsedMinutes && parsedMinutes > 0) {
+                            serviceHours = Math.max(parsedMinutes / 60, minimumHours)
+                            durationSource = parsedMinutes / 60 < minimumHours ? 'minimum (projected below min)' : 'projected'
+                        }
+                    }
+
+                    if (!appt.endTime) {
+                        noEndTimeCount++
+                    }
+
+                    // Mileage
+                    let mileage = 0
+                    let mileageRate = 0
+                    if (appt.mileageApproved && appt.actualMiles) {
+                        mileage = parseFloat(appt.actualMiles)
+                        mileageRate = parseFloat(currentRate.mileageRate || '0')
+                    }
+                    const mileageAmount = mileage * mileageRate
+
+                    let adjustmentType: string | null = null
+                    let adjustmentAmount = 0
+                    let lineTotal: number
+
+                    if (appt.status === 'No Show') {
+                        adjustmentType = 'no_show'
+                        adjustmentAmount = isCertifiedAppt 
+                            ? parseFloat(currentRate.certifiedNoShowFee || '0')
+                            : parseFloat(currentRate.qualifiedNoShowFee || '0')
+                        lineTotal = adjustmentAmount + mileageAmount
+                    } else if (appt.status === 'Late CX') {
+                        adjustmentType = 'late_cancel'
+                        adjustmentAmount = isCertifiedAppt 
+                            ? parseFloat(currentRate.certifiedLateCancelFee || '0')
+                            : parseFloat(currentRate.qualifiedLateCancelFee || '0')
+                        mileage = 0
+                        lineTotal = adjustmentAmount
+                    } else {
+                        lineTotal = (serviceHours * hourlyRate) + mileageAmount
+                        totalHours += serviceHours
+                    }
+
+                    totalAmount += lineTotal
+
+                    apptDetails.push({
+                        id: appt.id,
+                        bookingId: appt.bookingId,
+                        date: appt.date,
+                        status: appt.status,
+                        patientName: `${appt.patientFirstName || ''} ${appt.patientLastName || ''}`.trim() || 'Unknown',
+                        facilityName: appt.facilityName || 'Unknown',
+                        startTime: appt.startTime,
+                        endTime: appt.endTime,
+                        serviceHours,
+                        hourlyRate,
+                        mileage,
+                        mileageRate,
+                        adjustmentType,
+                        adjustmentAmount,
+                        lineTotal,
+                        isCertified: isCertifiedAppt,
+                        durationSource,
+                    })
+                }
+
+                const primaryCertified = appts.some(a => a.isCertified)
+
+                interpreterPreviews.push({
+                    interpreterId,
+                    interpreterName: interpName,
+                    appointmentCount: appts.length,
+                    estimatedHours: totalHours,
+                    estimatedTotal: totalAmount,
+                    rate: parseFloat(primaryCertified ? currentRate.certifiedHourlyRate : (currentRate.qualifiedHourlyRate || currentRate.certifiedHourlyRate)),
+                    isCertified: primaryCertified,
+                    appointments: apptDetails,
+                })
+            }
+
+            // Build warnings
+            if (noEndTimeCount > 0) {
+                warnings.push({
+                    type: 'no_end_time',
+                    message: `${noEndTimeCount} appointment${noEndTimeCount > 1 ? 's' : ''} missing end time — using projected duration or minimum hours as fallback.`,
+                    count: noEndTimeCount,
+                })
+            }
+
+            if (unclosedPastAppointments.length > 0) {
+                const statusBreakdown = Object.entries(unclosedByStatus)
+                    .map(([status, count]) => `${count} ${status}`)
+                    .join(', ')
+                warnings.push({
+                    type: 'unclosed_past',
+                    message: `${unclosedPastAppointments.length} past appointment${unclosedPastAppointments.length > 1 ? 's' : ''} not included: ${statusBreakdown}`,
+                    count: unclosedPastAppointments.length,
+                })
+            }
+
+            const estimatedTotal = interpreterPreviews.reduce((sum, i) => sum + i.estimatedTotal, 0)
+
+            return c.json({
+                data: {
+                    totalAppointments: payableAppointments.length,
+                    totalInterpreters: interpreterPreviews.length,
+                    estimatedTotal,
+                    interpreters: interpreterPreviews,
+                    warnings,
+                    skippedInterpreters,
+                    unclosedByStatus,
+                    unclosedDetails,
                 }
             })
         }
@@ -358,7 +713,8 @@ const app = new Hono()
                         gte(appointments.date, values.periodStart),
                         lte(appointments.date, values.periodEnd),
                         eq(appointments.payoutStatus, 'pending'),
-                        sql`${appointments.interpreterId} IS NOT NULL`
+                        sql`${appointments.interpreterId} IS NOT NULL`,
+                        sql`${appointments.status} IN ('Closed', 'No Show', 'Late CX')`
                     )
                 )
                 .orderBy(asc(appointments.interpreterId), asc(appointments.date))
