@@ -72,10 +72,10 @@ export const columns: ColumnDef<ResponseType>[] = [
         cell: ({ row }) => {
             const status = row.original.status
 
-            const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "outline" | "destructive" }> = {
-                pending: { label: "Pending", variant: "outline" },
-                processing: { label: "Processing", variant: "secondary" },
-                paid: { label: "Paid", variant: "default" },
+            const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "closed" | "destructive" | "pendingConfirmation"  }> = {
+                pending: { label: "Pending", variant: "default" },
+                processing: { label: "Processing", variant: "pendingConfirmation" },
+                paid: { label: "Paid", variant: "closed" },
                 cancelled: { label: "Cancelled", variant: "destructive" },
             }
 

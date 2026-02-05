@@ -29,6 +29,7 @@ const formSchema  = insertInterpreterSchema.pick({
     address: true,
     phoneNumber: true,
     isCertified: true,
+    
     // targetLanguages: true,
     // isCertified: true,
     // specialty: true,
@@ -83,6 +84,7 @@ export const EditInterpreterDialog = () => {
         address: interpreterQuery.data.address || "",
         latitude: parseFloat(interpreterQuery.data.latitude || "0"),
         longitude: parseFloat(interpreterQuery.data.longitude || "0"),
+        paymentFrequency: (interpreterQuery.data.paymentFrequency as "monthly" | "biweekly") || "monthly",
         // targetLanguages: interpreterQuery.data.targetLanguages,
         // isCertified: interpreterQuery.data.isCertified,
         // specialty: interpreterQuery.data.specialty,
@@ -96,6 +98,7 @@ export const EditInterpreterDialog = () => {
         address: "",
         latitude: 0,
         longitude: 0,
+        paymentFrequency: "monthly" as const,
         // targetLanguages: '',
         // isCertified: false,
         // specialty: '',

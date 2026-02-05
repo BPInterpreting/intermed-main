@@ -56,7 +56,6 @@ const formSchema = z.object({
     periodType: z.enum(["first_half", "second_half", "full_month"]),
     month: z.string().min(1, "Month is required"),
     year: z.string().min(1, "Year is required"),
-    paymentFrequency: z.enum(["biweekly", "monthly", "all"]),
 })
 
 type FormValues = z.input<typeof formSchema>
@@ -241,7 +240,6 @@ export const GeneratePayoutsDialog = () => {
             periodType: "first_half",
             month: currentMonth,
             year: currentYear,
-            paymentFrequency: "monthly",
         }
     })
 
@@ -273,6 +271,7 @@ export const GeneratePayoutsDialog = () => {
         previewMutation.mutate({
             periodStart: dates.start,
             periodEnd: dates.end,
+            periodType: values.periodType,
         }, {
             onSuccess: (response) => {
                 setPreviewData(response.data)
@@ -288,6 +287,7 @@ export const GeneratePayoutsDialog = () => {
         generateMutation.mutate({
             periodStart: periodDates.start,
             periodEnd: periodDates.end,
+            periodType: form.getValues('periodType'),
         }, {
             onSuccess: () => {
                 handleReset()
@@ -445,53 +445,6 @@ export const GeneratePayoutsDialog = () => {
                                         )}
                                     />
                                 </div>
-
-                                <FormField
-                                    control={form.control}
-                                    name="paymentFrequency"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Payment Frequency Filter</FormLabel>
-                                            <FormControl>
-                                                <RadioGroup
-                                                    onValueChange={field.onChange}
-                                                    defaultValue={field.value}
-                                                    className="flex flex-col space-y-1"
-                                                >
-                                                    <FormItem className="flex items-center space-x-3 space-y-0">
-                                                        <FormControl>
-                                                            <RadioGroupItem value="biweekly" />
-                                                        </FormControl>
-                                                        <FormLabel className="font-normal">
-                                                            Bi-weekly interpreters only
-                                                        </FormLabel>
-                                                    </FormItem>
-                                                    <FormItem className="flex items-center space-x-3 space-y-0">
-                                                        <FormControl>
-                                                            <RadioGroupItem value="monthly" />
-                                                        </FormControl>
-                                                        <FormLabel className="font-normal">
-                                                            Monthly interpreters only
-                                                        </FormLabel>
-                                                    </FormItem>
-                                                    <FormItem className="flex items-center space-x-3 space-y-0">
-                                                        <FormControl>
-                                                            <RadioGroupItem value="all" />
-                                                        </FormControl>
-                                                        <FormLabel className="font-normal">
-                                                            All interpreters
-                                                        </FormLabel>
-                                                    </FormItem>
-                                                </RadioGroup>
-                                            </FormControl>
-                                            <FormDescription>
-                                                Filter by interpreter&apos;s preferred payment schedule.
-                                            </FormDescription>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
                                 <Button 
                                     type="submit" 
                                     className="w-full" 

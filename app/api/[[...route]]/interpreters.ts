@@ -46,6 +46,7 @@ const app = new Hono()
                     phoneNumber: interpreter.phoneNumber,
                     isCertified: interpreter.isCertified,
                     clerkUserId: interpreter.clerkUserId,
+                    paymentFrequency: interpreter.paymentFrequency,
                     createdAt: interpreter.createdAt
                     // targetLanguages: interpreter.targetLanguages,
                     // isCertified: interpreter.isCertified,
@@ -190,6 +191,7 @@ const app = new Hono()
                     longitude: interpreter.longitude,
                     phoneNumber: interpreter.phoneNumber,
                     isCertified: interpreter.isCertified,
+                    paymentFrequency: interpreter.paymentFrequency,
                     clerkUserId: interpreter.clerkUserId,
                     createdAt: interpreter.createdAt
                     // targetLanguages: interpreter.targetLanguages,
@@ -281,6 +283,7 @@ const app = new Hono()
             longitude: true,
             email: true,
             phoneNumber: true,
+            paymentFrequency: true,
             isCertified: true
             // targetLanguages: true,
             // isCertified: true,

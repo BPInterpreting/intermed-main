@@ -99,7 +99,7 @@ export const columns: ColumnDef<ResponseType>[] = [
         cell: ({ row }) => {
             const isActive = row.original.isActive
             return (
-                <Badge variant={isActive ? "default" : "secondary"}>
+                <Badge variant={isActive ? "confirmed" : "destructive"}>
                     {isActive ? "Active" : "Inactive"}
                 </Badge>
             )

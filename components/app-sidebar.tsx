@@ -1,31 +1,25 @@
 "use client"
 
-import * as React from "react"
-import Image from "next/image"
 import {
+    IconBuildingHospital,
+    IconCalendar,
     IconCamera,
-    IconChartBar,
+    IconClipboardHeart,
     IconDashboard,
     IconDatabase,
     IconFileAi,
     IconFileDescription,
     IconFileWord,
-    IconFolder,
     IconHelp,
-    IconInnerShadowTop,
-    IconListDetails,
     IconReport,
     IconSearch,
     IconSettings,
-    IconUsers,
-    IconCalendar,
-    IconClipboardHeart,
-    IconBuildingHospital
+    IconUsers
 } from "@tabler/icons-react"
+import Image from "next/image"
+import * as React from "react"
 
-import { NavDocuments } from "@/components/nav-documents"
 import { NavMain } from "@/components/nav-main"
-import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
 import {
     Sidebar,
@@ -36,10 +30,8 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import {TbBuildingHospital, TbFileInvoice, TbInvoice} from "react-icons/tb";
-import {useNewAppointment} from "@/features/appointments/hooks/use-new-appointments";
-import {Collapsible} from "@radix-ui/react-collapsible";
-import { FaDollarSign, FaFileInvoiceDollar } from "react-icons/fa6"
+import { useNewAppointment } from "@/features/appointments/hooks/use-new-appointments"
+import { FaFileInvoiceDollar } from "react-icons/fa6"
 
 const data = {
     user: {

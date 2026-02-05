@@ -324,6 +324,7 @@ const app = new Hono()
             z.object({
                 periodStart: z.coerce.date(),
                 periodEnd: z.coerce.date(),
+                periodType: z.enum(["first_half", "second_half", "full_month"]),
             })
         ),
         async (c) => {
@@ -367,7 +368,11 @@ const app = new Hono()
                         lte(appointments.date, values.periodEnd),
                         eq(appointments.payoutStatus, 'pending'),
                         sql`${appointments.interpreterId} IS NOT NULL`,
-                        sql`${appointments.status} IN ('Closed', 'No Show', 'Late CX')`
+                        sql`${appointments.status} IN ('Closed', 'No Show', 'Late CX')`,
+                        sql`${appointments.interpreterId} IN (
+                            SELECT id FROM interpreter 
+                            WHERE COALESCE(payment_frequency, 'monthly') = ${values.periodType === 'full_month' ? 'monthly' : 'biweekly'}
+                        )`
                     )
                 )
                 .orderBy(asc(appointments.interpreterId), asc(appointments.date))
@@ -672,6 +677,7 @@ const app = new Hono()
             z.object({
                 periodStart: z.coerce.date(),
                 periodEnd: z.coerce.date(),
+                periodType: z.enum(["first_half", "second_half", "full_month"]),
                 scheduledDate: z.coerce.date().optional(),
             })
         ),
@@ -714,7 +720,11 @@ const app = new Hono()
                         lte(appointments.date, values.periodEnd),
                         eq(appointments.payoutStatus, 'pending'),
                         sql`${appointments.interpreterId} IS NOT NULL`,
-                        sql`${appointments.status} IN ('Closed', 'No Show', 'Late CX')`
+                        sql`${appointments.status} IN ('Closed', 'No Show', 'Late CX')`,
+                        sql`${appointments.interpreterId} IN (
+                            SELECT id FROM interpreter 
+                            WHERE COALESCE(payment_frequency, 'monthly') = ${values.periodType === 'full_month' ? 'monthly' : 'biweekly'}
+                        )`
                     )
                 )
                 .orderBy(asc(appointments.interpreterId), asc(appointments.date))

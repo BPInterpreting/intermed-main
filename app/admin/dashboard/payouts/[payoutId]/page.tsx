@@ -98,11 +98,11 @@ const formatTime = (timeString: string | null | undefined) => {
     }
 }
 
-// Status badge config for appointment statuses
-const appointmentStatusConfig: Record<string, { label: string; variant: "default" | "secondary" | "outline" | "destructive" }> = {
-    "Closed": { label: "Closed", variant: "default" },
-    "No Show": { label: "No Show", variant: "destructive" },
-    "Late CX": { label: "Late CX", variant: "destructive" },
+// Status badge config using custom badge variants
+const appointmentStatusConfig: Record<string, { label: string; variant: "closed" | "cancelled" | "confirmed" | "pendingConfirmation" | "pendingAuthorization" | "interpreterRequested" | "outline" }> = {
+    "Closed": { label: "Closed", variant: "closed" },
+    "No Show": { label: "No Show", variant: "cancelled" },
+    "Late CX": { label: "Late CX", variant: "cancelled" },
 }
 
 const PayoutDetailPage = () => {
@@ -381,6 +381,7 @@ const PayoutDetailPage = () => {
                                                         variant: "outline" as const 
                                                     }
                                                     
+                                                    
                                                     return (
                                                         <TableRow key={item.id}>
                                                             <TableCell className="whitespace-nowrap">
@@ -392,11 +393,6 @@ const PayoutDetailPage = () => {
                                                                 <Badge variant={statusConf.variant} className="whitespace-nowrap">
                                                                     {statusConf.label}
                                                                 </Badge>
-                                                                {item.adjustmentType && (
-                                                                    <Badge variant="secondary" className="mt-1 whitespace-nowrap">
-                                                                        {item.adjustmentType.replace("_", " ").toUpperCase()}
-                                                                    </Badge>
-                                                                )}
                                                             </TableCell>
                                                             <TableCell className="whitespace-nowrap">
                                                                 {item.patientName || "-"}

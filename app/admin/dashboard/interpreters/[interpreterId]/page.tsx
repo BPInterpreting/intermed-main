@@ -254,6 +254,17 @@ const InterpreterClient = () => {
                                             </div>
                                         </div>
                                     </div>
+                                    <div>
+                                        <div className={'flex flex-row items-center space-x-2'}>
+                                            <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center" >
+                                                <DollarSign height={30} width={30} />
+                                            </div>
+                                            <div className={'flex flex-col '}>
+                                                <span className="text-sm text-muted-foreground">Payment Frequency</span>
+                                                <span className="font-medium capitalize">{interpreter?.paymentFrequency || "monthly"}</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </CardContent>
                         </Card>

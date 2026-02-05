@@ -58,7 +58,8 @@ const formSchema = z.object({
     latitude: z.coerce.number(),
     email: z.string().email(),
     phoneNumber: z.string(),
-    isCertified: z.boolean()
+    isCertified: z.boolean(),
+    paymentFrequency: z.enum(["monthly", "biweekly"]),
 })
 
 const apiSchema = insertInterpreterSchema.omit({
@@ -223,6 +224,29 @@ export const InterpreterForm = ({
                                            onCheckedChange={field.onChange}
                                        />
                                    </FormControl>
+                               </FormItem>
+                           )}
+                       />
+                       <FormField
+                           control={form.control}
+                           name="paymentFrequency"
+                           render={({field}) => (
+                               <FormItem className="mt-2">
+                                   <FormLabel>Payment Frequency</FormLabel>
+                                   <Select
+                                       onValueChange={field.onChange}
+                                       defaultValue={field.value}
+                                   >
+                                       <FormControl>
+                                           <SelectTrigger>
+                                               <SelectValue placeholder="Select frequency" />
+                                           </SelectTrigger>
+                                       </FormControl>
+                                       <SelectContent>
+                                           <SelectItem value="monthly">Monthly</SelectItem>
+                                           <SelectItem value="biweekly">Bi-weekly</SelectItem>
+                                       </SelectContent>
+                                   </Select>
                                </FormItem>
                            )}
                        />
