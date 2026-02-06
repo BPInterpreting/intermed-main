@@ -1,6 +1,6 @@
 import {Hono} from 'hono'
 import {db} from '@/db/drizzle'
-import {appointmentOffers, appointments, facilities, insertAppointmentSchema, interpreter, patient} from "@/db/schema";
+import {appointmentOffers, appointments, facilities, insertAppointmentSchema, interpreter, patient, payers} from "@/db/schema";
 import {z} from 'zod'
 import {zValidator} from '@hono/zod-validator'
 import {createId} from "@paralleldrive/cuid2";
@@ -624,6 +624,13 @@ const app = new Hono()
                     interpreterId: appointments.interpreterId,
                     interpreterFirstName: interpreter.firstName,
                     interpreterLastName: interpreter.lastName,
+                    billingStatus: appointments.billingStatus,
+                    payoutStatus: appointments.payoutStatus,
+                    payerId: appointments.payerId,
+                    payerName: payers.name,
+                    language: appointments.language,
+                    mileageApproved: appointments.mileageApproved,
+                    actualMiles: appointments.actualMiles,
                     createdAt: appointments.createdAt,
                     updatedAt: appointments.updatedAt,
                     // interpreterSpecialty: interpreter.specialty,
@@ -634,6 +641,7 @@ const app = new Hono()
                 .innerJoin(patient, eq(appointments.patientId, patient.id))
                 .innerJoin(interpreter, eq(appointments.interpreterId, interpreter.id))
                 .innerJoin(facilities, eq(appointments.facilityId, facilities.id))
+                .leftJoin(payers, eq(appointments.payerId, payers.id))
                 .where(userRole === 'admin' ? and(eq(appointments.id, id)) : and(eq(interpreter.clerkUserId, userId), eq(appointments.id, id)))
                 .orderBy(
                     asc(appointments.date),

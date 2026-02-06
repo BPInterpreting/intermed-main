@@ -4,6 +4,7 @@ import { useParams } from "next/navigation";
 import {
     useGetIndividualAppointment
 } from "@/features/appointments/api/use-get-individual-appointment";
+import { useGetAppointmentBilling } from "@/features/billing/use-get-appointment-billing"; 
 import { Button } from "@/components/ui/button";
 import {
     Breadcrumb,
@@ -16,7 +17,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { format, parseISO } from "date-fns";
-import { Calendar, Clock, Building, User, Hash, Stethoscope, UserCheck } from "lucide-react";
+import { Calendar, Clock, Building, User, Hash, Stethoscope, UserCheck, DollarSign, TrendingUp, AlertCircle, Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import {Badge} from "@/components/ui/badge";
 import dynamic from "next/dynamic";
@@ -48,7 +49,6 @@ const parseProjectedDuration = (duration: string): number | null => {
 
     const trimmed = duration.trim().toLowerCase()
 
-    // Check for "Xh Ym" or "XhYm" format
     const hoursMinutesMatch = trimmed.match(/(\d+(?:\.\d+)?)\s*h\s*(\d+)\s*m?/)
     if (hoursMinutesMatch) {
         const hours = parseFloat(hoursMinutesMatch[1])
@@ -56,19 +56,16 @@ const parseProjectedDuration = (duration: string): number | null => {
         return (hours * 60) + mins
     }
 
-    // Check for "Xh" format
     const hoursMatch = trimmed.match(/^(\d+(?:\.\d+)?)\s*h$/)
     if (hoursMatch) {
         return parseFloat(hoursMatch[1]) * 60
     }
 
-    // Check for "Xm" format
     const minutesMatch = trimmed.match(/^(\d+)\s*m$/)
     if (minutesMatch) {
         return parseInt(minutesMatch[1])
     }
 
-    // Plain number - assume hours if small, minutes if large
     const plainNumber = parseFloat(trimmed)
     if (!isNaN(plainNumber)) {
         if (plainNumber > 10) {
@@ -88,7 +85,6 @@ const formatDuration = (
 ) => {
     let minutes: number | null = null
 
-    // Prefer actual duration if available and valid
     if (actualDuration && actualDuration > 0) {
         minutes = actualDuration
     } else if (projectedDuration) {
@@ -111,14 +107,28 @@ const formatDuration = (
     }
 }
 
+// Currency formatter
+const formatCurrency = (value: number | string | null | undefined) => {
+    if (value === null || value === undefined) return "$0.00"
+    const num = typeof value === "string" ? parseFloat(value) : value
+    if (isNaN(num)) return "$0.00"
+    return new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+        minimumFractionDigits: 2,
+    }).format(num)
+}
+
 const AppointmentClient = () => {
     const params = useParams();
     const appointmentId = params.appointmentId as string;
     const editMutation = useEditAppointment(appointmentId);
     const {onOpen} = useUpdateAppointment()
 
-
     const { data: appointment, isLoading } = useGetIndividualAppointment(appointmentId);
+    const billingQuery = useGetAppointmentBilling(appointmentId);
+    const billingData = billingQuery.data;
+    const billing = billingData?.billing;
 
     const patientFullName = `${appointment?.patientFirstName ?? ''} ${appointment?.patientLastName ?? ''}`.trim();
 
@@ -242,7 +252,6 @@ const AppointmentClient = () => {
                             </div>
                             <Separator />
 
-                            {/* Inlined Detail Items */}
                             <div className={'flex flex-row items-center space-x-4'}>
                                 <div className="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center">
                                     <User className="h-5 w-5 text-muted-foreground" />
@@ -323,6 +332,173 @@ const AppointmentClient = () => {
                             )}
                         </CardContent>
                     </Card>
+
+                    {/* ============================================================ */}
+                    {/* BILLING SUMMARY CARD */}
+                    {/* ============================================================ */}
+                    <Card>
+                        <CardHeader className="pb-3">
+                            <div className="flex items-center justify-between">
+                                <CardTitle className="flex items-center gap-2">
+                                    <DollarSign className="size-5" />
+                                    Billing Summary
+                                </CardTitle>
+                                <div className="flex items-center gap-2">
+                                    {appointment?.billingStatus && (
+                                        <Badge variant={
+                                            appointment.billingStatus === 'invoiced' ? 'default' :
+                                            appointment.billingStatus === 'pending' ? 'secondary' :
+                                            'outline'
+                                        }>
+                                            {appointment.billingStatus}
+                                        </Badge>
+                                    )}
+                                    {appointment?.payoutStatus && (
+                                        <Badge variant={
+                                            appointment.payoutStatus === 'paid' ? 'default' :
+                                            appointment.payoutStatus === 'scheduled' ? 'secondary' :
+                                            'outline'
+                                        }>
+                                            Payout: {appointment.payoutStatus}
+                                        </Badge>
+                                    )}
+                                </div>
+                            </div>
+                            {appointment?.payerName && (
+                                <CardDescription>
+                                    Payer: {appointment.payerName}
+                                    {appointment?.language && <> &middot; {appointment.language}</>}
+                                </CardDescription>
+                            )}
+                        </CardHeader>
+                        <CardContent>
+                            {billingQuery.isLoading ? (
+                                <div className="flex items-center justify-center py-8">
+                                    <Loader2 className="size-5 animate-spin text-muted-foreground" />
+                                </div>
+                            ) : billingQuery.isError || !billing ? (
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground py-4">
+                                    <AlertCircle className="size-4" />
+                                    {!appointment?.payerId
+                                        ? "No payer assigned — billing cannot be calculated"
+                                        : "Unable to load billing details"
+                                    }
+                                </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    {/* Warnings */}
+                                    {billing.warnings && billing.warnings.length > 0 && (
+                                        <div className="space-y-1">
+                                            {billing.warnings.map((warning: string, i: number) => (
+                                                <div key={i} className="flex items-center gap-2 text-xs text-amber-600 bg-amber-50 dark:bg-amber-950/30 rounded p-2">
+                                                    <AlertCircle className="size-3 shrink-0" />
+                                                    {warning}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {/* Two column: Payer Revenue | Interpreter Cost */}
+                                    <div className="grid grid-cols-2 gap-4">
+                                        {/* Payer (Revenue) */}
+                                        <div className="space-y-2">
+                                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Payer Revenue</p>
+                                            <div className="space-y-1.5">
+                                                <div className="flex justify-between text-sm">
+                                                    <span className="text-muted-foreground">Service</span>
+                                                    <span>
+                                                        {billing.billToInsurance.serviceHours}h × {formatCurrency(billing.billToInsurance.serviceRate)}/hr
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between text-sm">
+                                                    <span className="text-muted-foreground">Service Amount</span>
+                                                    <span className="font-medium">{formatCurrency(billing.billToInsurance.serviceAmount)}</span>
+                                                </div>
+                                                {billing.billToInsurance.mileageAmount > 0 && (
+                                                    <div className="flex justify-between text-sm">
+                                                        <span className="text-muted-foreground">Mileage</span>
+                                                        <span>
+                                                            {billing.billToInsurance.mileage} mi × {formatCurrency(billing.billToInsurance.mileageRate)}/mi
+                                                        </span>
+                                                    </div>
+                                                )}
+                                                {billing.billToInsurance.adjustmentType && (
+                                                    <div className="flex justify-between text-sm">
+                                                        <span className="text-muted-foreground">
+                                                            {billing.billToInsurance.adjustmentType === 'no_show' ? 'No Show Fee' : 'Late CX Fee'}
+                                                        </span>
+                                                        <span className="text-amber-600">{formatCurrency(billing.billToInsurance.adjustmentAmount)}</span>
+                                                    </div>
+                                                )}
+                                                <Separator />
+                                                <div className="flex justify-between text-sm font-semibold">
+                                                    <span>Total Revenue</span>
+                                                    <span className="text-green-600">{formatCurrency(billing.billToInsurance.total)}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Interpreter (Cost) */}
+                                        <div className="space-y-2">
+                                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Interpreter Cost</p>
+                                            <div className="space-y-1.5">
+                                                <div className="flex justify-between text-sm">
+                                                    <span className="text-muted-foreground">Service</span>
+                                                    <span>
+                                                        {billing.payToInterpreter.serviceHours}h × {formatCurrency(billing.payToInterpreter.serviceRate)}/hr
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between text-sm">
+                                                    <span className="text-muted-foreground">Service Amount</span>
+                                                    <span className="font-medium">{formatCurrency(billing.payToInterpreter.serviceAmount)}</span>
+                                                </div>
+                                                {billing.payToInterpreter.mileageAmount > 0 && (
+                                                    <div className="flex justify-between text-sm">
+                                                        <span className="text-muted-foreground">Mileage</span>
+                                                        <span>
+                                                            {billing.payToInterpreter.mileage} mi × {formatCurrency(billing.payToInterpreter.mileageRate)}/mi
+                                                        </span>
+                                                    </div>
+                                                )}
+                                                {billing.payToInterpreter.adjustmentType && (
+                                                    <div className="flex justify-between text-sm">
+                                                        <span className="text-muted-foreground">
+                                                            {billing.payToInterpreter.adjustmentType === 'no_show' ? 'No Show Fee' : 'Late CX Fee'}
+                                                        </span>
+                                                        <span className="text-amber-600">{formatCurrency(billing.payToInterpreter.adjustmentAmount)}</span>
+                                                    </div>
+                                                )}
+                                                <Separator />
+                                                <div className="flex justify-between text-sm font-semibold">
+                                                    <span>Total Cost</span>
+                                                    <span className="text-red-500">{formatCurrency(billing.payToInterpreter.total)}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Profit / Margin Row */}
+                                    <div className="rounded-lg bg-muted/50 p-3">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <TrendingUp className="size-4 text-muted-foreground" />
+                                                <span className="text-sm font-medium">Profit</span>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <span className={`text-lg font-bold ${billing.margin >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+                                                    {formatCurrency(billing.margin)}
+                                                </span>
+                                                <Badge variant={billing.marginPercent >= 0 ? 'default' : 'destructive'}>
+                                                    {billing.marginPercent.toFixed(1)}% margin
+                                                </Badge>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+
                     {/* Map Placeholder Card */}
                     <Card>
                         <CardHeader>
@@ -415,14 +591,12 @@ const AppointmentPageSkeleton = () => {
                     </Card>
                 </div>
                 <div className={'lg:col-span-2 space-y-4'}>
+                    <Skeleton className="h-16 w-full" />
+                    <Skeleton className="h-[280px] w-full" />
                     <Skeleton className="h-[250px] w-full" />
                     <Card>
-                        <CardHeader><Skeleton className="h-6 w-48" /></CardHeader>
-                        <CardContent><Skeleton className="h-10 w-full" /></CardContent>
-                    </Card>
-                    <Card>
                         <CardHeader>
-                            <Skeleton className="h-6 w-56" />
+                            <Skeleton className="h-6 w-48" />
                             <Skeleton className="h-4 w-72 mt-2" />
                         </CardHeader>
                         <CardContent><Skeleton className="h-24 w-full" /></CardContent>
@@ -432,4 +606,3 @@ const AppointmentPageSkeleton = () => {
         </div>
     )
 }
-

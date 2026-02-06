@@ -6,7 +6,7 @@ export const useGetAppointmentBilling = (appointmentId?: string) => {
         enabled: !!appointmentId,
         queryKey: ['appointment-billing', { appointmentId }],
         queryFn: async () => {
-            const response = await client.api.billing.appointment[':id'].$get({
+            const response = await client.api.billing.calculate[':id'].$get({
                 param: { id: appointmentId! }
             })
 
