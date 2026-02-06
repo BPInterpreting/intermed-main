@@ -224,6 +224,13 @@ const app = new Hono()
                 interpreterId: appointments.interpreterId,
                 interpreterFirstName: interpreter.firstName,
                 interpreterLastName: interpreter.lastName,
+                payerId: appointments.payerId,
+                payerName: payers.name,
+                language: appointments.language,
+                billingStatus: appointments.billingStatus,
+                payoutStatus: appointments.payoutStatus,
+                mileageApproved: appointments.mileageApproved,
+                actualMiles: appointments.actualMiles,
                 createdAt: appointments.createdAt,
                 updatedAt: appointments.updatedAt,
                 // Next follow-up: gets the next future appointment for this patient (submitted as a follow-up)
@@ -265,6 +272,7 @@ const app = new Hono()
             .innerJoin(patient, eq(appointments.patientId, patient.id))
             .innerJoin(facilities, eq(appointments.facilityId, facilities.id))
             .innerJoin(interpreter, eq(appointments.interpreterId, interpreter.id))
+            .leftJoin(payers, eq(appointments.payerId, payers.id))
             .where(finalWhereClause)
             .orderBy(
                 asc(appointments.date),
@@ -628,9 +636,9 @@ const app = new Hono()
                     payoutStatus: appointments.payoutStatus,
                     payerId: appointments.payerId,
                     payerName: payers.name,
-                    language: appointments.language,
                     mileageApproved: appointments.mileageApproved,
                     actualMiles: appointments.actualMiles,
+                    language: appointments.language,
                     createdAt: appointments.createdAt,
                     updatedAt: appointments.updatedAt,
                     // interpreterSpecialty: interpreter.specialty,

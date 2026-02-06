@@ -15,7 +15,7 @@ import {
 import { z } from 'zod'
 import { zValidator } from '@hono/zod-validator'
 import { createId } from "@paralleldrive/cuid2"
-import { and, eq, gte, lte, asc, desc, sql, isNull } from "drizzle-orm"
+import { and, eq, gte, lte, asc, desc, sql, count,isNull } from "drizzle-orm"
 import { clerkMiddleware, getAuth } from "@hono/clerk-auth"
 
 // Helper to generate invoice number: INV-2025-0001
@@ -189,6 +189,251 @@ const app = new Hono()
                 data: {
                     ...invoice,
                     lineItems
+                }
+            })
+        }
+    )
+
+    // ========================================================================
+    // PREVIEW INVOICE - Show what will be invoiced before generating
+    // ========================================================================
+    .post(
+        '/preview',
+        clerkMiddleware(),
+        zValidator(
+            'json',
+            z.object({
+                payerId: z.string(),
+                periodStart: z.coerce.date(),
+                periodEnd: z.coerce.date(),
+            })
+        ),
+        async (c) => {
+            const auth = getAuth(c)
+            const userRole = (auth?.sessionClaims?.metadata as { role: string })?.role
+
+            if (!auth?.userId) {
+                return c.json({ error: "Unauthorized" }, 401)
+            }
+
+            if (userRole !== 'admin') {
+                return c.json({ error: "Admin access required" }, 403)
+            }
+
+            const values = c.req.valid('json')
+
+            // Get payer info
+            const [payer] = await db
+                .select()
+                .from(payers)
+                .where(eq(payers.id, values.payerId))
+                .limit(1)
+
+            if (!payer) {
+                return c.json({ error: "Payer not found" }, 404)
+            }
+
+            // Get billable appointments (Closed, No Show, Late CX with pending billing status)
+            const billableAppointments = await db
+                .select({
+                    id: appointments.id,
+                    bookingId: appointments.bookingId,
+                    date: appointments.date,
+                    status: appointments.status,
+                    language: appointments.language,
+                    startTime: appointments.startTime,
+                    endTime: appointments.endTime,
+                    projectedDuration: appointments.projectedDuration,
+                    actualDurationMinutes: appointments.actualDurationMinutes,
+                    actualMiles: appointments.actualMiles,
+                    mileageApproved: appointments.mileageApproved,
+                    isCertified: appointments.isCertified,
+                    patientFirstName: patient.firstName,
+                    patientLastName: patient.lastName,
+                    interpreterFirstName: interpreter.firstName,
+                    interpreterLastName: interpreter.lastName,
+                    facilityName: facilities.name,
+                })
+                .from(appointments)
+                .leftJoin(patient, eq(appointments.patientId, patient.id))
+                .innerJoin(interpreter, eq(appointments.interpreterId, interpreter.id))
+                .leftJoin(facilities, eq(appointments.facilityId, facilities.id))
+                .where(
+                    and(
+                        eq(appointments.payerId, values.payerId),
+                        gte(appointments.date, values.periodStart),
+                        lte(appointments.date, values.periodEnd),
+                        eq(appointments.billingStatus, 'pending'),
+                        sql`${appointments.status} IN ('Closed', 'No Show', 'Late CX')`
+                    )
+                )
+                .orderBy(asc(appointments.date))
+
+            // Calculate line items for preview
+            const lineItems = []
+            let subtotal = 0
+            let totalHours = 0
+            let noEndTimeCount = 0
+            const warnings: { type: string; message: string }[] = []
+
+            for (const appt of billableAppointments) {
+                // Determine hourly rate (check language-specific rate first, then default)
+                let hourlyRate = parseFloat(payer.defaultHourlyRate || '0')
+                let mileageRate = parseFloat(payer.defaultMileageRate || '0')
+                const minimumHours = parseFloat(payer.minimumHours || '2')
+
+                if (appt.language) {
+                    const [langRate] = await db
+                        .select()
+                        .from(payerLanguageRates)
+                        .where(
+                            and(
+                                eq(payerLanguageRates.payerId, values.payerId),
+                                eq(payerLanguageRates.language, appt.language)
+                            )
+                        )
+                        .limit(1)
+
+                    if (langRate) {
+                        hourlyRate = parseFloat(langRate.hourlyRate)
+                    }
+                }
+
+                // Calculate service hours
+                let serviceHours = minimumHours
+                let durationSource = 'minimum'
+
+                if (appt.actualDurationMinutes && appt.actualDurationMinutes > 0) {
+                    serviceHours = Math.max(appt.actualDurationMinutes / 60, minimumHours)
+                    durationSource = 'actual'
+                } else if (appt.projectedDuration) {
+                    const match = appt.projectedDuration.match(/(\d+)h/)
+                    if (match) {
+                        serviceHours = Math.max(parseFloat(match[1]), minimumHours)
+                        durationSource = 'projected'
+                    }
+                }
+
+                if (!appt.endTime) {
+                    noEndTimeCount++
+                }
+
+                // Calculate mileage
+                let mileage = 0
+                let mileageAmount = 0
+                if (appt.mileageApproved && appt.actualMiles) {
+                    mileage = parseFloat(appt.actualMiles)
+                    mileageAmount = mileage * mileageRate
+                }
+
+                // Handle adjustments
+                let adjustmentType: string | null = null
+                let adjustmentAmount = 0
+                let lineTotal = 0
+
+                if (appt.status === 'No Show') {
+                    adjustmentType = 'no_show'
+                    adjustmentAmount = parseFloat(payer.noShowFee || '0')
+                    lineTotal = adjustmentAmount + mileageAmount
+                } else if (appt.status === 'Late CX') {
+                    adjustmentType = 'late_cancel'
+                    adjustmentAmount = parseFloat(payer.lateCancelFee || '0')
+                    mileage = 0
+                    mileageAmount = 0
+                    lineTotal = adjustmentAmount
+                } else {
+                    lineTotal = (serviceHours * hourlyRate) + mileageAmount
+                    totalHours += serviceHours
+                }
+
+                subtotal += lineTotal
+
+                lineItems.push({
+                    appointmentId: appt.id,
+                    bookingId: appt.bookingId,
+                    date: appt.date,
+                    status: appt.status,
+                    patientName: `${appt.patientFirstName || ''} ${appt.patientLastName || ''}`.trim() || 'Unknown',
+                    interpreterName: `${appt.interpreterFirstName || ''} ${appt.interpreterLastName || ''}`.trim() || 'Unknown',
+                    facilityName: appt.facilityName || 'Unknown',
+                    language: appt.language,
+                    startTime: appt.startTime,
+                    endTime: appt.endTime,
+                    serviceHours,
+                    hourlyRate,
+                    mileage,
+                    mileageRate,
+                    mileageAmount,
+                    adjustmentType,
+                    adjustmentAmount,
+                    lineTotal,
+                    durationSource,
+                    isCertified: appt.isCertified,
+                })
+            }
+
+            // Build warnings
+            if (noEndTimeCount > 0) {
+                warnings.push({
+                    type: 'no_end_time',
+                    message: `${noEndTimeCount} appointment${noEndTimeCount > 1 ? 's have' : ' has'} no end time recorded — using projected duration or minimum hours`,
+                })
+            }
+
+            if (parseFloat(payer.defaultHourlyRate || '0') === 0) {
+                warnings.push({
+                    type: 'no_rate',
+                    message: `No hourly rate configured for this payer — all service amounts will be $0`,
+                })
+            }
+
+            // Check for unbillable appointments in the period (wrong status)
+            const [unbillableCount] = await db
+                .select({ count: count(appointments.id) })
+                .from(appointments)
+                .where(
+                    and(
+                        eq(appointments.payerId, values.payerId),
+                        gte(appointments.date, values.periodStart),
+                        lte(appointments.date, values.periodEnd),
+                        eq(appointments.billingStatus, 'pending'),
+                        sql`${appointments.status} NOT IN ('Closed', 'No Show', 'Late CX')`
+                    )
+                )
+
+            if (unbillableCount?.count && unbillableCount.count > 0) {
+                warnings.push({
+                    type: 'unbillable',
+                    message: `${unbillableCount.count} appointment${Number(unbillableCount.count) > 1 ? 's are' : ' is'} not yet Closed, No Show, or Late CX and will not be included`,
+                })
+            }
+
+            // Status breakdown of billable appointments
+            const statusBreakdown = {
+                closed: lineItems.filter(li => li.status === 'Closed').length,
+                noShow: lineItems.filter(li => li.status === 'No Show').length,
+                lateCancel: lineItems.filter(li => li.status === 'Late CX').length,
+            }
+
+            return c.json({
+                data: {
+                    payer: {
+                        id: payer.id,
+                        name: payer.name,
+                        type: payer.type,
+                        defaultRate: payer.defaultHourlyRate,
+                        paymentTerms: payer.paymentTermsDays,
+                    },
+                    period: {
+                        start: values.periodStart,
+                        end: values.periodEnd,
+                    },
+                    totalAppointments: lineItems.length,
+                    totalHours,
+                    estimatedTotal: subtotal,
+                    statusBreakdown,
+                    lineItems,
+                    warnings,
                 }
             })
         }

@@ -164,6 +164,48 @@ export const columns: ColumnDef<ResponseType>[] = [
         header: 'isCertified',
         size: 90,
     },
+    // ========================================================================
+    // BILLING COLUMNS
+    // ========================================================================
+    {
+        accessorKey: "payerName",
+        header: "Payer",
+        size: 160,
+        cell: ({ row }) => {
+            const payerName = row.original.payerName
+            if (!payerName) {
+                return <span className="text-muted-foreground text-xs">No payer</span>
+            }
+            return (
+                <span className="text-sm truncate block max-w-[150px]" title={payerName}>
+                    {payerName}
+                </span>
+            )
+        },
+    },
+    {
+        id: "billingStatus",
+        accessorKey: "billingStatus",
+        header: "Billing",
+        size: 100,
+        cell: ({ row }) => {
+            const status = row.original.billingStatus
+            if (!status) return <span className="text-muted-foreground">-</span>
+
+            return (
+                <Badge variant={
+                    status === 'invoiced' ? 'default' :
+                    status === 'pending' ? 'secondary' :
+                    'outline'
+                } className="text-[11px]">
+                    {status}
+                </Badge>
+            )
+        },
+    },
+    // ========================================================================
+    // END BILLING COLUMNS
+    // ========================================================================
     {
         accessorKey: "nextFollowUpDate",
         header: "Next Follow Up",
@@ -253,4 +295,3 @@ export const columns: ColumnDef<ResponseType>[] = [
     
 
 ]
-

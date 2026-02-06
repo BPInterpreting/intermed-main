@@ -332,7 +332,8 @@ export const GeneratePayoutsDialog = () => {
 
     return (
         <Dialog open={isOpen} onOpenChange={handleClose}>
-            <DialogContent className={step === 'preview' ? "max-w-4xl max-h-[90vh] overflow-y-auto" : undefined}>
+            <DialogContent className={step === 'preview' ? "max-w-5xl max-h-[90vh] overflow-y-auto" : undefined}>
+           
                 {step === 'form' && (
                     <>
                         <DialogHeader>
