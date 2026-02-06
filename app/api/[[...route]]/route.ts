@@ -13,7 +13,7 @@ import invoices from './invoices';
 import payouts from './payouts';
 import payers from './payers';
 import billing from './billing';
-
+import patientPayers from '@/app/api/[[...route]]/patient-payers';
 
 // export const runtime = 'edge';
 //initialize the new hono api instance where base is out /api route
@@ -51,6 +51,7 @@ const route = app
     .route('/payouts', payouts)
     .route('/payers', payers)
     .route('/billing', billing)
+    .route('/patient-payers', patientPayers)
 
 export const GET = handle(app)
 export const POST = handle(app)

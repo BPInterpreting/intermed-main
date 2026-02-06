@@ -490,6 +490,72 @@ const app = new Hono()
             return c.json({ data })
         }
     )
+    // ========================================================================
+    // DELETE INVOICE (and restore appointment billing status)
+    // ========================================================================
+    .delete(
+        '/:id',
+        clerkMiddleware(),
+        zValidator('param', z.object({
+            id: z.string()
+        })),
+        async (c) => {
+            const auth = getAuth(c)
+            const userRole = (auth?.sessionClaims?.metadata as { role: string })?.role
+            const { id } = c.req.valid('param')
+
+            if (!auth?.userId) {
+                return c.json({ error: "Unauthorized" }, 401)
+            }
+
+            if (userRole !== 'admin') {
+                return c.json({ error: "Admin access required" }, 403)
+            }
+
+            // Check if invoice exists and is deletable (only drafts)
+            const [existing] = await db
+                .select({ id: invoices.id, status: invoices.status })
+                .from(invoices)
+                .where(eq(invoices.id, id))
+                .limit(1)
+
+            if (!existing) {
+                return c.json({ error: "Invoice not found" }, 404)
+            }
+
+            if (existing.status !== 'draft') {
+                return c.json({ 
+                    error: "Only draft invoices can be deleted. Use status updates for sent/paid invoices." 
+                }, 400)
+            }
+
+            // Get line items to restore appointment billing status
+            const lineItems = await db
+                .select({ appointmentId: invoiceLineItems.appointmentId })
+                .from(invoiceLineItems)
+                .where(eq(invoiceLineItems.invoiceId, id))
+
+            // Delete invoice (cascade will delete line items)
+            const [deleted] = await db
+                .delete(invoices)
+                .where(eq(invoices.id, id))
+                .returning()
+
+            // Restore appointments back to pending billing
+            for (const item of lineItems) {
+                if (item.appointmentId) {
+                    await db
+                        .update(appointments)
+                        .set({ billingStatus: 'pending' })
+                        .where(eq(appointments.id, item.appointmentId))
+                }
+            }
+
+            console.log(`[Invoices] Deleted draft invoice ${deleted.invoiceNumber}, restored ${lineItems.length} appointments to pending`)
+
+            return c.json({ data: deleted })
+        }
+    )
 
     // ========================================================================
     // MARK INVOICE AS SENT

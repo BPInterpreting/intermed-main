@@ -10,6 +10,7 @@ import {useGetFacilities} from "@/features/facilities/api/use-get-facilities";
 import {AppointmentForm} from "@/features/appointments/components/appointmentForm";
 import {Loader2} from "lucide-react";
 import {useGetInterpreters} from "@/features/interpreters/api/use-get-interpreters";
+import { useGetPayers } from "@/features/payers/api/use-get-payers"
 
 const formSchema  = insertAppointmentSchema.omit({
     id: true,
@@ -26,6 +27,12 @@ export const NewAppointmentDialog = () => {
     const facilityOptions = (facilityQuery.data ?? []).map(facility => ({
         label: facility.name,
         value: facility.id
+    }))
+
+    const payersQuery = useGetPayers()
+    const payerOptions = (payersQuery.data ?? []).map((payer: any) => ({
+        label: payer.name,
+        value: payer.id,
     }))
 
     // patientQuery is used to load the patients from the database
@@ -95,6 +102,7 @@ export const NewAppointmentDialog = () => {
                         facilityOptions={facilityOptions}
                         patientOptions={patientOptions}
                         interpreterOptions={interpreterOptions}
+                        payerOptions={payerOptions}
                         // onCreateFacility={onCreateFacility}
                         // onCreatePatient={onCreatePatient}
                      />

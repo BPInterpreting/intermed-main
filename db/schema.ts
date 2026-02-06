@@ -31,10 +31,42 @@ export const patient = pgTable("patients", {
 })
 
 export const patientsRelations = relations(patient, ({ many }) => ({
-    appointments: many(appointments)
+    appointments: many(appointments),
+    payers: many(patientPayers),
 }))
 
 export const insertPatientSchema = createInsertSchema(patient)
+
+// PATIENT PAYERS - Tracks which payer (insurance) covers a patient over time
+export const patientPayers = pgTable("patient_payers", {
+    id: text("id").primaryKey(),
+    patientId: text("patient_id").references(() => patient.id, { onDelete: "cascade" }).notNull(),
+    payerId: text("payer_id").references(() => payers.id, { onDelete: "set null" }),
+    claimNumber: varchar("claim_number"),                         // Optional - not always available
+    isPrimary: boolean("is_primary").default(true).notNull(),     // Primary vs secondary payer
+    isActive: boolean("is_active").default(true).notNull(),       // Current active assignment
+    effectiveDate: timestamp("effective_date", { mode: "date" }).notNull(),
+    endDate: timestamp("end_date", { mode: "date" }),             // Null = still active
+    notes: text("notes"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow().$onUpdate(() => new Date()),
+})
+
+export const patientPayersRelations = relations(patientPayers, ({ one }) => ({
+    patient: one(patient, {
+        fields: [patientPayers.patientId],
+        references: [patient.id],
+    }),
+    payer: one(payers, {
+        fields: [patientPayers.payerId],
+        references: [payers.id],
+    }),
+}))
+
+export const insertPatientPayerSchema = createInsertSchema(patientPayers, {
+    effectiveDate: z.coerce.date(),
+    endDate: z.coerce.date().optional().nullable(),
+})
 
 export const facilities = pgTable("facilities", {
     id: text("id").primaryKey(),
@@ -337,6 +369,7 @@ export const payersRelations = relations(payers, ({ many }) => ({
     languageRates: many(payerLanguageRates),
     appointments: many(appointments),
     invoices: many(invoices),
+    patients: many(patientPayers),
 }))
 
 export const payerLanguageRatesRelations = relations(payerLanguageRates, ({ one }) => ({

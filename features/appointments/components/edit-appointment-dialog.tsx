@@ -24,6 +24,7 @@ import {useCreateFacility} from "@/features/facilities/api/use-create-facility";
 import {useGetPatients} from "@/features/patients/api/use-get-patients";
 import {useCreatePatient} from "@/features/patients/api/use-create-patient";
 import {useGetInterpreters} from "@/features/interpreters/api/use-get-interpreters";
+import { useGetPayers } from "@/features/payers/api/use-get-payers"
 
 const formSchema  = insertAppointmentSchema.omit
 ({
@@ -52,6 +53,11 @@ export const EditAppointmentDialog = () => {
     const facilityOptions = (facilityQuery.data ?? []).map(facility => ({
         label: facility.name,
         value: facility.id
+    }))
+    const payersQuery = useGetPayers()
+    const payerOptions = (payersQuery.data ?? []).map((payer: any) => ({
+        label: payer.name,
+        value: payer.id,
     }))
 
     // patientQuery is used to load the patients from the database
@@ -103,6 +109,7 @@ export const EditAppointmentDialog = () => {
         notes: appointmentQuery.data.notes,
         adminNotes: appointmentQuery.data.adminNotes,
         status: appointmentQuery.data.status,
+        
 
     } : {
         patientId: '',
@@ -166,6 +173,7 @@ export const EditAppointmentDialog = () => {
                                  facilityOptions={facilityOptions}
                                  patientOptions={patientOptions}
                                  interpreterOptions={interpreterOptions}
+                                 payerOptions={payerOptions}
                                  // onCreateFacility={onCreateFacility}
                                  // onCreatePatient={onCreatePatient}
                              />

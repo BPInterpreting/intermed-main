@@ -6,7 +6,7 @@ import {useForm} from "react-hook-form"
 import {Button} from "@/components/ui/button"
 import {Form, FormControl, FormDescription, FormField, FormItem, FormLabel,} from "@/components/ui/form"
 import {Input} from "@/components/ui/input"
-import {Trash} from "lucide-react";
+import {Trash, Building2, AlertCircle} from "lucide-react";
 import {insertAppointmentSchema} from "@/db/schema";
 import {CustomSelect} from "@/components/customUi/customSelect";
 import { DatePicker } from "@/components/customUi/date-picker";
@@ -28,6 +28,9 @@ import {useInterpreterCount} from "@/features/appointments/api/use-get-interpret
 import {SimpleTimePicker} from "@/components/customUi/time-picker-ampm";
 import {Check, ChevronsUpDown} from "lucide-react";
 import {cn} from "@/lib/utils";
+import {Badge} from "@/components/ui/badge";
+import {Separator} from "@/components/ui/separator";
+import { useGetActivePatientPayers } from "@/features/patient-payers/use-get-active-patient-payers" 
 
 // Appointment type options for searchable combobox
 const appointmentTypeOptions = [
@@ -46,11 +49,28 @@ const appointmentTypeOptions = [
     { label: "Other", value: "Other" },
 ];
 
+// Language options
+const languageOptions = [
+    { label: "Spanish", value: "Spanish" },
+    { label: "Mandarin", value: "Mandarin" },
+    { label: "Cantonese", value: "Cantonese" },
+    { label: "Vietnamese", value: "Vietnamese" },
+    { label: "Korean", value: "Korean" },
+    { label: "Tagalog", value: "Tagalog" },
+    { label: "Russian", value: "Russian" },
+    { label: "Arabic", value: "Arabic" },
+    { label: "Farsi", value: "Farsi" },
+    { label: "Portuguese", value: "Portuguese" },
+    { label: "French", value: "French" },
+    { label: "Japanese", value: "Japanese" },
+    { label: "Hindi", value: "Hindi" },
+    { label: "Punjabi", value: "Punjabi" },
+    { label: "ASL", value: "ASL" },
+    { label: "Other", value: "Other" },
+];
 
 const intervalRegex = /^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$/i;
 
-//this schema is used for the default values of the form mainly due to the use of coercion and regex
-//and also ensures that the data is in the correct format
 const formSchema = z.object({
     date: z.coerce.date(),
     patientId: z.string().nullable(),
@@ -58,7 +78,6 @@ const formSchema = z.object({
     interpreterId: z.string().nullable().optional(),
     startTime: z.string(),
     projectedEndTime: z.string().nullable(),
-    // duration: z.string().regex(intervalRegex, {message: 'Invalid duration format. Example: 1h30m'}).nullable(),
     projectedDuration: z.string().regex(intervalRegex, {message: 'Invalid duration format. Example: 1h30m'}).nullable(),
     endTime: z.string().nullable().optional(),
     appointmentType: z.string().nullable(),
@@ -68,10 +87,12 @@ const formSchema = z.object({
     status: z.string().nullable(),
     offerMode: z.boolean().optional(),
     isRushAppointment: z.boolean().optional(),
+    // NEW: Billing fields
+    payerId: z.string().nullable().optional(),
+    language: z.string().nullable().optional(),
+    mileageApproved: z.boolean().optional(),
 })
 
-//this api schema is used in the onSubmit function to send the data to the server
-//simple all true values to allow the data to pass in the onSubmit
 const apiSchema = insertAppointmentSchema.omit({
     id:true
 })
@@ -85,12 +106,10 @@ type Props ={
     onSubmit: (values: ApiFormValues) => void;
     onDelete?: () => void;
     disabled?: boolean;
-    //arrays of values for label and value
     patientOptions: {label: string, value: string}[];
     facilityOptions: {label: string, value: string}[];
     interpreterOptions: {label: string, value: string}[];
-    // onCreateFacility: (name: string) => void
-    // onCreatePatient: (firstName: string) => void
+    payerOptions: {label: string, value: string}[];
 }
 
 export const AppointmentForm = ({
@@ -101,7 +120,8 @@ export const AppointmentForm = ({
     disabled,
     patientOptions,
     facilityOptions,
-    interpreterOptions
+    interpreterOptions,
+    payerOptions,
 }: Props) => {
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
@@ -113,22 +133,56 @@ export const AppointmentForm = ({
     const [appointmentTypeSearch, setAppointmentTypeSearch] = useState("")
     const appointmentTypeInputRef = useRef<HTMLInputElement>(null)
     const facilityId = form.watch('facilityId')
+    const patientId = form.watch('patientId')
+    const currentPayerId = form.watch('payerId')
     const interpreterCount = useInterpreterCount(facilityId)
-    
+
+    // Auto-populate payer when patient is selected
+    const activePayersQuery = useGetActivePatientPayers(patientId ?? undefined)
+
+    // Track if payer was manually overridden
+    const [payerManuallySet, setPayerManuallySet] = useState(false)
+    const [autoPopulatedPayerId, setAutoPopulatedPayerId] = useState<string | null>(null)
+
+    useEffect(() => {
+        if (activePayersQuery.data && activePayersQuery.data.length > 0 && !payerManuallySet) {
+            // Find primary payer first, fallback to first active
+            const primaryPayer = activePayersQuery.data.find((p: any) => p.isPrimary)
+            const payerToSet = primaryPayer || activePayersQuery.data[0]
+
+            if (payerToSet?.payerId) {
+                form.setValue('payerId', payerToSet.payerId)
+                setAutoPopulatedPayerId(payerToSet.payerId)
+            }
+        }
+    }, [activePayersQuery.data, payerManuallySet, form])
+
+    // Reset payer auto-population when patient changes
+    useEffect(() => {
+        if (!id) {
+            // Only reset on new appointments, not edits
+            setPayerManuallySet(false)
+            setAutoPopulatedPayerId(null)
+        }
+    }, [patientId, id])
+
     // Focus the search input when popover opens
     useEffect(() => {
         if (appointmentTypeOpen && appointmentTypeInputRef.current) {
-            // Small delay to ensure popover is rendered
             setTimeout(() => {
                 appointmentTypeInputRef.current?.focus()
             }, 0)
         }
     }, [appointmentTypeOpen])
-    
-    // Filter appointment types based on search
+
     const filteredAppointmentTypes = appointmentTypeOptions.filter((option) =>
         option.label.toLowerCase().includes(appointmentTypeSearch.toLowerCase())
     )
+
+    // Get the active payer info for display
+    const activePrimaryPayer = activePayersQuery.data?.find((p: any) => p.isPrimary)
+    const activeSecondaryPayer = activePayersQuery.data?.find((p: any) => !p.isPrimary)
+    const isPayerOverridden = payerManuallySet && currentPayerId !== autoPopulatedPayerId
 
     const handleSubmit = (values: FormValues) => {
         onSubmit({
@@ -136,6 +190,9 @@ export const AppointmentForm = ({
             interpreterId: values.offerMode ? null : values.interpreterId,
             offerMode: values.offerMode ?? false,
             isRushAppointment: values.isRushAppointment ?? false,
+            payerId: values.payerId ?? null,
+            language: values.language ?? null,
+            mileageApproved: values.mileageApproved ?? true,
         })
     }
 
@@ -251,7 +308,6 @@ export const AppointmentForm = ({
                                            <CustomSelect
                                                placeholder="Select a patient..."
                                                options={patientOptions}
-                                               // onCreate={onCreatePatient}
                                                value={field.value}
                                                onChange={field.onChange}
                                                disabled={disabled}
@@ -260,6 +316,132 @@ export const AppointmentForm = ({
                                    </FormItem>
                                )}
                            />
+
+                           {/* ============================================================ */}
+                           {/* BILLING SECTION: Payer + Language + Mileage */}
+                           {/* ============================================================ */}
+                           {patientId && (
+                               <div className="rounded-lg border p-3 mt-2 space-y-3">
+                                   <div className="flex items-center justify-between">
+                                       <p className="text-sm font-medium flex items-center gap-2">
+                                           <Building2 className="size-4" />
+                                           Billing Info
+                                       </p>
+                                       {activePrimaryPayer && !isPayerOverridden && (
+                                           <Badge variant="outline" className="text-xs">
+                                               Auto-populated from patient
+                                           </Badge>
+                                       )}
+                                       {isPayerOverridden && (
+                                           <Badge variant="secondary" className="text-xs">
+                                               Manually overridden
+                                           </Badge>
+                                       )}
+                                   </div>
+
+                                   {/* Active payer info from patient */}
+                                   {activePayersQuery.data && activePayersQuery.data.length > 0 && (
+                                       <div className="text-xs text-muted-foreground space-y-1 bg-muted/50 rounded p-2">
+                                           {activePrimaryPayer && (
+                                               <div className="flex justify-between">
+                                                   <span>Primary: <span className="font-medium text-foreground">{activePrimaryPayer.payerName}</span></span>
+                                                   <Badge variant="outline" className="text-[10px] h-4">{activePrimaryPayer.payerType?.replace("_", " ")}</Badge>
+                                               </div>
+                                           )}
+                                           {activeSecondaryPayer && (
+                                               <div className="flex justify-between">
+                                                   <span>Secondary: <span className="font-medium text-foreground">{activeSecondaryPayer.payerName}</span></span>
+                                                   <Badge variant="outline" className="text-[10px] h-4">{activeSecondaryPayer.payerType?.replace("_", " ")}</Badge>
+                                               </div>
+                                           )}
+                                       </div>
+                                   )}
+
+                                   {activePayersQuery.data && activePayersQuery.data.length === 0 && (
+                                       <div className="flex items-center gap-2 text-xs text-amber-600 bg-amber-50 dark:bg-amber-950/30 rounded p-2">
+                                           <AlertCircle className="size-3 shrink-0" />
+                                           No active payer assigned to this patient
+                                       </div>
+                                   )}
+
+                                   {/* Payer Select (override) */}
+                                   <FormField
+                                       control={form.control}
+                                       name="payerId"
+                                       render={({field}) => (
+                                           <FormItem>
+                                               <FormLabel className="text-xs">Payer</FormLabel>
+                                               <FormControl>
+                                                   <CustomSelect
+                                                       placeholder="Select payer..."
+                                                       options={payerOptions}
+                                                       value={field.value}
+                                                       onChange={(value) => {
+                                                           field.onChange(value)
+                                                           setPayerManuallySet(true)
+                                                       }}
+                                                       disabled={disabled}
+                                                   />
+                                               </FormControl>
+                                           </FormItem>
+                                       )}
+                                   />
+
+                                   {/* Language */}
+                                   <FormField
+                                       control={form.control}
+                                       name="language"
+                                       render={({field}) => (
+                                           <FormItem>
+                                               <FormLabel className="text-xs">Language</FormLabel>
+                                               <FormControl>
+                                                   <Select
+                                                       onValueChange={field.onChange}
+                                                       value={field.value ?? ''}
+                                                   >
+                                                       <SelectTrigger>
+                                                           <SelectValue placeholder="Select language..." />
+                                                       </SelectTrigger>
+                                                       <SelectContent>
+                                                           <SelectGroup>
+                                                               <SelectLabel>Languages</SelectLabel>
+                                                               {languageOptions.map((lang) => (
+                                                                   <SelectItem key={lang.value} value={lang.value}>
+                                                                       {lang.label}
+                                                                   </SelectItem>
+                                                               ))}
+                                                           </SelectGroup>
+                                                       </SelectContent>
+                                                   </Select>
+                                               </FormControl>
+                                           </FormItem>
+                                       )}
+                                   />
+
+                                   {/* Mileage Approved */}
+                                   <FormField
+                                       control={form.control}
+                                       name="mileageApproved"
+                                       render={({field}) => (
+                                           <FormItem className="flex items-center justify-between rounded-lg border p-3">
+                                               <div className="space-y-0.5">
+                                                   <FormLabel className="text-xs">Mileage Approved</FormLabel>
+                                                   <FormDescription className="text-[11px]">
+                                                       Is mileage reimbursable for this appointment?
+                                                   </FormDescription>
+                                               </div>
+                                               <FormControl>
+                                                   <Switch
+                                                       checked={field.value ?? false}
+                                                       onCheckedChange={field.onChange}
+                                                   />
+                                               </FormControl>
+                                           </FormItem>
+                                       )}
+                                   />
+                               </div>
+                           )}
+
                            <FormField
                                control={form.control}
                                name="facilityId"
@@ -271,7 +453,6 @@ export const AppointmentForm = ({
                                                options={facilityOptions}
                                                value={field.value}
                                                onChange={field.onChange}
-                                               // onCreate={onCreateFacility}
                                                placeholder="Select a facility..."
                                                disabled={disabled}
                                            />
@@ -280,7 +461,6 @@ export const AppointmentForm = ({
                                )}
                            />
                               <div className='mt-2'>
-                                  {/*this is a toggle for offer mode. when checked it sets the interpreterId to null triggering the backend operation to send out offer to other interpreters in the area.*/}
                                   <FormField
                                       control={form.control}
                                       name="offerMode"
@@ -323,7 +503,6 @@ export const AppointmentForm = ({
                                                       options={interpreterOptions}
                                                       value={field.value}
                                                       onChange={field.onChange}
-                                                      // onCreate={onCreateFacility}
                                                       placeholder="Select an Interpreter..."
                                                       disabled={disabled}
                                                   />
@@ -346,21 +525,6 @@ export const AppointmentForm = ({
                                       </CardContent>
                                   </Card>
                               }
-                           {/*<FormItem>*/}
-                           {/*    <FormLabel>Appointment Type</FormLabel>*/}
-                           {/*    <FormControl>*/}
-                           {/*        <CustomSelect*/}
-                           {/*            options={[*/}
-                           {/*                {label: "In-person", value: "in-person"},*/}
-                           {/*                {label: "Virtual", value: "virtual"},*/}
-                           {/*                {label: "Phone", value: "phone"},*/}
-                           {/*            ]}*/}
-                           {/*            value={form.getValues("appointmentType")}*/}
-                           {/*            onChange={(value) => form.setValue("appointmentType", value)}*/}
-                           {/*            disabled={disabled}*/}
-                           {/*        />*/}
-                           {/*    </FormControl>*/}
-                           {/*</FormItem>*/}
                            <div className='flex flex-row gap-x-4 items-end'>
                                <FormField
                                    control={form.control}
@@ -447,7 +611,6 @@ export const AppointmentForm = ({
                                            <FormLabel>Status</FormLabel>
                                            <FormControl>
                                                <Select onValueChange={field.onChange} value={field.value ?? ''}>
-                                                   {/* eslint-disable-next-line react/jsx-no-undef */}
                                                    <SelectTrigger className="w-[180px]">
                                                        <SelectValue className='pr-4' placeholder="Select Status" />
                                                    </SelectTrigger>
