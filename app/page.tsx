@@ -1,370 +1,318 @@
-"use client";
+'use client'
 
-import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, Users, MapPin, Clock, Smartphone, AppWindow, Bell, CheckCircle } from "lucide-react";
+import { ModeToggle } from "@/components/theme/mode-toggle";
+import { Languages, Mic, BarChart3, Shield, Clock, Users, ArrowRight, CheckCircle2, ChevronRight, Globe, Headphones, Brain } from "lucide-react";
 
-// Prevent static prerendering - fixes Next.js 15 build error
-export const dynamic = "force-dynamic";
+
+import { motion } from "framer-motion";
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: (i: number) => ({
+    opacity: 1, y: 0,
+    transition: { delay: i * 0.1, duration: 0.5, ease: "easeOut" as const }
+  })
+};
+
+const features = [
+  {
+    icon: Brain,
+    title: "AI Interpretation",
+    description: "Real-time speech-to-speech interpretation and transcription powered by advanced AI for instant multilingual communication."
+  },
+  {
+    icon: Users,
+    title: "Human Interpreters",
+    description: "Professional interpreters available on-demand or scheduled for complex, high-stakes encounters."
+  },
+  {
+    icon: Globe,
+    title: "200+ Languages",
+    description: "Comprehensive language coverage ensuring no conversation is left without communication support."
+  },
+  {
+    icon: Shield,
+    title: "Enterprise Security",
+    description: "Enterprise-grade security with end-to-end encryption and full HIPAA compliance for sensitive settings."
+  },
+  {
+    icon: Clock,
+    title: "24/7 Availability",
+    description: "Round-the-clock coverage with AI always available and human interpreters on standby."
+  },
+  {
+    icon: BarChart3,
+    title: "Analytics Dashboard",
+    description: "Comprehensive usage tracking, session history, and reporting for organizational compliance."
+  }
+];
+
+const plans = [
+  {
+    name: "AI Essential",
+    description: "AI-powered interpretation for organizations needing instant access",
+    features: ["Efatha Live AI interpretation", "Unlimited sessions", "Live transcripts", "Session history & analytics", "Email support"],
+    cta: "Get Started",
+    highlighted: false
+  },
+  {
+    name: "Full Service",
+    description: "AI + human interpreters for comprehensive language coverage",
+    features: ["Everything in AI Essential", "Human interpreter scheduling", "Interpreter management", "Mobile app for interpreters", "Priority 24/7 support", "Custom language pairs"],
+    cta: "Contact Sales",
+    highlighted: true
+  },
+  {
+    name: "Enterprise",
+    description: "Custom solutions for large organizations and systems",
+    features: ["Everything in Full Service", "Dedicated account manager", "Custom integrations", "SLA guarantees", "Compliance audit reports", "On-site training"],
+    cta: "Contact Sales",
+    highlighted: false
+  }
+];
 
 export default function LandingPage() {
-  const [image1Loaded, setImage1Loaded] = useState(false);
-  const [image2Loaded, setImage2Loaded] = useState(false);
-  const [image1Error, setImage1Error] = useState(false);
-  const [image2Error, setImage2Error] = useState(false);
-  
-  // Classical painting backgrounds
-  const painting1 = "https://upload.wikimedia.org/wikipedia/commons/b/b9/Caspar_David_Friedrich_-_Wanderer_above_the_sea_of_fog.jpg";
-  const painting2 = "https://upload.wikimedia.org/wikipedia/commons/a/aa/Claude_Monet_-_Water_Lilies_-_1906%2C_Ryerson.jpg";
-
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Header */}
-      <header className="border-b">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center justify-start gap-2 flex-1">
-            <div className="relative h-12 w-[420px] overflow-visible">
-              <Image
-                src="/branding/Transparent Logo.png"
-                alt="InterpreFi"
-                fill
-                className="object-contain object-left origin-left scale-150"
-                sizes="420px"
-                priority
-              />
+    <div className="min-h-screen bg-background">
+      {/* Navigation */}
+      <nav className="fixed top-0 left-0 right-0 z-50 glass">
+        <div className="container mx-auto flex items-center justify-between px-6 py-4">
+          <Link href="/" className="flex items-center gap-2">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent-gradient">
+                {/* TODO: Add logo */}
+              {/* <Languages className="h-5 w-5 text-accent-foreground" /> */}
             </div>
-          </div>
-          {/* TODO: Remove sign-in button in production - kept for testing purposes only */}
-          <Link href="/sign-in">
-            <Button variant="outline">Sign In</Button>
+            <span className="font-display text-xl font-bold text-foreground">Efatha</span>
           </Link>
+          <div className="hidden items-center gap-8 md:flex">
+            <a href="#features" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">Features</a>
+            <a href="#pricing" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">Pricing</a>
+            <a href="#faq" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">FAQ</a>
+            <Link href="/marketing" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">Interpreters</Link>
+          </div>
+          <div className="flex items-center gap-3">
+            <ModeToggle />
+            <Link href="/dashboard">
+              <Button variant="ghost" size="sm">Sign In</Button>
+            </Link>
+            <Link href="/dashboard">
+              <Button size="sm" className="bg-accent-gradient text-accent-foreground hover:opacity-90">
+                Get Started
+              </Button>
+            </Link>
+          </div>
         </div>
-      </header>
+      </nav>
 
-      {/* Hero Section */}
-      <section className="flex-1 container mx-auto px-4 py-16 lg:py-24">
-        <div className="max-w-4xl mx-auto text-center space-y-8">
-          <div className="space-y-4">
-            <h1 className="text-4xl lg:text-6xl font-bold tracking-tight">
-              Interpreter Management
-              <span className="block text-primary mt-2">Made Simple</span>
-            </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Intelligent booking system to connect interpreting services with healthcare providers. 
+      {/* Hero */}
+      <section className="relative overflow-hidden pt-32 pb-20 md:pt-44 md:pb-32">
+        <div className="absolute inset-0 bg-hero opacity-[0.03]" />
+        <div className="container relative mx-auto px-6">
+          <div className="mx-auto max-w-4xl text-center">
+            <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={0}>
+              <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-1.5 text-xs font-medium text-muted-foreground shadow-soft">
+                <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse-ring" />
+                Now available — AI-powered universal interpretation
+              </span>
+            </motion.div>
+            <motion.h1
+              className="mt-8 font-display text-5xl font-extrabold leading-tight tracking-tight text-foreground md:text-7xl"
+              initial="hidden" animate="visible" variants={fadeUp} custom={1}
+            >
+              Break language barriers{" "}
+              <span className="text-gradient-hero">everywhere</span>
+            </motion.h1>
+            <motion.p
+              className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground md:text-xl"
+              initial="hidden" animate="visible" variants={fadeUp} custom={2}
+            >
+              Efatha unifies AI and human interpretation under one platform — giving organizations instant, reliable multilingual communication 24/7.
+            </motion.p>
+            <motion.div
+              className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
+              initial="hidden" animate="visible" variants={fadeUp} custom={3}
+            >
+              <Link href="/live">
+                <Button size="lg" className="bg-accent-gradient text-accent-foreground hover:opacity-90 gap-2 px-8 shadow-glow">
+                  <Mic className="h-4 w-4" />
+                  Try Efatha Live
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
+              <Link href="/dashboard">
+                <Button size="lg" variant="outline" className="gap-2 px-8">
+                  View Dashboard
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </Link>
+            </motion.div>
+          </div>
+
+          {/* Hero image */}
+          <motion.div
+            className="mx-auto mt-16 max-w-5xl overflow-hidden rounded-2xl border border-border shadow-lg"
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.7 }}
+          >
+            <img src="/branding/hero-bg.jpg" alt="Efatha universal interpretation platform" className="w-full" />
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Features */}
+      <section id="features" className="py-24 bg-muted/50">
+        <div className="container mx-auto px-6">
+          <div className="mx-auto max-w-2xl text-center">
+            <h2 className="font-display text-3xl font-bold text-foreground md:text-4xl">
+              Everything you need for seamless interpretation
+            </h2>
+            <p className="mt-4 text-muted-foreground">
+              One platform, two powerful tools. Use AI interpretation, human interpreters, or both — tailored to your organization&apos;s needs.
             </p>
           </div>
-
-          {/* Interpreter Portal Card */}
-          <div className="mt-12 max-w-md mx-auto">
-            <Card className="border-2 hover:border-primary/50 transition-colors">
-              <CardHeader>
-                <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                  <Smartphone className="h-6 w-6 text-primary" />
+          <div className="mx-auto mt-16 grid max-w-5xl gap-8 md:grid-cols-2 lg:grid-cols-3">
+            {features.map((f, i) => (
+              <motion.div
+                key={f.title}
+                className="group rounded-xl border border-border bg-card p-6 shadow-soft transition-all hover:shadow-md"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.08 }}
+              >
+                <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-accent/10 text-accent transition-colors group-hover:bg-accent group-hover:text-accent-foreground">
+                  <f.icon className="h-5 w-5" />
                 </div>
-                <CardTitle>Interpreter Portal</CardTitle>
-                <CardDescription>
-                  Interpreters can sign in or create an account to access the mobile app and manage appointments.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Link href="/interpreter" className="w-full">
-                  <Button variant="outline" className="w-full" size="lg">
-                    Open Interpreter Portal
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
+                <h3 className="mt-4 font-display text-lg font-semibold text-foreground">{f.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{f.description}</p>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Section 1: Text Left + Screenshots Right */}
-      <section className="border-t py-16 lg:py-24">
-        <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto">
-            <div className="grid lg:grid-cols-2 gap-12 items-center">
-              {/* Text Content - Left */}
-              <div className="space-y-6">
-                <h2 className="text-3xl lg:text-4xl font-bold tracking-tight">
-                  Empower Your Interpreters
-                </h2>
-                <p className="text-lg text-muted-foreground">
-                  Our mobile app gives interpreters everything they need at their fingertips — calendar views, appointment details, and real-time navigation to facilities.
-                </p>
-                <ul className="space-y-4">
-                  <li className="flex items-start gap-3">
-                    <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <Calendar className="h-3.5 w-3.5 text-primary" />
-                    </div>
-                    <div>
-                      <span className="font-medium">Calendar Overview</span>
-                      <p className="text-sm text-muted-foreground">View all upcoming appointments at a glance</p>
-                    </div>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <MapPin className="h-3.5 w-3.5 text-primary" />
-                    </div>
-                    <div>
-                      <span className="font-medium">Built-in Navigation</span>
-                      <p className="text-sm text-muted-foreground">Get directions to any facility with one tap</p>
-                    </div>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <CheckCircle className="h-3.5 w-3.5 text-primary" />
-                    </div>
-                    <div>
-                      <span className="font-medium">Complete Details</span>
-                      <p className="text-sm text-muted-foreground">Patient info, facility contacts, and appointment notes</p>
-                    </div>
-                  </li>
-                </ul>
-              </div>
-
-              {/* Screenshots - Right */}
-              <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl ring-1 ring-black/10 group">
-                {/* Loading placeholder */}
-                {!image1Loaded && (
-                  <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200 animate-pulse" />
-                )}
-                
-                {/* Painting Background */}
-                <img
-                  src={painting1}
-                  alt=""
-                  className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 group-hover:scale-105 ${
-                    image1Loaded ? 'opacity-100' : 'opacity-0'
-                  }`}
-                  onLoad={() => setImage1Loaded(true)}
-                  onError={(e) => {
-                    console.error('Failed to load painting background 1:', e);
-                    setImage1Loaded(true); // Stop loading state even on error
-                  }}
-                />
-                
-                {/* Gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-black/10 to-black/20" />
-                
-                {/* Screenshots */}
-                <div className="absolute inset-0 flex items-center justify-center p-6">
-                  <img
-                    src="/screenshots/combo1-calendar-map.png"
-                    alt="Mobile app showing calendar and map views"
-                    className="max-h-full w-auto object-contain drop-shadow-2xl transition-transform duration-500 group-hover:scale-[1.02]"
-                    onError={(e) => {
-                      console.error('Failed to load screenshot 1:', e);
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Flow Banner - Option 4A */}
-      <section className="py-12">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-gradient-to-r from-slate-700 to-slate-800 rounded-2xl p-10 text-white text-center">
-              <h3 className="text-2xl md:text-3xl font-bold mb-4">You request. We deliver.</h3>
-              <p className="text-slate-300 mb-8 max-w-lg mx-auto">
-                Send us an appointment request and we handle everything — matching, scheduling, confirmation, and follow-up.
-              </p>
-              <div className="flex items-center justify-center gap-3 text-sm font-medium flex-wrap">
-                <span className="bg-white/10 px-4 py-2 rounded-full">Request</span>
-                <span className="text-slate-500">→</span>
-                <span className="bg-white/10 px-4 py-2 rounded-full">Match</span>
-                <span className="text-slate-500">→</span>
-                <span className="bg-white/10 px-4 py-2 rounded-full">Confirm</span>
-                <span className="text-slate-500">→</span>
-                <span className="bg-white/10 px-4 py-2 rounded-full">Complete</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Section 2: Screenshots Left + Text Right */}
-      <section className="py-16 lg:py-24">
-        <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto">
-            <div className="grid lg:grid-cols-2 gap-12 items-center">
-              {/* Screenshots - Left */}
-              <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl ring-1 ring-black/10 group order-2 lg:order-1">
-                {/* Loading placeholder */}
-                {!image2Loaded && (
-                  <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200 animate-pulse" />
-                )}
-                
-                {/* Painting Background */}
-                <img
-                  src={painting2}
-                  alt=""
-                  className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 group-hover:scale-105 ${
-                    image2Loaded ? 'opacity-100' : 'opacity-0'
-                  }`}
-                  onLoad={() => setImage2Loaded(true)}
-                  onError={(e) => {
-                    console.error('Failed to load painting background 2:', e);
-                    setImage2Loaded(true); // Stop loading state even on error
-                  }}
-                />
-                
-                {/* Gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-black/10 to-black/20" />
-                
-                {/* Screenshots */}
-                <div className="absolute inset-0 flex items-center justify-center p-6">
-                  <img
-                    src="/screenshots/combo2-notification-close.png"
-                    alt="Mobile app showing notifications and appointment closing"
-                    className="max-h-full w-auto object-contain drop-shadow-2xl transition-transform duration-500 group-hover:scale-[1.02]"
-                    onError={(e) => {
-                      console.error('Failed to load screenshot 2:', e);
-                    }}
-                  />
-                </div>
-              </div>
-
-              {/* Text Content - Right */}
-              <div className="space-y-6 order-1 lg:order-2">
-                <h2 className="text-3xl lg:text-4xl font-bold tracking-tight">
-                  Real-Time Updates
-                </h2>
-                <p className="text-lg text-muted-foreground">
-                  Interpreters receive instant notifications for new appointments and can accept or decline with a single tap. When the job is done, closing out is just as easy.
-                </p>
-                <ul className="space-y-4">
-                  <li className="flex items-start gap-3">
-                    <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <Bell className="h-3.5 w-3.5 text-primary" />
-                    </div>
-                    <div>
-                      <span className="font-medium">Push Notifications</span>
-                      <p className="text-sm text-muted-foreground">Never miss a new appointment opportunity</p>
-                    </div>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <CheckCircle className="h-3.5 w-3.5 text-primary" />
-                    </div>
-                    <div>
-                      <span className="font-medium">One-Tap Accept</span>
-                      <p className="text-sm text-muted-foreground">Review details and confirm in seconds</p>
-                    </div>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <Clock className="h-3.5 w-3.5 text-primary" />
-                    </div>
-                    <div>
-                      <span className="font-medium">Easy Close-Out</span>
-                      <p className="text-sm text-muted-foreground">Log end time and notes when the appointment wraps</p>
-                    </div>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="border-t bg-muted/50 py-16">
-        <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl font-bold text-center mb-12">
-              Powerful Features for Seamless Operations
+      {/* Pricing */}
+      <section id="pricing" className="py-24">
+        <div className="container mx-auto px-6">
+          <div className="mx-auto max-w-2xl text-center">
+            <h2 className="font-display text-3xl font-bold text-foreground md:text-4xl">
+              Plans for every organization
             </h2>
-            <div className="grid md:grid-cols-3 gap-6">
-              <Card>
-                <CardHeader>
-                  <Calendar className="h-8 w-8 text-primary mb-4" />
-                  <CardTitle>Appointment Management</CardTitle>
-                  <CardDescription>
-                    Schedule, track, and manage interpreter appointments with ease.
-                  </CardDescription>
-                </CardHeader>
-              </Card>
+            <p className="mt-4 text-muted-foreground">
+              From solo professionals to large enterprise systems — choose the plan that fits your interpretation needs.
+            </p>
+          </div>
+          <div className="mx-auto mt-16 grid max-w-5xl gap-8 lg:grid-cols-3">
+            {plans.map((plan, i) => (
+              <motion.div
+                key={plan.name}
+                className={`relative flex flex-col rounded-2xl border p-8 ${
+                  plan.highlighted
+                    ? "border-accent bg-card shadow-glow"
+                    : "border-border bg-card shadow-soft"
+                }`}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+              >
+                {plan.highlighted && (
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-accent-gradient px-4 py-1 text-xs font-semibold text-accent-foreground">
+                    Most Popular
+                  </span>
+                )}
+                <h3 className="font-display text-xl font-bold text-foreground">{plan.name}</h3>
+                <p className="mt-2 text-sm text-muted-foreground">{plan.description}</p>
+                <ul className="mt-8 flex-1 space-y-3">
+                  {plan.features.map(f => (
+                    <li key={f} className="flex items-start gap-2 text-sm text-foreground">
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                <Button
+                  className={`mt-8 w-full ${plan.highlighted ? "bg-accent-gradient text-accent-foreground hover:opacity-90" : ""}`}
+                  variant={plan.highlighted ? "default" : "outline"}
+                >
+                  {plan.cta}
+                </Button>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-              <Card>
-                <CardHeader>
-                  <Users className="h-8 w-8 text-primary mb-4" />
-                  <CardTitle>User Management</CardTitle>
-                  <CardDescription>
-                    Manage interpreters, patients, and facilities from one central location.
-                  </CardDescription>
-                </CardHeader>
-              </Card>
+      {/* FAQ */}
+      <section id="faq" className="py-24 bg-muted/50">
+        <div className="container mx-auto px-6">
+          <div className="mx-auto max-w-2xl text-center">
+            <h2 className="font-display text-3xl font-bold text-foreground md:text-4xl">
+              Frequently asked questions
+            </h2>
+          </div>
+          <div className="mx-auto mt-12 max-w-3xl space-y-4">
+            {[
+              { q: "How does Efatha Live's AI interpretation work?", a: "Efatha Live uses advanced speech-to-speech AI to provide real-time interpretation. One person speaks in their language, and the other hears the translation instantly. A live bilingual transcript is generated throughout the session." },
+              { q: "Can we use both AI and human interpreters?", a: "Absolutely. Our Full Service plan gives you access to both tools. Use AI for instant, on-demand interpretation and schedule human interpreters for complex cases or when a personal touch is needed." },
+              { q: "Is Efatha secure and compliant?", a: "Yes. All data is encrypted in transit and at rest. We offer full HIPAA compliance for healthcare settings, and session transcripts are stored securely and accessible only to authorized users within your organization." },
+              { q: "What languages are supported?", a: "Efatha Live supports 200+ languages for AI interpretation. Human interpreter availability varies by language pair — contact us for specific language needs." },
+            ].map((item, i) => (
+              <motion.div
+                key={i}
+                className="rounded-xl border border-border bg-card p-6 shadow-soft"
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.05 }}
+              >
+                <h3 className="font-display font-semibold text-foreground">{item.q}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.a}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-              <Card>
-                <CardHeader>
-                  <MapPin className="h-8 w-8 text-primary mb-4" />
-                  <CardTitle>Location Services</CardTitle>
-                  <CardDescription>
-                    Track locations and optimize interpreter assignments by geographic proximity.
-                  </CardDescription>
-                </CardHeader>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <Clock className="h-8 w-8 text-primary mb-4" />
-                  <CardTitle>Real-time Updates</CardTitle>
-                  <CardDescription>
-                    Stay informed with instant notifications and real-time appointment updates.
-                  </CardDescription>
-                </CardHeader>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <Clock className="h-8 w-8 text-primary mb-4" />
-                  <CardTitle>Secure & Reliable</CardTitle>
-                  <CardDescription>
-                    Enterprise-grade security to protect sensitive healthcare information.
-                  </CardDescription>
-                </CardHeader>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <Smartphone className="h-8 w-8 text-primary mb-4" />
-                  <CardTitle>Mobile Ready</CardTitle>
-                  <CardDescription>
-                    Full mobile app support for interpreters to access appointments on the go.
-                  </CardDescription>
-                </CardHeader>
-              </Card>
+      {/* CTA */}
+      <section className="py-24">
+        <div className="container mx-auto px-6">
+          <div className="mx-auto max-w-3xl rounded-2xl bg-hero p-12 text-center md:p-16">
+            <h2 className="font-display text-3xl font-bold text-white md:text-4xl">
+              Ready to break language barriers?
+            </h2>
+            <p className="mx-auto mt-4 max-w-xl text-slate-300">
+              Join organizations worldwide using Efatha to provide seamless communication across languages.
+            </p>
+            <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
+              <Link href="/live">
+                <Button size="lg" className="bg-accent-gradient text-accent-foreground hover:opacity-90 gap-2 px-8">
+                  <Mic className="h-4 w-4" />
+                  Try Efatha Live
+                </Button>
+              </Link>
+              <Button size="lg" variant="outline" className="gap-2 border-white/20 text-white hover:bg-white/10 hover:text-white">
+                <Headphones className="h-4 w-4" />
+                Talk to Sales
+              </Button>
             </div>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t py-8">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <div className="relative h-10 w-80">
-                <Image
-                  src="/branding/Transparent Logo.png"
-                  alt="InterpreFi"
-                  fill
-                  className="object-contain"
-                  sizes="320px"
-                />
-              </div>
+      <footer className="border-t border-border py-12">
+        <div className="container mx-auto flex flex-col items-center justify-between gap-6 px-6 md:flex-row">
+          <div className="flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-gradient">
+              <Languages className="h-4 w-4 text-accent-foreground" />
             </div>
-            <p className="text-sm text-muted-foreground text-center">
-              © {new Date().getFullYear()} InterpreFi. All rights reserved.
-            </p>
+            <span className="font-display text-lg font-bold text-foreground">Efatha</span>
           </div>
+          <p className="text-sm text-muted-foreground">© 2026 Efatha. All rights reserved.</p>
         </div>
       </footer>
     </div>
