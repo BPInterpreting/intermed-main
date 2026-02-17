@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useState } from "react";
@@ -5,7 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, Users, MapPin, Clock, Smartphone, AppWindow, Bell, CheckCircle } from "lucide-react";
+import { Calendar, Users, MapPin, Clock, Smartphone, Bell, CheckCircle } from "lucide-react";
 
 // Prevent static prerendering - fixes Next.js 15 build error
 export const dynamic = "force-dynamic";
@@ -13,8 +14,6 @@ export const dynamic = "force-dynamic";
 export default function LandingPage() {
   const [image1Loaded, setImage1Loaded] = useState(false);
   const [image2Loaded, setImage2Loaded] = useState(false);
-  const [image1Error, setImage1Error] = useState(false);
-  const [image2Error, setImage2Error] = useState(false);
   
   // Classical painting backgrounds
   const painting1 = "https://upload.wikimedia.org/wikipedia/commons/b/b9/Caspar_David_Friedrich_-_Wanderer_above_the_sea_of_fog.jpg";
@@ -36,6 +35,19 @@ export default function LandingPage() {
                 priority
               />
             </div>
+          </div>
+
+          {/* Right Navigation (Restored) */}
+          <div className="flex items-center gap-6">
+            <Link 
+              href="/interpreters" 
+              className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+            >
+              Interpreters
+            </Link>
+            <Link href="/sign-in">
+              <Button variant="outline">Sign In</Button>
+            </Link>
           </div>
         </div>
       </header>
@@ -138,7 +150,7 @@ export default function LandingPage() {
                   onLoad={() => setImage1Loaded(true)}
                   onError={(e) => {
                     console.error('Failed to load painting background 1:', e);
-                    setImage1Loaded(true); // Stop loading state even on error
+                    setImage1Loaded(true);
                   }}
                 />
                 
@@ -207,7 +219,7 @@ export default function LandingPage() {
                   onLoad={() => setImage2Loaded(true)}
                   onError={(e) => {
                     console.error('Failed to load painting background 2:', e);
-                    setImage2Loaded(true); // Stop loading state even on error
+                    setImage2Loaded(true);
                   }}
                 />
                 
