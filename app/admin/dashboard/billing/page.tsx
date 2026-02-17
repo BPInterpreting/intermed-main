@@ -82,6 +82,8 @@ const BillingDashboardPage = () => {
         endDate: dateRange?.to ? format(dateRange.to, "yyyy-MM-dd") : undefined,
     }), [dateRange])
 
+    console.log('Dashboard filters:', filters)
+
     const { data, isLoading, error } = useGetBillingDashboard(filters)
 
     // Handle preset selection

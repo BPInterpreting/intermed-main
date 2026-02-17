@@ -11,7 +11,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useConfirm } from "@/hooks/use-confirm"
-import { useDeleteInvoice } from "@/features/invoices/use-delete-invoice" 
+import { useDeleteInvoice } from "@/features/invoices/api/use-delete-invoice" 
 import Link from "next/link"
 
 type Props = {
@@ -44,7 +44,7 @@ export const Actions = ({ id }: Props) => {
                 <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
                     <DropdownMenuItem disabled={deleteMutation.isPending}>
-                        <Link href={`/admin/dashboard/billing/invoices/${id}`} className="flex items-center w-full">
+                        <Link href={`/admin/dashboard/invoices/${id}`} className="flex items-center w-full">
                             <Eye className="size-4 mr-2" />
                             View Details
                         </Link>

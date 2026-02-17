@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { format, startOfMonth, endOfMonth } from "date-fns"
 import { useGetPayers } from "@/features/payers/api/use-get-payers"
-import { useGenerateInvoice } from "../use-generate-invoice" 
+import { useGenerateInvoice } from "../api/use-generate-invoice" 
 import { usePreviewInvoice } from "@/features/invoices/api/use-preview-invoice"
 import {
     Dialog,
